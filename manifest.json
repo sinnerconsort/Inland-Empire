@@ -1,12 +1,11 @@
 {
     "display_name": "Inland Empire",
-    "loading_order": 150,
+    "loading_order": 10,
     "requires": [],
     "optional": [],
     "js": "index.js",
     "css": "style.css",
     "author": "Judas",
-    "version": "0.2.2",
-    "description": "Disco Elysium-style internal voices that comment on your roleplay with distinct personalities and skill checks",
-    "auto_update": false
+    "version": "0.3.0",
+    "description": "Disco Elysium-style internal voices that comment on your roleplay with dice checks and distinct personalities. Voices appear directly in chat below AI messages."
 }
