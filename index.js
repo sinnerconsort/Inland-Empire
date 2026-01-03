@@ -648,8 +648,8 @@ Respond as ${skill.signature}.`;
                     <button class="ie-btn ie-btn-settings" title="Settings">
                         <i class="fa-solid fa-gear"></i>
                     </button>
-                    <button class="ie-btn ie-btn-collapse" title="Collapse">
-                        <i class="fa-solid fa-chevron-down"></i>
+                    <button class="ie-btn ie-btn-close-panel" title="Close">
+                        <i class="fa-solid fa-times"></i>
                     </button>
                 </div>
             </div>
@@ -687,6 +687,32 @@ Respond as ${skill.signature}.`;
         `;
 
         return panel;
+    }
+
+    function createToggleFAB() {
+        const fab = document.createElement('div');
+        fab.id = 'inland-empire-fab';
+        fab.className = 'ie-fab';
+        fab.title = 'Toggle Psyche Panel';
+        fab.innerHTML = `<i class="fa-solid fa-brain"></i>`;
+        return fab;
+    }
+
+    function togglePanel() {
+        const panel = document.getElementById('inland-empire-panel');
+        const fab = document.getElementById('inland-empire-fab');
+        
+        if (!panel) return;
+        
+        const isOpen = panel.classList.contains('ie-panel-open');
+        
+        if (isOpen) {
+            panel.classList.remove('ie-panel-open');
+            fab?.classList.remove('ie-fab-active');
+        } else {
+            panel.classList.add('ie-panel-open');
+            fab?.classList.add('ie-fab-active');
+        }
     }
 
     function createSettingsModal() {
@@ -1035,6 +1061,12 @@ Respond as ${skill.signature}.`;
     // ═══════════════════════════════════════════════════════════════
 
     function setupEventListeners() {
+        // FAB toggle
+        document.getElementById('inland-empire-fab')?.addEventListener('click', togglePanel);
+
+        // Close panel button
+        document.querySelector('.ie-btn-close-panel')?.addEventListener('click', togglePanel);
+
         // Settings button
         document.querySelector('.ie-btn-settings')?.addEventListener('click', () => {
             const modal = document.getElementById('inland-empire-settings-modal');
@@ -1042,15 +1074,6 @@ Respond as ${skill.signature}.`;
                 populateSettingsModal();
                 modal.style.display = 'flex';
             }
-        });
-
-        // Collapse button
-        document.querySelector('.ie-btn-collapse')?.addEventListener('click', (e) => {
-            const panel = document.getElementById('inland-empire-panel');
-            const icon = e.currentTarget.querySelector('i');
-            panel?.classList.toggle('collapsed');
-            icon?.classList.toggle('fa-chevron-down');
-            icon?.classList.toggle('fa-chevron-up');
         });
 
         // Manual trigger
@@ -1103,6 +1126,25 @@ Respond as ${skill.signature}.`;
         // Build editor sliders
         document.querySelectorAll('.ie-attribute-slider').forEach(slider => {
             slider.addEventListener('input', updateBuildEditorDisplay);
+        });
+
+        // Close panel when clicking outside (optional, for mobile UX)
+        document.addEventListener('click', (e) => {
+            const panel = document.getElementById('inland-empire-panel');
+            const fab = document.getElementById('inland-empire-fab');
+            
+            if (!panel || !fab) return;
+            
+            // If panel is open and click is outside panel and fab
+            if (panel.classList.contains('ie-panel-open')) {
+                if (!panel.contains(e.target) && !fab.contains(e.target)) {
+                    // Check if click is on a modal
+                    const modal = e.target.closest('.ie-modal');
+                    if (!modal) {
+                        // togglePanel(); // Uncomment to enable click-outside-to-close
+                    }
+                }
+            }
         });
     }
 
@@ -1157,9 +1199,15 @@ Respond as ${skill.signature}.`;
             enabledCheckbox.addEventListener('change', (e) => {
                 extensionSettings.enabled = e.target.checked;
                 saveState(getSTContext());
+                
+                const fab = document.getElementById('inland-empire-fab');
                 const panel = document.getElementById('inland-empire-panel');
-                if (panel) {
-                    panel.style.display = e.target.checked ? 'flex' : 'none';
+                
+                if (fab) {
+                    fab.style.display = e.target.checked ? 'flex' : 'none';
+                }
+                if (panel && !e.target.checked) {
+                    panel.classList.remove('ie-panel-open');
                 }
             });
         }
@@ -1168,15 +1216,7 @@ Respond as ${skill.signature}.`;
         const toggleBtn = document.getElementById('ie-toggle-panel-btn');
         if (toggleBtn) {
             toggleBtn.addEventListener('click', () => {
-                const panel = document.getElementById('inland-empire-panel');
-                if (panel) {
-                    const isVisible = panel.style.display !== 'none';
-                    panel.style.display = isVisible ? 'none' : 'flex';
-                    console.log('[Inland Empire] Panel visibility toggled:', !isVisible);
-                } else {
-                    console.error('[Inland Empire] Panel not found!');
-                    alert('Panel not found! Check console for errors.');
-                }
+                togglePanel();
             });
         }
     }
@@ -1199,42 +1239,24 @@ Respond as ${skill.signature}.`;
             // Create UI elements
             console.log('[Inland Empire] Creating UI elements...');
             const panel = createPsychePanel();
+            const fab = createToggleFAB();
             const settingsModal = createSettingsModal();
             const buildModal = createBuildEditorModal();
 
-            // Find best place to inject panel
-            // Try multiple possible containers
-            const possibleContainers = [
-                document.getElementById('sheld'),
-                document.getElementById('chat'),
-                document.querySelector('.chat-container'),
-                document.querySelector('#chat_container'),
-                document.body
-            ];
-
-            let injectionTarget = null;
-            for (const container of possibleContainers) {
-                if (container) {
-                    injectionTarget = container;
-                    break;
-                }
-            }
-
-            if (injectionTarget === document.body) {
-                console.log('[Inland Empire] Injecting panel into document.body');
-            } else {
-                console.log('[Inland Empire] Injecting panel into:', injectionTarget?.id || injectionTarget?.className);
-            }
-
-            injectionTarget.appendChild(panel);
+            // Inject FAB into body (always visible)
+            document.body.appendChild(fab);
+            
+            // Inject panel into body
+            document.body.appendChild(panel);
             document.body.appendChild(settingsModal);
             document.body.appendChild(buildModal);
 
             console.log('[Inland Empire] UI elements injected');
 
-            // Force panel to be visible
-            panel.style.display = extensionSettings.enabled ? 'flex' : 'none';
-            panel.style.zIndex = '9999';
+            // Set initial visibility based on settings
+            if (!extensionSettings.enabled) {
+                fab.style.display = 'none';
+            }
 
             // Render initial state
             renderAttributesDisplay();
@@ -1261,7 +1283,6 @@ Respond as ${skill.signature}.`;
             }
 
             console.log('[Inland Empire] ✅ Initialization complete');
-            console.log('[Inland Empire] Panel element:', document.getElementById('inland-empire-panel'));
 
         } catch (error) {
             console.error('[Inland Empire] ❌ Initialization failed:', error);
