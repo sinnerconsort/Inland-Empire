@@ -30,13 +30,13 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   FLOATING ACTION BUTTON (FAB)
+   FLOATING ACTION BUTTON (FAB) - Left sidebar style
    ═══════════════════════════════════════════════════════════════ */
 
 .ie-fab {
     position: fixed;
     left: 10px;
-    top: 50%;
+    top: calc(50% + 80px);
     transform: translateY(-50%);
     width: 50px;
     height: 50px;
@@ -67,25 +67,25 @@
     transition: color 0.3s ease;
 }
 
+/* Hide FAB when panel is open */
 .ie-fab.ie-fab-active {
-    background: var(--ie-accent, #9d8df1);
-}
-
-.ie-fab.ie-fab-active i {
-    color: var(--ie-bg-dark, #1a1a2e);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-50%) scale(0.5);
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   PANEL CONTAINER
+   PANEL CONTAINER - Slides out from FAB position
    ═══════════════════════════════════════════════════════════════ */
 
 .inland-empire-panel {
     position: fixed;
-    left: 70px;
+    left: 10px;
     top: 50%;
-    transform: translateY(-50%) translateX(-120%);
+    transform: translateY(-50%) scale(0.9);
+    transform-origin: left center;
     width: 320px;
-    max-width: calc(100vw - 90px);
+    max-width: calc(100vw - 30px);
     max-height: 80vh;
     background: var(--ie-bg-dark, #1a1a2e);
     border: 1px solid var(--ie-border-color, #3a3a5a);
@@ -104,7 +104,7 @@
 }
 
 .inland-empire-panel.ie-panel-open {
-    transform: translateY(-50%) translateX(0);
+    transform: translateY(-50%) scale(1);
     opacity: 1;
     pointer-events: auto;
 }
@@ -707,6 +707,7 @@
 @media (max-width: 768px) {
     .ie-fab {
         left: 8px;
+        top: calc(50% + 70px);
         width: 44px;
         height: 44px;
     }
@@ -716,8 +717,8 @@
     }
     
     .inland-empire-panel {
-        left: 60px;
-        width: calc(100vw - 80px);
+        left: 8px;
+        width: calc(100vw - 24px);
         max-height: 70vh;
     }
     
@@ -750,22 +751,19 @@
 @media (max-width: 400px) {
     .ie-fab {
         left: 5px;
-        top: auto;
-        bottom: 70px;
-        transform: none;
+        top: calc(50% + 60px);
+        width: 40px;
+        height: 40px;
+    }
+    
+    .ie-fab i {
+        font-size: 16px;
     }
     
     .inland-empire-panel {
         left: 5px;
         right: 5px;
-        top: auto;
-        bottom: 130px;
-        transform: none;
         width: auto;
-        max-height: 50vh;
-    }
-    
-    .inland-empire-panel.ie-panel-open {
-        transform: none;
+        max-height: 65vh;
     }
 }
