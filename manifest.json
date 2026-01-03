@@ -1,11 +1,12 @@
 {
     "display_name": "Inland Empire",
-    "loading_order": 100,
+    "loading_order": 150,
     "requires": [],
     "optional": [],
     "js": "index.js",
     "css": "style.css",
     "author": "Judas",
-    "version": "0.3.3",
-    "description": "Disco Elysium-style internal voices with status effects, skill checks, and chat injection."
+    "version": "0.2.3",
+    "description": "Disco Elysium-style internal voices that comment on your roleplay with distinct personalities and skill checks. Now with chat injection!",
+    "auto_update": false
 }

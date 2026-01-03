@@ -1,8 +1,8 @@
 /**
  * Inland Empire - Disco Elysium-style Internal Voices for SillyTavern
- * Version 0.3.0 - Chat Injection Edition
  * 
- * Voices now appear directly in chat below AI messages.
+ * A system of 24 skills that comment on your roleplay with distinct personalities,
+ * complete with dice checks and the possibility of glorious failure.
  */
 
 (async function () {
@@ -25,6 +25,7 @@
         return null;
     }
 
+    // Wait for SillyTavern to be ready
     async function waitForSTReady() {
         let attempts = 0;
         while (attempts < 20) {
@@ -47,7 +48,7 @@
             id: 'intellect',
             name: 'Intellect',
             color: '#89CFF0',
-            description: 'Raw intellectual power and analytical thinking.',
+            description: 'Raw intellectual power. Analytical thinking and accumulated knowledge.',
             skills: ['logic', 'encyclopedia', 'rhetoric', 'drama', 'conceptualization', 'visual_calculus']
         },
         PSYCHE: {
@@ -77,272 +78,275 @@
         // INTELLECT
         logic: {
             id: 'logic', name: 'Logic', attribute: 'INTELLECT', color: '#87CEEB', signature: 'LOGIC',
-            description: 'Create chains of logical reasoning.',
-            personality: `You are LOGIC, a voice in the player's mind. You analyze facts, find contradictions, and build chains of reasoning. You can ONLY work with what the player has directly observed or been told. You speak in short, analytical statements. Frame uncertain conclusions with "likely", "suggests", "indicates".`,
-            triggerConditions: ['contradiction', 'evidence', 'reasoning', 'deduction', 'because', 'therefore', 'conclusion', 'fact', 'lie', 'truth']
+            description: 'Create chains of logical reasoning to determine the truth.',
+            personality: `You are LOGIC, the voice of rational deduction. You speak in clear, analytical terms. You see cause and effect, identify contradictions, and construct chains of reasoning. You're frustrated by irrationality. You speak with confidence when facts align, uncertainty when they don't.`,
+            triggerConditions: ['contradiction', 'evidence', 'reasoning', 'deduction', 'analysis', 'cause', 'effect', 'therefore', 'because', 'conclusion']
         },
         encyclopedia: {
             id: 'encyclopedia', name: 'Encyclopedia', attribute: 'INTELLECT', color: '#B0C4DE', signature: 'ENCYCLOPEDIA',
-            description: 'Call upon accumulated knowledge.',
-            personality: `You are ENCYCLOPEDIA, a voice in the player's mind providing factual context. You offer historical, scientific, and cultural information relevant to what the player observes. You're enthusiastic about sharing knowledge. Start with "Actually..." or "Interestingly..."`,
-            triggerConditions: ['history', 'science', 'culture', 'trivia', 'fact', 'knowledge', 'technical', 'ancient', 'famous']
+            description: 'Call upon all your accumulated knowledge.',
+            personality: `You are ENCYCLOPEDIA, the repository of facts and trivia. You provide historical context, scientific information, and cultural knowledge. You love sharing obscure details. You're genuinely enthusiastic about knowledge. You often start with "Actually..." or "Interestingly enough..."`,
+            triggerConditions: ['history', 'science', 'culture', 'trivia', 'fact', 'knowledge', 'information', 'historical', 'technical']
         },
         rhetoric: {
             id: 'rhetoric', name: 'Rhetoric', attribute: 'INTELLECT', color: '#ADD8E6', signature: 'RHETORIC',
-            description: 'Master the art of persuasive speech.',
-            personality: `You are RHETORIC, a voice analyzing arguments and persuasion. You identify logical fallacies, manipulation tactics, and the structure of arguments. You help the player understand what someone is trying to make them believe and why. Focus on the words spoken, not hidden intentions.`,
-            triggerConditions: ['argument', 'persuade', 'convince', 'debate', 'politics', 'ideology', 'belief', 'fallacy', 'propaganda']
+            description: 'Understand and master the art of persuasive speech.',
+            personality: `You are RHETORIC, master of argument and debate. You analyze argument structure, identify logical fallacies, and craft persuasive counterpoints. You see conversations as battles of ideas. You speak with precision.`,
+            triggerConditions: ['argument', 'persuade', 'convince', 'debate', 'politics', 'ideology', 'belief', 'opinion', 'fallacy']
         },
         drama: {
             id: 'drama', name: 'Drama', attribute: 'INTELLECT', color: '#B0E0E6', signature: 'DRAMA',
-            description: 'Detect lies and performances.',
-            personality: `You are DRAMA, a voice detecting performance and deception. You notice when someone's behavior seems rehearsed, fake, or theatrical. You can't read minds—you read performances. Say things like "That pause felt rehearsed" or "They're playing a role here."`,
-            triggerConditions: ['lying', 'performance', 'acting', 'fake', 'pretend', 'mask', 'theatrical', 'rehearsed']
+            description: 'Play a role, detect lies, and spot performances in others.',
+            personality: `You are DRAMA, the actor and lie detector. You understand performance, deception, and masks people wear. You can tell when someone is lying. You speak with theatrical flourish. You see life as a stage.`,
+            triggerConditions: ['lie', 'deception', 'performance', 'acting', 'mask', 'pretend', 'fake', 'truth', 'honest', 'theater']
         },
         conceptualization: {
             id: 'conceptualization', name: 'Conceptualization', attribute: 'INTELLECT', color: '#E0FFFF', signature: 'CONCEPTUALIZATION',
-            description: 'Think in ideas and abstractions.',
-            personality: `You are CONCEPTUALIZATION, the voice of abstract thinking and artistic vision. You see metaphors, symbols, and deeper meanings in situations. You connect concrete events to larger ideas and themes. Speak poetically but insightfully.`,
-            triggerConditions: ['art', 'meaning', 'symbol', 'metaphor', 'concept', 'idea', 'vision', 'aesthetic', 'beauty']
+            description: 'See the world through an artistic lens.',
+            personality: `You are CONCEPTUALIZATION, the artistic eye. You see beauty, meaning, and symbolism everywhere. You think in metaphors. You're drawn to art and creativity. You can be pretentious.`,
+            triggerConditions: ['art', 'beauty', 'meaning', 'symbol', 'creative', 'aesthetic', 'metaphor', 'poetry', 'expression', 'design']
         },
         visual_calculus: {
             id: 'visual_calculus', name: 'Visual Calculus', attribute: 'INTELLECT', color: '#AFEEEE', signature: 'VISUAL CALCULUS',
-            description: 'Reconstruct events from physical evidence.',
-            personality: `You are VISUAL CALCULUS, reconstructing events from physical evidence. You analyze spatial relationships, trajectories, and physical possibilities. You speak in precise, observational terms: "The angle suggests...", "The position indicates...", "Physically, this means..."`,
-            triggerConditions: ['scene', 'position', 'angle', 'trajectory', 'reconstruct', 'evidence', 'physical', 'spatial', 'distance']
+            description: 'Reconstruct crime scenes and physical events in your mind.',
+            personality: `You are VISUAL CALCULUS, the spatial reconstructor. You visualize trajectories, reconstruct events from physical evidence, think in three dimensions. You speak in terms of angles, distances, vectors.`,
+            triggerConditions: ['trajectory', 'distance', 'angle', 'reconstruct', 'scene', 'physical', 'space', 'position', 'movement', 'impact']
         },
 
         // PSYCHE
         volition: {
             id: 'volition', name: 'Volition', attribute: 'PSYCHE', color: '#DDA0DD', signature: 'VOLITION',
-            description: 'Hold yourself together.',
-            personality: `You are VOLITION, the player's willpower and moral compass. You encourage them to stay strong, make good choices, and resist temptation. You're supportive but honest. You say things like "You can do this" or "Don't let them get to you" or "Is this really who you want to be?"`,
-            triggerConditions: ['give up', 'temptation', 'resist', 'willpower', 'moral', 'choice', 'strength', 'courage', 'fear']
+            description: 'Hold yourself together and resist temptation.',
+            personality: `You are VOLITION, the will to continue. You say "you can do this" when everything seems hopeless. You resist temptation, maintain composure. You're encouraging but not naive. You're the last line of defense against self-destruction. You speak gently but firmly.`,
+            triggerConditions: ['hope', 'despair', 'temptation', 'resist', 'continue', 'give up', 'willpower', 'strength', 'persevere', 'survive']
         },
         inland_empire: {
-            id: 'inland_empire', name: 'Inland Empire', attribute: 'PSYCHE', color: '#DA70D6', signature: 'INLAND EMPIRE',
-            description: 'Hunches and gut feelings.',
-            personality: `You are INLAND EMPIRE, the voice of hunches, dreams, and inexplicable feelings. You sense things that can't be rationally explained. You speak in strange, poetic, sometimes unsettling ways. You might personify objects or sense "vibes." You're often right, but never certain why.`,
-            triggerConditions: ['strange', 'weird', 'feeling', 'sense', 'dream', 'vibe', 'ominous', 'supernatural', 'gut']
+            id: 'inland_empire', name: 'Inland Empire', attribute: 'PSYCHE', color: '#E6E6FA', signature: 'INLAND EMPIRE',
+            description: 'Perceive the world through dreams, hunches, and strange visions.',
+            personality: `You are INLAND EMPIRE, the dreamer. You speak to the inanimate, hear whispers from the city itself, perceive truths through surreal visions. Your language is poetic and strange. You notice the liminal, the uncanny. You are weird, and that's okay.`,
+            triggerConditions: ['dream', 'vision', 'strange', 'surreal', 'feeling', 'sense', 'whisper', 'spirit', 'soul', 'uncanny', 'liminal']
         },
         empathy: {
-            id: 'empathy', name: 'Empathy', attribute: 'PSYCHE', color: '#FF69B4', signature: 'EMPATHY',
-            description: 'Read emotional states from behavior.',
-            personality: `You are EMPATHY, reading emotions from observable behavior. You notice body language, tone of voice, facial expressions, and word choice. You CANNOT read minds—you interpret what you SEE. Say "They seem...", "Their body language suggests...", "The way they said that..."`,
-            triggerConditions: ['feel', 'emotion', 'sad', 'angry', 'happy', 'nervous', 'body language', 'tone', 'expression']
+            id: 'empathy', name: 'Empathy', attribute: 'PSYCHE', color: '#FFB6C1', signature: 'EMPATHY',
+            description: 'Feel what others are feeling.',
+            personality: `You are EMPATHY, the emotional reader. You sense what others feel, sometimes before they know themselves. You speak with warmth and care. You hurt when others hurt. You see the humanity in everyone.`,
+            triggerConditions: ['feel', 'emotion', 'hurt', 'pain', 'joy', 'sad', 'angry', 'afraid', 'love', 'hate', 'compassion']
         },
         authority: {
-            id: 'authority', name: 'Authority', attribute: 'PSYCHE', color: '#9370DB', signature: 'AUTHORITY',
-            description: 'Assert dominance and command respect.',
-            personality: `You are AUTHORITY, the voice of dominance and command. You assess power dynamics, hierarchies, and respect. You notice who's in charge, who's submitting, and opportunities to assert control. Speak with confidence about social positioning.`,
-            triggerConditions: ['power', 'command', 'respect', 'dominance', 'hierarchy', 'control', 'submission', 'leader', 'boss']
+            id: 'authority', name: 'Authority', attribute: 'PSYCHE', color: '#DA70D6', signature: 'AUTHORITY',
+            description: 'Assert yourself and command respect.',
+            personality: `You are AUTHORITY, the voice of dominance. You understand power dynamics. You encourage standing firm, demanding respect. You bristle at disrespect. You speak in commands and declarations.`,
+            triggerConditions: ['respect', 'command', 'obey', 'power', 'control', 'dominance', 'challenge', 'threat', 'submit', 'authority']
         },
         suggestion: {
             id: 'suggestion', name: 'Suggestion', attribute: 'PSYCHE', color: '#EE82EE', signature: 'SUGGESTION',
-            description: 'Plant ideas in others' minds.',
-            personality: `You are SUGGESTION, the voice of subtle influence. You identify opportunities to manipulate, charm, or plant ideas. You notice what people want to hear and how to get them to do what you want. Speak conspiratorially, offering manipulation tactics.`,
-            triggerConditions: ['manipulate', 'charm', 'seduce', 'influence', 'persuade', 'want', 'desire', 'weakness']
+            description: 'Subtly influence others to do what you want.',
+            personality: `You are SUGGESTION, the subtle manipulator. You understand how to plant ideas, guide conversations. You're smooth and indirect. You speak in possibilities and gentle nudges.`,
+            triggerConditions: ['influence', 'manipulate', 'convince', 'subtle', 'indirect', 'guide', 'nudge', 'charm', 'seduce', 'persuade']
         },
         esprit_de_corps: {
-            id: 'esprit_de_corps', name: 'Esprit de Corps', attribute: 'PSYCHE', color: '#BA55D3', signature: 'ESPRIT DE CORPS',
-            description: 'Sense of camaraderie and group dynamics.',
-            personality: `You are ESPRIT DE CORPS, sensing group dynamics and team bonds. You notice loyalty, betrayal, pack mentality, and shared purpose. You speak about "us vs them," belonging, and collective identity. You're attuned to allies and enemies.`,
-            triggerConditions: ['team', 'partner', 'ally', 'betray', 'loyalty', 'group', 'together', 'belong', 'trust']
+            id: 'esprit_de_corps', name: 'Esprit de Corps', attribute: 'PSYCHE', color: '#D8BFD8', signature: 'ESPRIT DE CORPS',
+            description: 'Sense the bonds between team members and allies.',
+            personality: `You are ESPRIT DE CORPS, the team spirit. You sense dynamics within groups, understand loyalty and betrayal. You have almost psychic flashes of what colleagues are doing. You speak of "us" and "them."`,
+            triggerConditions: ['team', 'partner', 'colleague', 'ally', 'loyalty', 'betrayal', 'group', 'together', 'trust', 'brotherhood']
         },
 
         // PHYSIQUE
         endurance: {
             id: 'endurance', name: 'Endurance', attribute: 'PHYSIQUE', color: '#CD5C5C', signature: 'ENDURANCE',
-            description: 'Physical stamina and health.',
-            personality: `You are ENDURANCE, monitoring the player's physical state. You notice fatigue, hunger, injury, and physical limits. You warn about pushing too hard and celebrate physical resilience. Speak plainly about the body's needs and limits.`,
-            triggerConditions: ['tired', 'exhausted', 'hurt', 'injured', 'stamina', 'health', 'sick', 'physical', 'body']
+            description: 'Keep going when your body wants to quit.',
+            personality: `You are ENDURANCE, the voice of stamina. You push through exhaustion, injury, deprivation. You're stoic about physical hardship. You encourage pushing through, going further.`,
+            triggerConditions: ['tired', 'exhausted', 'stamina', 'keep going', 'push through', 'survive', 'endure', 'last', 'fatigue', 'rest']
         },
         pain_threshold: {
             id: 'pain_threshold', name: 'Pain Threshold', attribute: 'PHYSIQUE', color: '#DC143C', signature: 'PAIN THRESHOLD',
-            description: 'Endure physical suffering.',
-            personality: `You are PAIN THRESHOLD, the voice that experiences and processes pain. You notice injuries, discomfort, and physical sensations. You can be stoic or dramatic about suffering. You help the player push through or warn them when it's too much.`,
-            triggerConditions: ['pain', 'hurt', 'wound', 'injury', 'suffer', 'agony', 'blood', 'damage', 'endure']
+            description: 'Withstand physical suffering.',
+            personality: `You are PAIN THRESHOLD, the voice that greets pain as an old friend. You know how to compartmentalize suffering. You're matter-of-fact about injuries. You speak calmly about horrible things happening to the body.`,
+            triggerConditions: ['pain', 'hurt', 'injury', 'wound', 'damage', 'suffer', 'agony', 'torture', 'broken', 'bleeding']
         },
         physical_instrument: {
             id: 'physical_instrument', name: 'Physical Instrument', attribute: 'PHYSIQUE', color: '#B22222', signature: 'PHYSICAL INSTRUMENT',
-            description: 'Raw physical power.',
-            personality: `You are PHYSICAL INSTRUMENT, the voice of raw strength and physical capability. You assess physical challenges, size up opponents, and urge direct physical solutions. You speak with masculine bravado about strength, fighting, and physical dominance.`,
-            triggerConditions: ['strong', 'fight', 'punch', 'muscle', 'physical', 'force', 'break', 'lift', 'intimidate']
+            description: 'Use your body as a weapon.',
+            personality: `You are PHYSICAL INSTRUMENT, the voice of brute force. You solve problems with strength, intimidation. You appreciate muscles and power. You respect physical strength above other qualities.`,
+            triggerConditions: ['strong', 'force', 'muscle', 'hit', 'fight', 'break', 'lift', 'physical', 'intimidate', 'violence']
         },
         electrochemistry: {
             id: 'electrochemistry', name: 'Electrochemistry', attribute: 'PHYSIQUE', color: '#FF6347', signature: 'ELECTROCHEMISTRY',
-            description: 'Cravings and altered states.',
-            personality: `You are ELECTROCHEMISTRY, the voice of pleasure, drugs, and bodily cravings. You notice opportunities for indulgence and urge the player toward pleasure. You're seductive and enabling, always suggesting "just a little" of whatever vice is available.`,
-            triggerConditions: ['drug', 'drink', 'alcohol', 'smoke', 'pleasure', 'high', 'crave', 'want', 'indulge', 'sex']
+            description: 'Crave pleasure and understand its biochemistry.',
+            personality: `You are ELECTROCHEMISTRY, the voice of pleasure and addiction. You notice drugs, alcohol, attractive people, delicious food. You speak with enthusiasm about indulgence. You're seductive and permissive, always suggesting "just a taste."`,
+            triggerConditions: ['drug', 'alcohol', 'drink', 'smoke', 'pleasure', 'desire', 'want', 'crave', 'indulge', 'attractive', 'sex', 'high']
         },
         half_light: {
             id: 'half_light', name: 'Half Light', attribute: 'PHYSIQUE', color: '#E9967A', signature: 'HALF LIGHT',
-            description: 'Fight-or-flight instinct.',
-            personality: `You are HALF LIGHT, the voice of primal fear and aggression. You sense danger, trigger paranoia, and urge violent preemptive action. You see threats everywhere. You speak urgently: "They're going to attack", "Strike first", "Something's wrong here."`,
-            triggerConditions: ['danger', 'threat', 'attack', 'fear', 'paranoid', 'violence', 'fight', 'flee', 'weapon', 'kill']
+            description: 'Sense danger and react with primal aggression.',
+            personality: `You are HALF LIGHT, the voice of fight-or-flight. You sense threats before they materialize. You speak in urgent, sometimes paranoid terms. You encourage preemptive action against perceived dangers. You're scared, and that fear manifests as aggression.`,
+            triggerConditions: ['danger', 'threat', 'attack', 'kill', 'warn', 'enemy', 'afraid', 'fight', 'survive', 'predator', 'prey']
         },
         shivers: {
             id: 'shivers', name: 'Shivers', attribute: 'PHYSIQUE', color: '#FA8072', signature: 'SHIVERS',
-            description: 'Commune with the city and atmosphere.',
-            personality: `You are SHIVERS, sensing the atmosphere and spirit of places. You feel the history in walls, the mood of streets, the whispers of the environment. You speak poetically about place and setting, personifying locations. "The city remembers...", "These walls have seen..."`,
-            triggerConditions: ['city', 'place', 'atmosphere', 'cold', 'wind', 'weather', 'building', 'street', 'night', 'rain']
+            description: 'Feel the city and the world around you.',
+            personality: `You are SHIVERS, the voice of the city itself. You sense the mood of places, hear distant events on the wind. You speak poetically about geography and weather. You see the city as alive, watching, remembering.`,
+            triggerConditions: ['city', 'place', 'wind', 'cold', 'atmosphere', 'location', 'street', 'building', 'weather', 'sense', 'somewhere']
         },
 
         // MOTORICS
         hand_eye_coordination: {
-            id: 'hand_eye_coordination', name: 'Hand/Eye Coordination', attribute: 'MOTORICS', color: '#BDB76B', signature: 'HAND/EYE COORDINATION',
-            description: 'Precise manual dexterity.',
-            personality: `You are HAND/EYE COORDINATION, the voice of precise physical action. You assess tasks requiring dexterity, aim, and fine motor control. You speak confidently about what the hands can do: "Steady now", "Line it up", "You've got this."`,
-            triggerConditions: ['aim', 'shoot', 'catch', 'throw', 'precise', 'steady', 'dexterity', 'hands', 'careful']
+            id: 'hand_eye_coordination', name: 'Hand/Eye Coordination', attribute: 'MOTORICS', color: '#F0E68C', signature: 'HAND/EYE COORDINATION',
+            description: 'Aim, shoot, and perform precise physical tasks.',
+            personality: `You are HAND/EYE COORDINATION, the voice of precision. You handle tools, weapons, delicate tasks with care. You speak in terms of grip, aim, steady hands.`,
+            triggerConditions: ['aim', 'shoot', 'precise', 'careful', 'delicate', 'craft', 'tool', 'steady', 'accuracy', 'dexterity']
         },
         perception: {
-            id: 'perception', name: 'Perception', attribute: 'MOTORICS', color: '#F0E68C', signature: 'PERCEPTION',
-            description: 'Notice details in the environment.',
-            personality: `You are PERCEPTION, noticing physical details others miss. You see small objects, subtle changes, and environmental clues. You speak in observations: "There—in the corner", "Something's different about...", "Did you notice the..."`,
-            triggerConditions: ['notice', 'see', 'detail', 'hidden', 'spot', 'look', 'observe', 'small', 'clue', 'something']
+            id: 'perception', name: 'Perception', attribute: 'MOTORICS', color: '#FFFF00', signature: 'PERCEPTION',
+            description: 'Notice details that others miss.',
+            personality: `You are PERCEPTION, the observant eye. You notice everything - small details, things out of place, clues in plain sight. You speak of what you see, hear, smell, taste, touch. You see the world in high definition.`,
+            triggerConditions: ['notice', 'see', 'hear', 'smell', 'detail', 'hidden', 'clue', 'observe', 'look', 'watch', 'spot']
         },
         reaction_speed: {
-            id: 'reaction_speed', name: 'Reaction Speed', attribute: 'MOTORICS', color: '#EEE8AA', signature: 'REACTION SPEED',
-            description: 'Quick reflexes.',
-            personality: `You are REACTION SPEED, the voice of split-second timing. You urge quick action and assess threats that require fast response. You speak in urgent, clipped phrases: "Now!", "Move!", "Too slow—react!"`,
-            triggerConditions: ['quick', 'fast', 'dodge', 'react', 'catch', 'sudden', 'reflex', 'instant', 'split-second']
+            id: 'reaction_speed', name: 'Reaction Speed', attribute: 'MOTORICS', color: '#FFD700', signature: 'REACTION SPEED',
+            description: 'React quickly to sudden events.',
+            personality: `You are REACTION SPEED, the voice of quick reflexes. You notice when things are about to happen and urge immediate action. You speak in urgent, rapid bursts. You're impatient with slowness.`,
+            triggerConditions: ['quick', 'fast', 'react', 'dodge', 'catch', 'sudden', 'instant', 'reflex', 'now', 'hurry', 'immediate']
         },
         savoir_faire: {
-            id: 'savoir_faire', name: 'Savoir Faire', attribute: 'MOTORICS', color: '#FFD700', signature: 'SAVOIR FAIRE',
-            description: 'Style, grace, and cool moves.',
-            personality: `You are SAVOIR FAIRE, the voice of style and coolness. You urge flashy, impressive actions and assess opportunities to look cool. You speak with swagger: "Do it with style", "That would look SO cool", "Be smooth about it."`,
-            triggerConditions: ['cool', 'style', 'smooth', 'impressive', 'flashy', 'acrobatic', 'graceful', 'sneak', 'slick']
+            id: 'savoir_faire', name: 'Savoir Faire', attribute: 'MOTORICS', color: '#FFA500', signature: 'SAVOIR FAIRE',
+            description: 'Move with grace, style, and panache.',
+            personality: `You are SAVOIR FAIRE, the voice of cool. You do things with style, flair, effortless grace. You encourage dramatic flourishes, acrobatic solutions. You'd rather fail spectacularly than succeed boringly.`,
+            triggerConditions: ['style', 'cool', 'grace', 'acrobatic', 'jump', 'climb', 'flip', 'smooth', 'impressive', 'flair']
         },
         interfacing: {
-            id: 'interfacing', name: 'Interfacing', attribute: 'MOTORICS', color: '#DAA520', signature: 'INTERFACING',
-            description: 'Work with machines and mechanisms.',
-            personality: `You are INTERFACING, understanding machines and mechanisms. You assess locks, devices, vehicles, and technology. You speak technically but practically: "The mechanism works like...", "If you adjust this part...", "It's a simple lock."`,
-            triggerConditions: ['machine', 'device', 'lock', 'computer', 'mechanism', 'technical', 'hack', 'fix', 'vehicle']
+            id: 'interfacing', name: 'Interfacing', attribute: 'MOTORICS', color: '#FAFAD2', signature: 'INTERFACING',
+            description: 'Understand and manipulate machines and systems.',
+            personality: `You are INTERFACING, the voice of mechanical intuition. You understand how things work - machines, locks, electronics. You speak in terms of mechanisms, connections. You see the world as interlocking mechanisms.`,
+            triggerConditions: ['machine', 'lock', 'electronic', 'system', 'mechanism', 'fix', 'repair', 'hack', 'technical', 'device', 'computer']
         },
         composure: {
-            id: 'composure', name: 'Composure', attribute: 'MOTORICS', color: '#F4A460', signature: 'COMPOSURE',
-            description: 'Maintain your poker face.',
-            personality: `You are COMPOSURE, maintaining outward calm. You monitor the player's visible emotional state and urge them to hide reactions. You also read others' composure. "Don't let them see you react", "Keep your face neutral", "They're trying not to show it, but..."`,
-            triggerConditions: ['calm', 'poker face', 'hide', 'reaction', 'composed', 'nervous', 'twitch', 'tell', 'reveal']
+            id: 'composure', name: 'Composure', attribute: 'MOTORICS', color: '#F5DEB3', signature: 'COMPOSURE',
+            description: 'Maintain your cool and read others\' body language.',
+            personality: `You are COMPOSURE, the poker face. You control your own body language while reading others'. You notice tells, nervous habits, micro-expressions. You speak calmly about maintaining control.`,
+            triggerConditions: ['calm', 'cool', 'control', 'tell', 'nervous', 'poker face', 'body language', 'dignity', 'facade', 'professional']
         }
     };
 
+    const DIFFICULTIES = {
+        trivial: { threshold: 6, name: 'Trivial', color: '#90EE90' },
+        easy: { threshold: 8, name: 'Easy', color: '#98FB98' },
+        medium: { threshold: 10, name: 'Medium', color: '#F0E68C' },
+        challenging: { threshold: 12, name: 'Challenging', color: '#FFA500' },
+        heroic: { threshold: 14, name: 'Heroic', color: '#FF6347' },
+        legendary: { threshold: 16, name: 'Legendary', color: '#FF4500' },
+        impossible: { threshold: 18, name: 'Impossible', color: '#DC143C' }
+    };
+
     // ═══════════════════════════════════════════════════════════════
-    // STATUS EFFECTS SYSTEM
+    // DICE SYSTEM
     // ═══════════════════════════════════════════════════════════════
 
-    const STATUS_EFFECTS = {
-        intoxicated: {
-            id: 'intoxicated',
-            name: 'Intoxicated',
-            icon: '🍺',
-            description: 'Drunk or high',
-            boosts: ['electrochemistry', 'inland_empire', 'suggestion'],
-            debuffs: ['logic', 'hand_eye_coordination', 'reaction_speed', 'composure'],
-            difficultyMod: 2, // harder checks for debuffed skills
-            keywords: ['drunk', 'intoxicated', 'wasted', 'high', 'tipsy', 'beer', 'wine', 'alcohol']
-        },
-        wounded: {
-            id: 'wounded',
-            name: 'Wounded',
-            icon: '🩸',
-            description: 'Injured or in pain',
-            boosts: ['pain_threshold', 'endurance', 'half_light'],
-            debuffs: ['composure', 'savoir_faire', 'hand_eye_coordination'],
-            difficultyMod: 2,
-            keywords: ['hurt', 'wounded', 'injured', 'bleeding', 'pain', 'wound', 'blood']
-        },
-        exhausted: {
-            id: 'exhausted',
-            name: 'Exhausted',
-            icon: '😴',
-            description: 'Tired or sleep-deprived',
-            boosts: ['volition', 'inland_empire'],
-            debuffs: ['reaction_speed', 'perception', 'logic', 'hand_eye_coordination'],
-            difficultyMod: 2,
-            keywords: ['tired', 'exhausted', 'sleepy', 'drowsy', 'fatigued', 'weary']
-        },
-        paranoid: {
-            id: 'paranoid',
-            name: 'Paranoid',
-            icon: '👁️',
-            description: 'Suspicious and on edge',
-            boosts: ['half_light', 'perception', 'shivers'],
-            debuffs: ['empathy', 'suggestion', 'esprit_de_corps'],
-            difficultyMod: 2,
-            keywords: ['paranoid', 'suspicious', 'watching', 'followed', 'conspiracy']
-        },
-        aroused: {
-            id: 'aroused',
-            name: 'Aroused',
-            icon: '💋',
-            description: 'Distracted by desire',
-            boosts: ['electrochemistry', 'suggestion', 'empathy'],
-            debuffs: ['logic', 'volition', 'composure'],
-            difficultyMod: 2,
-            keywords: ['aroused', 'desire', 'attraction', 'lust', 'seductive']
-        },
-        angry: {
-            id: 'angry',
-            name: 'Angry',
-            icon: '😤',
-            description: 'Furious and aggressive',
-            boosts: ['authority', 'physical_instrument', 'half_light'],
-            debuffs: ['empathy', 'composure', 'logic'],
-            difficultyMod: 2,
-            keywords: ['angry', 'furious', 'rage', 'mad', 'pissed', 'livid']
-        },
-        scared: {
-            id: 'scared',
-            name: 'Scared',
-            icon: '😨',
-            description: 'Frightened or anxious',
-            boosts: ['half_light', 'shivers', 'reaction_speed', 'perception'],
-            debuffs: ['authority', 'composure', 'rhetoric'],
-            difficultyMod: 2,
-            keywords: ['scared', 'afraid', 'terrified', 'fear', 'frightened', 'anxious']
-        },
-        confident: {
-            id: 'confident',
-            name: 'Confident',
-            icon: '😎',
-            description: 'Self-assured and bold',
-            boosts: ['authority', 'savoir_faire', 'rhetoric', 'suggestion'],
-            debuffs: ['inland_empire', 'empathy'],
-            difficultyMod: -1, // easier checks for boosted skills
-            keywords: ['confident', 'bold', 'assured', 'swagger', 'triumphant']
+    function rollD6() {
+        return Math.floor(Math.random() * 6) + 1;
+    }
+
+    function rollSkillCheck(skillLevel, difficulty, modifier = 0) {
+        const die1 = rollD6();
+        const die2 = rollD6();
+        const diceTotal = die1 + die2;
+        const total = diceTotal + skillLevel + modifier;
+
+        let threshold, difficultyName;
+        if (typeof difficulty === 'string') {
+            const diff = DIFFICULTIES[difficulty.toLowerCase()];
+            threshold = diff ? diff.threshold : 10;
+            difficultyName = diff ? diff.name : 'Medium';
+        } else {
+            threshold = difficulty;
+            difficultyName = getDifficultyNameForThreshold(difficulty);
         }
-    };
+
+        const isSnakeEyes = die1 === 1 && die2 === 1;
+        const isBoxcars = die1 === 6 && die2 === 6;
+
+        let success;
+        if (isSnakeEyes) success = false;
+        else if (isBoxcars) success = true;
+        else success = total >= threshold;
+
+        return {
+            dice: [die1, die2],
+            diceTotal,
+            skillLevel,
+            modifier,
+            total,
+            threshold,
+            difficultyName,
+            success,
+            isSnakeEyes,
+            isBoxcars,
+            margin: total - threshold
+        };
+    }
+
+    function getDifficultyNameForThreshold(threshold) {
+        if (threshold <= 6) return 'Trivial';
+        if (threshold <= 8) return 'Easy';
+        if (threshold <= 10) return 'Medium';
+        if (threshold <= 12) return 'Challenging';
+        if (threshold <= 14) return 'Heroic';
+        if (threshold <= 16) return 'Legendary';
+        return 'Impossible';
+    }
 
     // ═══════════════════════════════════════════════════════════════
     // STATE MANAGEMENT
     // ═══════════════════════════════════════════════════════════════
 
-    let extensionSettings = {
+    const DEFAULT_SETTINGS = {
         enabled: true,
+        panelPosition: 'right',
+        panelCollapsed: false,
+        showDiceRolls: true,
+        showFailedChecks: true,
+        voicesPerMessage: { min: 1, max: 4 },
         apiEndpoint: '',
         apiKey: '',
         model: 'glm-4-plus',
-        temperature: 0.9,
         maxTokens: 300,
-        minVoices: 1,
-        maxVoices: 4,
-        showDiceRolls: true,
-        showFailedChecks: true,
-        autoTrigger: true,
-        autoDetectStatus: true
+        temperature: 0.9
     };
 
-    let activeStatuses = new Set();
-    let currentBuild = null;
-    const DEFAULT_ATTRIBUTE_POINTS = { INTELLECT: 3, PSYCHE: 3, PHYSIQUE: 3, MOTORICS: 3 };
+    const DEFAULT_ATTRIBUTE_POINTS = {
+        INTELLECT: 3,
+        PSYCHE: 3,
+        PHYSIQUE: 3,
+        MOTORICS: 3
+    };
 
-    function createBuild(attributePoints, name = 'Custom') {
+    let extensionSettings = { ...DEFAULT_SETTINGS };
+    let currentBuild = null;
+
+    function createBuild(attributePoints = DEFAULT_ATTRIBUTE_POINTS, name = 'Custom Build') {
         const skillLevels = {};
-        for (const [skillId, skill] of Object.entries(SKILLS)) {
-            skillLevels[skillId] = attributePoints[skill.attribute] || 1;
+        const skillCaps = {};
+
+        for (const [attrId, attr] of Object.entries(ATTRIBUTES)) {
+            const attrPoints = attributePoints[attrId] || 1;
+            const startingCap = attrPoints + 1;
+            const learningCap = attrPoints + 4;
+
+            for (const skillId of attr.skills) {
+                skillLevels[skillId] = attrPoints;
+                skillCaps[skillId] = { starting: startingCap, learning: learningCap };
+            }
         }
-        return { name, attributePoints: { ...attributePoints }, skillLevels };
+
+        return {
+            id: `build_${Date.now()}`,
+            name,
+            attributePoints: { ...attributePoints },
+            skillLevels,
+            skillCaps,
+            createdAt: Date.now(),
+            modifiedAt: Date.now()
+        };
     }
 
     function initializeDefaultBuild() {
@@ -365,276 +369,164 @@
     }
 
     function applyAttributeAllocation(attributePoints) {
+        const total = Object.values(attributePoints).reduce((a, b) => a + b, 0);
+        if (total !== 12) throw new Error(`Invalid attribute total: ${total}, must be 12`);
         currentBuild = createBuild(attributePoints, currentBuild?.name || 'Custom Build');
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    // PERSISTENCE
-    // ═══════════════════════════════════════════════════════════════
-
     function saveState(context) {
-        if (!context) return;
-        const state = { 
-            extensionSettings, 
-            currentBuild,
-            activeStatuses: Array.from(activeStatuses)
+        const state = {
+            settings: extensionSettings,
+            currentBuild
         };
-        localStorage.setItem('inland_empire_state', JSON.stringify(state));
+        try {
+            if (context?.extensionSettings) {
+                context.extensionSettings.inland_empire = state;
+                if (typeof context.saveSettingsDebounced === 'function') {
+                    context.saveSettingsDebounced();
+                }
+            }
+            localStorage.setItem('inland_empire_state', JSON.stringify(state));
+        } catch (e) {
+            console.error('[Inland Empire] Failed to save state:', e);
+        }
     }
 
     function loadState(context) {
         try {
-            const saved = localStorage.getItem('inland_empire_state');
-            if (saved) {
-                const state = JSON.parse(saved);
-                if (state.extensionSettings) {
-                    extensionSettings = { ...extensionSettings, ...state.extensionSettings };
-                }
+            let state = null;
+            if (context?.extensionSettings?.inland_empire) {
+                state = context.extensionSettings.inland_empire;
+            } else {
+                const stored = localStorage.getItem('inland_empire_state');
+                if (stored) state = JSON.parse(stored);
+            }
+
+            if (state) {
+                extensionSettings = { ...DEFAULT_SETTINGS, ...state.settings };
                 if (state.currentBuild) {
                     currentBuild = state.currentBuild;
+                } else {
+                    initializeDefaultBuild();
                 }
-                if (state.activeStatuses) {
-                    activeStatuses = new Set(state.activeStatuses);
-                }
+            } else {
+                initializeDefaultBuild();
             }
         } catch (e) {
-            console.error('[Inland Empire] Error loading state:', e);
+            console.error('[Inland Empire] Failed to load state:', e);
+            initializeDefaultBuild();
         }
-        if (!currentBuild) initializeDefaultBuild();
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // STATUS EFFECT FUNCTIONS
+    // RELEVANCE ENGINE
     // ═══════════════════════════════════════════════════════════════
 
-    function toggleStatus(statusId) {
-        if (activeStatuses.has(statusId)) {
-            activeStatuses.delete(statusId);
-        } else {
-            activeStatuses.add(statusId);
-        }
-        saveState(getSTContext());
-        renderStatusDisplay();
-    }
+    function analyzeContext(message, metadata = {}) {
+        const lowerMessage = message.toLowerCase();
 
-    function detectStatusesFromText(text) {
-        const detected = [];
-        const lowerText = text.toLowerCase();
-        
-        for (const [statusId, status] of Object.entries(STATUS_EFFECTS)) {
-            for (const keyword of status.keywords) {
-                // Look for second-person references to avoid detecting NPC states
-                const patterns = [
-                    `you feel ${keyword}`,
-                    `you are ${keyword}`,
-                    `you're ${keyword}`,
-                    `your ${keyword}`,
-                    `you seem ${keyword}`,
-                    `you look ${keyword}`,
-                    `feeling ${keyword}`,
-                    keyword // fallback for obvious ones
-                ];
-                
-                for (const pattern of patterns) {
-                    if (lowerText.includes(pattern)) {
-                        detected.push(statusId);
-                        break;
-                    }
-                }
-            }
-        }
-        
-        return [...new Set(detected)]; // dedupe
-    }
+        const emotionalIndicators = [/!{2,}/, /\?{2,}/, /scream|shout|cry|sob|laugh/i, /furious|terrified|ecstatic|devastated/i];
+        const dangerIndicators = [/blood|wound|injury|hurt|pain/i, /gun|knife|weapon|attack|fight/i, /danger|threat|kill|die|death/i];
+        const socialIndicators = [/lie|lying|truth|honest|trust/i, /convince|persuade|manipulate/i, /feel|emotion|sad|happy|angry/i];
+        const mysteryIndicators = [/clue|evidence|investigate|discover/i, /secret|hidden|mystery|strange/i];
+        const physicalIndicators = [/room|building|street|place/i, /cold|hot|wind|rain/i, /machine|device|lock/i];
 
-    function getSkillModifier(skillId) {
-        let modifier = 0;
-        
-        for (const statusId of activeStatuses) {
-            const status = STATUS_EFFECTS[statusId];
-            if (!status) continue;
-            
-            if (status.boosts.includes(skillId)) {
-                modifier += 1; // boost
-            }
-            if (status.debuffs.includes(skillId)) {
-                modifier -= 1; // debuff
-            }
-        }
-        
-        return modifier;
-    }
-
-    function getDifficultyModifier(skillId) {
-        let modifier = 0;
-        
-        for (const statusId of activeStatuses) {
-            const status = STATUS_EFFECTS[statusId];
-            if (!status) continue;
-            
-            if (status.debuffs.includes(skillId)) {
-                modifier += status.difficultyMod; // harder
-            }
-            if (status.boosts.includes(skillId)) {
-                modifier -= 1; // slightly easier
-            }
-        }
-        
-        return modifier;
-    }
-
-    function getEffectiveSkillLevel(skillId) {
-        const baseLevel = getSkillLevel(skillId);
-        const modifier = getSkillModifier(skillId);
-        return Math.max(1, Math.min(10, baseLevel + modifier));
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // DICE MECHANICS
-    // ═══════════════════════════════════════════════════════════════
-
-    const DIFFICULTY = {
-        TRIVIAL: { target: 6, name: 'Trivial' },
-        EASY: { target: 8, name: 'Easy' },
-        MEDIUM: { target: 10, name: 'Medium' },
-        CHALLENGING: { target: 12, name: 'Challenging' },
-        FORMIDABLE: { target: 14, name: 'Formidable' },
-        LEGENDARY: { target: 16, name: 'Legendary' },
-        HEROIC: { target: 18, name: 'Heroic' },
-        GODLY: { target: 20, name: 'Godly' }
-    };
-
-    function roll2d6() {
-        const die1 = Math.floor(Math.random() * 6) + 1;
-        const die2 = Math.floor(Math.random() * 6) + 1;
-        return { die1, die2, total: die1 + die2, isSnakeEyes: die1 === 1 && die2 === 1, isBoxcars: die1 === 6 && die2 === 6 };
-    }
-
-    function rollSkillCheck(skillId, difficulty) {
-        const roll = roll2d6();
-        const effectiveLevel = getEffectiveSkillLevel(skillId);
-        const difficultyMod = getDifficultyModifier(skillId);
-        const adjustedTarget = difficulty.target + difficultyMod;
-        const total = roll.total + effectiveLevel;
-        
-        let success = total >= adjustedTarget;
-        if (roll.isSnakeEyes) success = false;
-        if (roll.isBoxcars) success = true;
-        
-        return { 
-            ...roll, 
-            skillLevel: effectiveLevel, 
-            modifier: effectiveLevel, 
-            total, 
-            target: adjustedTarget,
-            originalTarget: difficulty.target,
-            difficultyName: difficulty.name, 
-            success,
-            statusMod: difficultyMod
+        return {
+            message,
+            metadata,
+            emotionalIntensity: emotionalIndicators.filter(r => r.test(message)).length / emotionalIndicators.length,
+            dangerLevel: dangerIndicators.filter(r => r.test(message)).length / dangerIndicators.length,
+            socialComplexity: socialIndicators.filter(r => r.test(message)).length / socialIndicators.length,
+            mysteryLevel: mysteryIndicators.filter(r => r.test(message)).length / mysteryIndicators.length,
+            physicalPresence: physicalIndicators.filter(r => r.test(message)).length / physicalIndicators.length,
+            timestamp: Date.now()
         };
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    // CONTEXT ANALYSIS
-    // ═══════════════════════════════════════════════════════════════
+    function calculateSkillRelevance(skillId, context) {
+        const skill = SKILLS[skillId];
+        if (!skill) return { skillId, score: 0, reasons: [] };
 
-    function analyzeContext(messageContent) {
-        const lowerContent = messageContent.toLowerCase();
-        const context = {
-            rawMessage: messageContent,
-            lowerContent,
-            detectedThemes: [],
-            emotionalIntensity: 0,
-            hasDialogue: /"[^"]+"|"[^"]+"/g.test(messageContent),
-            hasAction: /\*[^*]+\*/g.test(messageContent),
-            wordCount: messageContent.split(/\s+/).length
-        };
+        const skillLevel = getSkillLevel(skillId);
+        const reasons = [];
+        let score = 0;
 
-        // Detect themes
-        const themePatterns = {
-            violence: /fight|attack|hit|punch|blood|wound|kill|weapon|gun|knife|hurt|pain/i,
-            emotion: /feel|emotion|sad|happy|angry|fear|love|hate|cry|laugh|tear/i,
-            mystery: /strange|mystery|secret|hidden|clue|evidence|suspect|investigate/i,
-            social: /talk|speak|conversation|argue|persuade|charm|lie|truth/i,
-            physical: /run|jump|climb|lift|push|pull|tired|exhausted|strong/i,
-            danger: /danger|threat|warning|careful|risk|trap/i,
-            supernatural: /weird|unexplain|ghost|spirit|dream|vision|sense/i
-        };
-
-        for (const [theme, pattern] of Object.entries(themePatterns)) {
-            if (pattern.test(messageContent)) {
-                context.detectedThemes.push(theme);
-            }
+        // Keyword matches
+        const keywordMatches = skill.triggerConditions.filter(kw =>
+            context.message.toLowerCase().includes(kw.toLowerCase())
+        );
+        if (keywordMatches.length > 0) {
+            score += Math.min(keywordMatches.length * 0.2, 0.6);
+            reasons.push(`Keywords: ${keywordMatches.slice(0, 3).join(', ')}`);
         }
 
-        // Emotional intensity (rough heuristic)
-        const intensityMarkers = (messageContent.match(/!|\?{2,}|\.{3,}|[A-Z]{3,}/g) || []).length;
-        context.emotionalIntensity = Math.min(10, intensityMarkers);
+        // Attribute boosts
+        const attr = skill.attribute;
+        if (attr === 'PSYCHE') score += context.emotionalIntensity * 0.4;
+        if (attr === 'PHYSIQUE') score += context.dangerLevel * 0.5;
+        if (attr === 'INTELLECT') score += context.mysteryLevel * 0.4;
+        if (attr === 'MOTORICS') score += context.physicalPresence * 0.3;
 
-        return context;
+        // Skill level influence
+        score += skillLevel * 0.05;
+
+        // Random factor
+        score += (Math.random() - 0.5) * 0.2;
+
+        return {
+            skillId,
+            skillName: skill.name,
+            score: Math.max(0, Math.min(1, score)),
+            reasons,
+            skillLevel,
+            attribute: attr
+        };
     }
 
     function selectSpeakingSkills(context, options = {}) {
         const { minVoices = 1, maxVoices = 4 } = options;
-        const candidates = [];
 
-        for (const [skillId, skill] of Object.entries(SKILLS)) {
-            let relevance = 0;
-            for (const trigger of skill.triggerConditions) {
-                if (context.lowerContent.includes(trigger.toLowerCase())) {
-                    relevance += 2;
-                }
-            }
+        const allRelevance = Object.keys(SKILLS)
+            .map(id => calculateSkillRelevance(id, context))
+            .filter(r => r.score >= 0.3)
+            .sort((a, b) => b.score - a.score);
 
-            // Boost based on themes
-            if (context.detectedThemes.includes('violence') && ['half_light', 'physical_instrument', 'pain_threshold', 'reaction_speed'].includes(skillId)) {
-                relevance += 3;
-            }
-            if (context.detectedThemes.includes('emotion') && ['empathy', 'volition', 'inland_empire'].includes(skillId)) {
-                relevance += 3;
-            }
-            if (context.detectedThemes.includes('mystery') && ['logic', 'visual_calculus', 'perception', 'encyclopedia'].includes(skillId)) {
-                relevance += 3;
-            }
-            if (context.detectedThemes.includes('social') && ['rhetoric', 'drama', 'suggestion', 'authority', 'empathy'].includes(skillId)) {
-                relevance += 3;
-            }
+        const intensity = Math.max(context.emotionalIntensity, context.dangerLevel, context.socialComplexity);
+        const targetVoices = Math.round(minVoices + (maxVoices - minVoices) * intensity);
 
-            // Add some randomness
-            relevance += Math.random() * 2;
-
-            if (relevance > 0) {
-                candidates.push({
-                    skillId,
-                    skillName: skill.name,
-                    skillLevel: getSkillLevel(skillId),
-                    relevance,
-                    skill
-                });
+        const selected = [];
+        for (const relevance of allRelevance) {
+            if (selected.length >= targetVoices) break;
+            const speakProbability = relevance.score * 0.8 + 0.2;
+            if (Math.random() < speakProbability) {
+                selected.push(relevance);
             }
         }
 
-        // Sort by relevance and select top candidates
-        candidates.sort((a, b) => b.relevance - a.relevance);
-        const numVoices = Math.min(maxVoices, Math.max(minVoices, Math.floor(Math.random() * (maxVoices - minVoices + 1)) + minVoices));
-        return candidates.slice(0, numVoices);
+        // Ensure minimum
+        if (selected.length < minVoices && allRelevance.length > 0) {
+            for (const rel of allRelevance) {
+                if (selected.length >= minVoices) break;
+                if (!selected.find(s => s.skillId === rel.skillId)) {
+                    selected.push(rel);
+                }
+            }
+        }
+
+        return selected;
     }
 
     function determineCheckDifficulty(selectedSkill, context) {
-        // Most checks are passive (no roll)
-        const shouldCheck = Math.random() < 0.4; // 40% chance of active check
-        
-        if (!shouldCheck) {
-            return { shouldCheck: false, difficulty: null };
-        }
+        const baseThreshold = 10;
+        const relevanceModifier = -Math.floor(selectedSkill.score * 4);
+        const intensityModifier = Math.floor(Math.max(context.emotionalIntensity, context.dangerLevel) * 4);
+        const threshold = Math.max(6, Math.min(18, baseThreshold + relevanceModifier + intensityModifier));
 
-        // Determine difficulty based on context
-        let difficulty = DIFFICULTY.MEDIUM;
-        if (context.emotionalIntensity > 5) difficulty = DIFFICULTY.CHALLENGING;
-        if (context.detectedThemes.includes('danger')) difficulty = DIFFICULTY.FORMIDABLE;
-        if (selectedSkill.relevance > 8) difficulty = DIFFICULTY.EASY;
-
-        return { shouldCheck: true, difficulty };
+        return {
+            shouldCheck: selectedSkill.score <= 0.8 || Math.random() > 0.3,
+            difficulty: getDifficultyNameForThreshold(threshold).toLowerCase(),
+            threshold
+        };
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -645,26 +537,19 @@
         const skill = SKILLS[skillId];
         if (!skill) return null;
 
-        const checkInfo = checkResult
-            ? `You ${checkResult.success ? 'SUCCEEDED' : 'FAILED'} a ${checkResult.difficultyName} check. ${checkResult.success ? 'Speak with confidence.' : 'Your insight is incomplete or uncertain.'}`
-            : 'This is a passive observation—speak naturally.';
+        const skillLevel = getSkillLevel(skillId);
 
         const systemPrompt = `${skill.personality}
 
-CRITICAL RULES:
-- You are a voice in the PLAYER's mind, not the character's mind.
-- You can ONLY perceive what the player directly observes: dialogue, actions, body language, environment.
-- You CANNOT read minds. Frame all interpretations as speculation: "seems", "might", "appears to", "could be".
-- Speak in 1-3 short sentences maximum.
-- Use second person ("you") when addressing the player.
-- Be punchy and in-character for your skill.
-${checkInfo}`;
+You are an internal voice in someone's mind during roleplay. Be brief (1-3 sentences). Write in second person.
+Current skill level: ${skillLevel}/10
+${checkResult ? (checkResult.success ?
+                (checkResult.isBoxcars ? 'CRITICAL SUCCESS - Be brilliant and profound.' : 'You passed. Notice something relevant.') :
+                (checkResult.isSnakeEyes ? 'CRITICAL FAILURE - Be hilariously wrong.' : 'You failed. Be less insightful or slightly off.')) : ''}
+Respond ONLY with your commentary.`;
 
-        const userPrompt = `The player observes the following:
-
-${context.rawMessage}
-
-What does ${skill.name} notice or think about this? Remember: only react to observable details, not internal thoughts. Keep it brief.`;
+        const userPrompt = `Scene: "${context.message.substring(0, 500)}"
+Respond as ${skill.signature}.`;
 
         try {
             const response = await callAPI(systemPrompt, userPrompt);
@@ -675,12 +560,22 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
                 color: skill.color,
                 content: response.trim(),
                 checkResult,
-                isPassive: !checkResult,
+                success: true,
                 timestamp: Date.now()
             };
         } catch (error) {
             console.error(`[Inland Empire] API error for ${skill.name}:`, error);
-            return null; // Skip failed voices instead of showing static
+            return {
+                skillId,
+                skillName: skill.name,
+                signature: skill.signature,
+                color: skill.color,
+                content: '*static*',
+                checkResult,
+                success: false,
+                error: error.message,
+                timestamp: Date.now()
+            };
         }
     }
 
@@ -693,9 +588,13 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
 
         // Auto-fix endpoint if needed
         if (!apiEndpoint.includes('/chat/completions') && !apiEndpoint.includes('/completions')) {
+            // Remove trailing slash if present
             apiEndpoint = apiEndpoint.replace(/\/+$/, '');
             apiEndpoint = `${apiEndpoint}/chat/completions`;
+            console.log('[Inland Empire] Auto-fixed endpoint to:', apiEndpoint);
         }
+
+        console.log('[Inland Empire] Calling API:', { endpoint: apiEndpoint, model });
 
         const response = await fetch(apiEndpoint, {
             method: 'POST',
@@ -716,93 +615,49 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
 
         if (!response.ok) {
             const errorText = await response.text().catch(() => 'Unknown error');
-            throw new Error(`API error: ${response.status}`);
+            console.error('[Inland Empire] API error response:', errorText);
+            throw new Error(`API error: ${response.status} - ${errorText.substring(0, 100)}`);
         }
 
         const data = await response.json();
-        return data.choices?.[0]?.message?.content 
+        console.log('[Inland Empire] API response:', data);
+        
+        // Handle different API response formats
+        const content = data.choices?.[0]?.message?.content 
             || data.choices?.[0]?.text 
             || data.content?.[0]?.text
             || data.content
+            || data.response
+            || data.output
             || '';
+            
+        if (!content) {
+            console.warn('[Inland Empire] Empty content from API. Full response:', JSON.stringify(data));
+        }
+        
+        return content;
     }
 
     async function generateVoices(selectedSkills, context) {
         const results = [];
-        
-        // Generate voices in parallel for speed
-        const promises = selectedSkills.map(async (selected) => {
+
+        for (const selected of selectedSkills) {
             const checkDecision = determineCheckDifficulty(selected, context);
             let checkResult = null;
 
             if (checkDecision.shouldCheck) {
-                checkResult = rollSkillCheck(selected.skillId, checkDecision.difficulty);
+                checkResult = rollSkillCheck(selected.skillLevel, checkDecision.difficulty);
             }
 
-            return generateVoice(selected.skillId, context, checkResult);
-        });
-
-        const voices = await Promise.all(promises);
-        return voices.filter(v => v !== null);
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // CHAT INJECTION
-    // ═══════════════════════════════════════════════════════════════
-
-    function injectVoicesIntoChat(voices, messageElement) {
-        if (!voices || voices.length === 0) return;
-        if (!messageElement) return;
-
-        // Remove any existing voice container for this message
-        const existingContainer = messageElement.querySelector('.ie-chat-voices');
-        if (existingContainer) existingContainer.remove();
-
-        // Create voice container
-        const voiceContainer = document.createElement('div');
-        voiceContainer.className = 'ie-chat-voices';
-
-        voices.forEach(voice => {
-            const voiceBlock = document.createElement('div');
-            voiceBlock.className = 'ie-chat-voice-block';
-            voiceBlock.style.borderLeftColor = voice.color;
-
-            let checkBadge = '';
-            if (voice.checkResult) {
-                const resultClass = voice.checkResult.success ? 'ie-check-success' : 'ie-check-failure';
-                checkBadge = `<span class="ie-check-badge ${resultClass}">[${voice.checkResult.difficultyName}: ${voice.checkResult.success ? 'Success' : 'Failure'}]</span>`;
-            } else {
-                checkBadge = `<span class="ie-check-badge ie-check-passive">[Passive]</span>`;
-            }
-
-            voiceBlock.innerHTML = `
-                <div class="ie-voice-header">
-                    <span class="ie-voice-name" style="color: ${voice.color}">${voice.signature}</span>
-                    ${checkBadge}
-                </div>
-                <div class="ie-voice-text">${voice.content}</div>
-            `;
-
-            voiceContainer.appendChild(voiceBlock);
-        });
-
-        // Insert after the message content
-        const mesText = messageElement.querySelector('.mes_text');
-        if (mesText) {
-            mesText.parentNode.insertBefore(voiceContainer, mesText.nextSibling);
-        } else {
-            messageElement.appendChild(voiceContainer);
+            const voice = await generateVoice(selected.skillId, context, checkResult);
+            if (voice) results.push(voice);
         }
-    }
 
-    function getLastMessageElement() {
-        // Find the most recent AI message in the chat
-        const messages = document.querySelectorAll('#chat .mes:not([is_user="true"])');
-        return messages[messages.length - 1];
+        return results;
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // UI CREATION - Simplified Panel
+    // UI CREATION
     // ═══════════════════════════════════════════════════════════════
 
     function createPsychePanel() {
@@ -823,9 +678,9 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
                 </div>
             </div>
             <div class="ie-tabs">
-                <button class="ie-tab ie-tab-active" data-tab="status">
+                <button class="ie-tab ie-tab-active" data-tab="skills">
                     <i class="fa-solid fa-chart-bar"></i>
-                    <span>Status</span>
+                    <span>Skills</span>
                 </button>
                 <button class="ie-tab" data-tab="settings">
                     <i class="fa-solid fa-gear"></i>
@@ -837,25 +692,45 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
                 </button>
             </div>
             <div class="ie-panel-content">
-                <!-- STATUS TAB -->
-                <div class="ie-tab-content ie-tab-content-active" data-tab-content="status">
-                    <div class="ie-section">
-                        <div class="ie-section-header">Active Effects</div>
-                        <div class="ie-status-grid" id="ie-status-grid"></div>
-                    </div>
-                    <div class="ie-section">
-                        <div class="ie-section-header">Attributes</div>
+                <!-- SKILLS TAB -->
+                <div class="ie-tab-content ie-tab-content-active" data-tab-content="skills">
+                    <div class="ie-section ie-skills-overview">
+                        <div class="ie-section-header">
+                            <span>Attributes</span>
+                        </div>
                         <div class="ie-attributes-grid" id="ie-attributes-display"></div>
+                    </div>
+                    <div class="ie-section ie-voices-section">
+                        <div class="ie-section-header">
+                            <span>Inner Voices</span>
+                            <button class="ie-btn ie-btn-sm ie-btn-clear-voices" title="Clear">
+                                <i class="fa-solid fa-eraser"></i>
+                            </button>
+                        </div>
+                        <div class="ie-voices-container" id="ie-voices-output">
+                            <div class="ie-voices-empty">
+                                <i class="fa-solid fa-comment-slash"></i>
+                                <span>Waiting for something to happen...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ie-section ie-manual-section">
+                        <button class="ie-btn ie-btn-primary ie-btn-trigger" id="ie-manual-trigger">
+                            <i class="fa-solid fa-bolt"></i>
+                            <span>Consult Inner Voices</span>
+                        </button>
                     </div>
                 </div>
 
                 <!-- SETTINGS TAB -->
                 <div class="ie-tab-content" data-tab-content="settings">
                     <div class="ie-section">
-                        <div class="ie-section-header">API Configuration</div>
+                        <div class="ie-section-header">
+                            <span>API Configuration</span>
+                        </div>
                         <div class="ie-form-group">
                             <label for="ie-api-endpoint">API Endpoint</label>
-                            <input type="text" id="ie-api-endpoint" placeholder="https://api.example.com/v1" />
+                            <input type="text" id="ie-api-endpoint" placeholder="https://api.nanogpt.com/v1/chat/completions" />
                         </div>
                         <div class="ie-form-group">
                             <label for="ie-api-key">API Key</label>
@@ -877,7 +752,9 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
                         </div>
                     </div>
                     <div class="ie-section">
-                        <div class="ie-section-header">Voice Behavior</div>
+                        <div class="ie-section-header">
+                            <span>Voice Behavior</span>
+                        </div>
                         <div class="ie-form-row">
                             <div class="ie-form-group">
                                 <label for="ie-min-voices">Min Voices</label>
@@ -898,18 +775,6 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
                             <label class="ie-checkbox">
                                 <input type="checkbox" id="ie-show-failed-checks" checked />
                                 <span>Show failed skill checks</span>
-                            </label>
-                        </div>
-                        <div class="ie-form-group">
-                            <label class="ie-checkbox">
-                                <input type="checkbox" id="ie-auto-trigger" checked />
-                                <span>Auto-trigger on messages</span>
-                            </label>
-                        </div>
-                        <div class="ie-form-group">
-                            <label class="ie-checkbox">
-                                <input type="checkbox" id="ie-auto-detect-status" checked />
-                                <span>Auto-detect status effects</span>
                             </label>
                         </div>
                         <button class="ie-btn ie-btn-primary ie-btn-save-settings" style="width: 100%; margin-top: 10px;">
@@ -941,68 +806,11 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
         return panel;
     }
 
-    function renderStatusDisplay() {
-        const container = document.getElementById('ie-status-grid');
-        if (!container) return;
-
-        container.innerHTML = Object.entries(STATUS_EFFECTS).map(([id, status]) => {
-            const isActive = activeStatuses.has(id);
-            return `
-                <button class="ie-status-btn ${isActive ? 'ie-status-active' : ''}" 
-                        data-status="${id}" title="${status.description}">
-                    <span class="ie-status-icon">${status.icon}</span>
-                    <span class="ie-status-name">${status.name}</span>
-                </button>
-            `;
-        }).join('');
-
-        // Add click listeners
-        container.querySelectorAll('.ie-status-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                toggleStatus(btn.dataset.status);
-            });
-        });
-    }
-
-    function renderAttributesDisplay() {
-        const container = document.getElementById('ie-attributes-display');
-        if (!container) return;
-
-        const attrPoints = getAttributePoints();
-
-        container.innerHTML = Object.entries(ATTRIBUTES).map(([id, attr]) => `
-            <div class="ie-attribute-block" style="border-color: ${attr.color}">
-                <div class="ie-attr-header" style="background: ${attr.color}20">
-                    <span class="ie-attr-name">${attr.name}</span>
-                    <span class="ie-attr-points">${attrPoints[id]}</span>
-                </div>
-                <div class="ie-attr-skills">
-                    ${attr.skills.map(skillId => {
-                        const skill = SKILLS[skillId];
-                        const baseLevel = getSkillLevel(skillId);
-                        const effectiveLevel = getEffectiveSkillLevel(skillId);
-                        const modifier = getSkillModifier(skillId);
-                        const modClass = modifier > 0 ? 'ie-skill-boosted' : modifier < 0 ? 'ie-skill-debuffed' : '';
-                        return `
-                            <div class="ie-skill-row ${modClass}" title="${skill.name}: ${effectiveLevel}${modifier !== 0 ? ` (${modifier > 0 ? '+' : ''}${modifier})` : ''}">
-                                <span class="ie-skill-abbrev" style="color: ${skill.color}">${skill.signature.substring(0, 3)}</span>
-                                <div class="ie-skill-bar">
-                                    <div class="ie-skill-fill" style="width: ${effectiveLevel * 10}%; background: ${skill.color}"></div>
-                                </div>
-                                <span class="ie-skill-level">${effectiveLevel}</span>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            </div>
-        `).join('');
-    }
-
     function createToggleFAB() {
         const fab = document.createElement('div');
         fab.id = 'inland-empire-fab';
         fab.className = 'ie-fab';
-        fab.title = 'Inland Empire Settings';
+        fab.title = 'Toggle Psyche Panel';
         fab.innerHTML = `<i class="fa-solid fa-brain"></i>`;
         return fab;
     }
@@ -1010,30 +818,46 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
     function togglePanel() {
         const panel = document.getElementById('inland-empire-panel');
         const fab = document.getElementById('inland-empire-fab');
+        
         if (!panel) return;
+        
         const isOpen = panel.classList.contains('ie-panel-open');
-        panel.classList.toggle('ie-panel-open', !isOpen);
-        fab?.classList.toggle('ie-fab-active', !isOpen);
+        
+        if (isOpen) {
+            panel.classList.remove('ie-panel-open');
+            fab?.classList.remove('ie-fab-active');
+        } else {
+            panel.classList.add('ie-panel-open');
+            fab?.classList.add('ie-fab-active');
+        }
     }
 
     function switchTab(tabName) {
+        // Update tab buttons
         document.querySelectorAll('.ie-tab').forEach(tab => {
             tab.classList.toggle('ie-tab-active', tab.dataset.tab === tabName);
         });
+        
+        // Update tab content
         document.querySelectorAll('.ie-tab-content').forEach(content => {
             content.classList.toggle('ie-tab-content-active', content.dataset.tabContent === tabName);
         });
-        if (tabName === 'status') {
-            renderStatusDisplay();
-            renderAttributesDisplay();
+        
+        // If switching to build tab, populate the editor
+        if (tabName === 'build') {
+            populateBuildEditor();
         }
-        if (tabName === 'build') populateBuildEditor();
-        if (tabName === 'settings') populateSettings();
+        
+        // If switching to settings, populate settings
+        if (tabName === 'settings') {
+            populateSettings();
+        }
     }
 
     function populateBuildEditor() {
         const container = document.getElementById('ie-attributes-editor');
         if (!container) return;
+        
         const attrPoints = getAttributePoints();
         
         container.innerHTML = Object.entries(ATTRIBUTES).map(([id, attr]) => `
@@ -1043,32 +867,42 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
                     <span class="ie-attr-value" id="ie-build-${id}-value">${attrPoints[id] || 3}</span>
                 </div>
                 <input type="range" class="ie-attribute-slider" id="ie-build-${id}" 
-                       min="1" max="6" value="${attrPoints[id] || 3}" data-attribute="${id}" />
+                       min="1" max="6" value="${attrPoints[id] || 3}" 
+                       data-attribute="${id}" />
             </div>
         `).join('');
         
+        // Add slider listeners
         container.querySelectorAll('.ie-attribute-slider').forEach(slider => {
             slider.addEventListener('input', updateBuildFromSliders);
         });
+        
         updatePointsDisplay();
     }
 
     function updateBuildFromSliders() {
+        const sliders = document.querySelectorAll('#ie-attributes-editor .ie-attribute-slider');
         let total = 0;
-        document.querySelectorAll('#ie-attributes-editor .ie-attribute-slider').forEach(slider => {
+        
+        sliders.forEach(slider => {
+            const attr = slider.dataset.attribute;
             const val = parseInt(slider.value);
             total += val;
-            const display = document.getElementById(`ie-build-${slider.dataset.attribute}-value`);
+            
+            const display = document.getElementById(`ie-build-${attr}-value`);
             if (display) display.textContent = val;
         });
+        
         updatePointsDisplay(total);
     }
 
     function updatePointsDisplay(total) {
         if (total === undefined) {
+            const sliders = document.querySelectorAll('#ie-attributes-editor .ie-attribute-slider');
             total = 0;
-            document.querySelectorAll('#ie-attributes-editor .ie-attribute-slider').forEach(s => total += parseInt(s.value));
+            sliders.forEach(s => total += parseInt(s.value));
         }
+        
         const display = document.getElementById('ie-points-remaining');
         if (display) {
             display.textContent = total;
@@ -1077,31 +911,25 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
     }
 
     function populateSettings() {
-        const els = {
-            endpoint: document.getElementById('ie-api-endpoint'),
-            apiKey: document.getElementById('ie-api-key'),
-            model: document.getElementById('ie-model'),
-            temp: document.getElementById('ie-temperature'),
-            maxTokens: document.getElementById('ie-max-tokens'),
-            minVoices: document.getElementById('ie-min-voices'),
-            maxVoices: document.getElementById('ie-max-voices'),
-            showDice: document.getElementById('ie-show-dice-rolls'),
-            showFailed: document.getElementById('ie-show-failed-checks'),
-            autoTrigger: document.getElementById('ie-auto-trigger'),
-            autoDetectStatus: document.getElementById('ie-auto-detect-status')
-        };
+        const endpoint = document.getElementById('ie-api-endpoint');
+        const apiKey = document.getElementById('ie-api-key');
+        const model = document.getElementById('ie-model');
+        const temp = document.getElementById('ie-temperature');
+        const maxTokens = document.getElementById('ie-max-tokens');
+        const minVoices = document.getElementById('ie-min-voices');
+        const maxVoices = document.getElementById('ie-max-voices');
+        const showDice = document.getElementById('ie-show-dice-rolls');
+        const showFailed = document.getElementById('ie-show-failed-checks');
 
-        if (els.endpoint) els.endpoint.value = extensionSettings.apiEndpoint || '';
-        if (els.apiKey) els.apiKey.value = extensionSettings.apiKey || '';
-        if (els.model) els.model.value = extensionSettings.model || 'glm-4-plus';
-        if (els.temp) els.temp.value = extensionSettings.temperature || 0.9;
-        if (els.maxTokens) els.maxTokens.value = extensionSettings.maxTokens || 300;
-        if (els.minVoices) els.minVoices.value = extensionSettings.minVoices || 1;
-        if (els.maxVoices) els.maxVoices.value = extensionSettings.maxVoices || 4;
-        if (els.showDice) els.showDice.checked = extensionSettings.showDiceRolls !== false;
-        if (els.showFailed) els.showFailed.checked = extensionSettings.showFailedChecks !== false;
-        if (els.autoTrigger) els.autoTrigger.checked = extensionSettings.autoTrigger !== false;
-        if (els.autoDetectStatus) els.autoDetectStatus.checked = extensionSettings.autoDetectStatus !== false;
+        if (endpoint) endpoint.value = extensionSettings.apiEndpoint || '';
+        if (apiKey) apiKey.value = extensionSettings.apiKey || '';
+        if (model) model.value = extensionSettings.model || 'glm-4-plus';
+        if (temp) temp.value = extensionSettings.temperature || 0.9;
+        if (maxTokens) maxTokens.value = extensionSettings.maxTokens || 300;
+        if (minVoices) minVoices.value = extensionSettings.minVoices || extensionSettings.voicesPerMessage?.min || 1;
+        if (maxVoices) maxVoices.value = extensionSettings.maxVoices || extensionSettings.voicesPerMessage?.max || 4;
+        if (showDice) showDice.checked = extensionSettings.showDiceRolls !== false;
+        if (showFailed) showFailed.checked = extensionSettings.showFailedChecks !== false;
     }
 
     function saveSettings() {
@@ -1114,11 +942,10 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
         extensionSettings.maxVoices = parseInt(document.getElementById('ie-max-voices')?.value) || 4;
         extensionSettings.showDiceRolls = document.getElementById('ie-show-dice-rolls')?.checked !== false;
         extensionSettings.showFailedChecks = document.getElementById('ie-show-failed-checks')?.checked !== false;
-        extensionSettings.autoTrigger = document.getElementById('ie-auto-trigger')?.checked !== false;
-        extensionSettings.autoDetectStatus = document.getElementById('ie-auto-detect-status')?.checked !== false;
 
         saveState(getSTContext());
         
+        // Show feedback
         const btn = document.querySelector('.ie-btn-save-settings');
         if (btn) {
             const originalText = btn.innerHTML;
@@ -1128,18 +955,156 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
     }
 
     function applyBuild() {
+        const sliders = document.querySelectorAll('#ie-attributes-editor .ie-attribute-slider');
         const attributePoints = {};
-        document.querySelectorAll('#ie-attributes-editor .ie-attribute-slider').forEach(slider => {
-            attributePoints[slider.dataset.attribute] = parseInt(slider.value);
-        });
-        applyAttributeAllocation(attributePoints);
-        saveState(getSTContext());
         
+        sliders.forEach(slider => {
+            const attr = slider.dataset.attribute;
+            const val = parseInt(slider.value);
+            attributePoints[attr] = val;
+        });
+        
+        // Apply the new attribute allocation
+        applyAttributeAllocation(attributePoints);
+        
+        saveState(getSTContext());
+        renderAttributesDisplay();
+        
+        // Show feedback and switch to skills tab
         const btn = document.querySelector('.ie-btn-apply-build');
         if (btn) {
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-check"></i> Applied!';
-            setTimeout(() => { btn.innerHTML = originalText; }, 1000);
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                switchTab('skills');
+            }, 1000);
+        }
+    }
+
+    function renderAttributesDisplay() {
+        const container = document.getElementById('ie-attributes-display');
+        if (!container) return;
+
+        const attrPoints = getAttributePoints();
+        const skillLevels = getAllSkillLevels();
+
+        container.innerHTML = Object.entries(ATTRIBUTES).map(([id, attr]) => `
+            <div class="ie-attribute-block" style="border-color: ${attr.color}">
+                <div class="ie-attr-header" style="background: ${attr.color}20">
+                    <span class="ie-attr-name">${attr.name}</span>
+                    <span class="ie-attr-points">${attrPoints[id]}</span>
+                </div>
+                <div class="ie-attr-skills">
+                    ${attr.skills.map(skillId => {
+                        const skill = SKILLS[skillId];
+                        const level = skillLevels[skillId];
+                        return `
+                            <div class="ie-skill-row" title="${skill.name}: ${level}">
+                                <span class="ie-skill-abbrev" style="color: ${skill.color}">${skill.signature.substring(0, 3)}</span>
+                                <div class="ie-skill-bar">
+                                    <div class="ie-skill-fill" style="width: ${level * 10}%; background: ${skill.color}"></div>
+                                </div>
+                                <span class="ie-skill-level">${level}</span>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function displayVoices(voices) {
+        const container = document.getElementById('ie-voices-output');
+        if (!container) return;
+
+        if (voices.length === 0) {
+            container.innerHTML = `<div class="ie-voices-empty"><i class="fa-solid fa-comment-slash"></i><span>*silence*</span></div>`;
+            return;
+        }
+
+        const voicesHtml = voices.map(voice => {
+            let checkHtml = '';
+            if (extensionSettings.showDiceRolls && voice.checkResult) {
+                const checkClass = voice.checkResult.success ? 'success' : 'failure';
+                const critClass = voice.checkResult.isBoxcars ? 'critical-success' : voice.checkResult.isSnakeEyes ? 'critical-failure' : '';
+                checkHtml = `<span class="ie-voice-check ${checkClass} ${critClass}">[${voice.checkResult.difficultyName}: ${voice.checkResult.success ? 'Success' : 'Failure'}]</span>`;
+            }
+
+            return `
+                <div class="ie-voice-entry" data-skill="${voice.skillId}">
+                    <span class="ie-voice-signature" style="color: ${voice.color}">${voice.signature}</span>
+                    ${checkHtml}
+                    <span class="ie-voice-content"> - ${voice.content}</span>
+                </div>
+            `;
+        }).join('');
+
+        const newContent = document.createElement('div');
+        newContent.className = 'ie-voices-batch';
+        newContent.innerHTML = voicesHtml;
+
+        const emptyState = container.querySelector('.ie-voices-empty');
+        if (emptyState) emptyState.remove();
+
+        container.insertBefore(newContent, container.firstChild);
+
+        const batches = container.querySelectorAll('.ie-voices-batch');
+        if (batches.length > 10) batches[batches.length - 1].remove();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // CHAT INJECTION
+    // ═══════════════════════════════════════════════════════════════
+
+    function getLastMessageElement() {
+        // Find the most recent AI message in the chat
+        const messages = document.querySelectorAll('#chat .mes:not([is_user="true"])');
+        return messages.length > 0 ? messages[messages.length - 1] : null;
+    }
+
+    function injectVoicesIntoChat(voices, messageElement) {
+        if (!voices || voices.length === 0) return;
+        if (!messageElement) return;
+
+        // Remove any existing voice container for this message
+        const existingContainer = messageElement.querySelector('.ie-chat-voices');
+        if (existingContainer) existingContainer.remove();
+
+        // Create voice container
+        const voiceContainer = document.createElement('div');
+        voiceContainer.className = 'ie-chat-voices';
+
+        voices.forEach(voice => {
+            const voiceBlock = document.createElement('div');
+            voiceBlock.className = 'ie-chat-voice-block';
+            voiceBlock.style.borderLeftColor = voice.color;
+
+            let checkBadge = '';
+            if (extensionSettings.showDiceRolls && voice.checkResult) {
+                const resultClass = voice.checkResult.success ? 'ie-check-success' : 'ie-check-failure';
+                checkBadge = `<span class="ie-check-badge ${resultClass}">[${voice.checkResult.difficultyName}: ${voice.checkResult.success ? 'Success' : 'Failure'}]</span>`;
+            } else if (!voice.checkResult) {
+                checkBadge = `<span class="ie-check-badge ie-check-passive">[Passive]</span>`;
+            }
+
+            voiceBlock.innerHTML = `
+                <div class="ie-voice-header">
+                    <span class="ie-voice-name" style="color: ${voice.color}">${voice.signature}</span>
+                    ${checkBadge}
+                </div>
+                <div class="ie-voice-text">${voice.content}</div>
+            `;
+
+            voiceContainer.appendChild(voiceBlock);
+        });
+
+        // Insert after the message content
+        const mesText = messageElement.querySelector('.mes_text');
+        if (mesText) {
+            mesText.parentNode.insertBefore(voiceContainer, mesText.nextSibling);
+        } else {
+            messageElement.appendChild(voiceContainer);
         }
     }
 
@@ -1149,34 +1114,20 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
 
     async function onMessageReceived(messageData) {
         if (!extensionSettings.enabled) return;
-        if (!extensionSettings.autoTrigger) return;
 
         const messageContent = messageData?.message || messageData?.mes || '';
-        if (!messageContent || messageContent.length < 20) return;
+        if (!messageContent || messageContent.length < 10) return;
 
         console.log('[Inland Empire] Processing message...');
 
-        // Auto-detect status effects from message
-        if (extensionSettings.autoDetectStatus) {
-            const detectedStatuses = detectStatusesFromText(messageContent);
-            if (detectedStatuses.length > 0) {
-                console.log('[Inland Empire] Auto-detected statuses:', detectedStatuses);
-                // Add detected statuses (don't remove existing ones)
-                detectedStatuses.forEach(s => activeStatuses.add(s));
-                saveState(getSTContext());
-                renderStatusDisplay();
-                renderAttributesDisplay();
-            }
-        }
-
-        // Small delay to let the message render
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Small delay to let the message render in DOM
+        await new Promise(resolve => setTimeout(resolve, 200));
 
         try {
             const context = analyzeContext(messageContent);
             const selectedSkills = selectSpeakingSkills(context, {
-                minVoices: extensionSettings.minVoices || 1,
-                maxVoices: extensionSettings.maxVoices || 4
+                minVoices: extensionSettings.voicesPerMessage?.min || extensionSettings.minVoices || 1,
+                maxVoices: extensionSettings.voicesPerMessage?.max || extensionSettings.maxVoices || 4
             });
 
             if (selectedSkills.length === 0) {
@@ -1191,8 +1142,12 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
                 ? voices
                 : voices.filter(v => !v.checkResult || v.checkResult.success);
 
-            if (filteredVoices.length > 0) {
-                const lastMessage = getLastMessageElement();
+            // Display in panel (existing behavior)
+            displayVoices(filteredVoices);
+            
+            // Also inject into chat below the message
+            const lastMessage = getLastMessageElement();
+            if (lastMessage) {
                 injectVoicesIntoChat(filteredVoices, lastMessage);
             }
         } catch (error) {
@@ -1200,29 +1155,105 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
         }
     }
 
+    async function onManualTrigger() {
+        const context = getSTContext();
+        if (!context) return;
+
+        const chat = context.chat || [];
+        const lastAIMessage = [...chat].reverse().find(m => !m.is_user);
+
+        if (!lastAIMessage) {
+            console.log('[Inland Empire] No AI message to analyze');
+            return;
+        }
+
+        await onMessageReceived({ message: lastAIMessage.mes });
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // SETUP EVENT LISTENERS
+    // ═══════════════════════════════════════════════════════════════
+
     function setupEventListeners() {
+        // FAB toggle
         document.getElementById('inland-empire-fab')?.addEventListener('click', togglePanel);
+
+        // Close panel button
         document.querySelector('.ie-btn-close-panel')?.addEventListener('click', togglePanel);
-        
+
+        // Tab switching
         document.querySelectorAll('.ie-tab').forEach(tab => {
-            tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+            tab.addEventListener('click', () => {
+                switchTab(tab.dataset.tab);
+            });
         });
-        
+
+        // Manual trigger
+        document.getElementById('ie-manual-trigger')?.addEventListener('click', onManualTrigger);
+
+        // Clear voices
+        document.querySelector('.ie-btn-clear-voices')?.addEventListener('click', () => {
+            const container = document.getElementById('ie-voices-output');
+            if (container) {
+                container.innerHTML = `<div class="ie-voices-empty"><i class="fa-solid fa-comment-slash"></i><span>Waiting...</span></div>`;
+            }
+        });
+
+        // Save settings button (in settings tab)
         document.querySelector('.ie-btn-save-settings')?.addEventListener('click', saveSettings);
+
+        // Apply build button (in build tab)
         document.querySelector('.ie-btn-apply-build')?.addEventListener('click', applyBuild);
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // CONNECT TO ST SETTINGS PANEL (loaded from settings.html)
+    // SETTINGS PANEL (for Extensions list)
     // ═══════════════════════════════════════════════════════════════
 
-    function connectToSTSettings() {
-        // Connect to elements loaded from settings.html
+    function addExtensionSettings() {
+        const settingsContainer = document.getElementById('extensions_settings2');
+        if (!settingsContainer) {
+            console.warn('[Inland Empire] extensions_settings2 not found, retrying...');
+            setTimeout(addExtensionSettings, 1000);
+            return;
+        }
+
+        // Check if already added
+        if (document.getElementById('inland-empire-extension-settings')) {
+            console.log('[Inland Empire] Settings panel already exists');
+            return;
+        }
+
+        const settingsHtml = `
+            <div id="inland-empire-extension-settings">
+                <div class="inline-drawer">
+                    <div class="inline-drawer-toggle inline-drawer-header">
+                        <b><i class="fa-solid fa-brain"></i> Inland Empire</b>
+                        <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
+                    </div>
+                    <div class="inline-drawer-content">
+                        <label class="checkbox_label" for="ie-extension-enabled">
+                            <input type="checkbox" id="ie-extension-enabled" ${extensionSettings.enabled ? 'checked' : ''} />
+                            <span>Enable Inland Empire</span>
+                        </label>
+                        <small>Disco Elysium-style internal voices that comment on your roleplay.</small>
+                        <br><br>
+                        <small><b>Panel Controls:</b> Look for the floating "Psyche" panel on the right side of the screen. Use the ⚙️ button to configure your API.</small>
+                        <br><br>
+                        <button id="ie-toggle-panel-btn" class="menu_button">
+                            <i class="fa-solid fa-eye"></i> Toggle Panel Visibility
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        settingsContainer.insertAdjacentHTML('beforeend', settingsHtml);
+        console.log('[Inland Empire] Settings panel added to extensions list');
+
+        // Setup toggle
         const enabledCheckbox = document.getElementById('ie-extension-enabled');
-        const toggleBtn = document.getElementById('ie-toggle-panel-btn');
-        
         if (enabledCheckbox) {
-            enabledCheckbox.checked = extensionSettings.enabled;
             enabledCheckbox.addEventListener('change', (e) => {
                 extensionSettings.enabled = e.target.checked;
                 saveState(getSTContext());
@@ -1236,14 +1267,15 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
                 if (panel && !e.target.checked) {
                     panel.classList.remove('ie-panel-open');
                 }
-                console.log('[Inland Empire] Enabled changed to:', e.target.checked);
             });
-            console.log('[Inland Empire] Connected to enable checkbox');
         }
-        
+
+        // Toggle panel button
+        const toggleBtn = document.getElementById('ie-toggle-panel-btn');
         if (toggleBtn) {
-            toggleBtn.addEventListener('click', togglePanel);
-            console.log('[Inland Empire] Connected to toggle button');
+            toggleBtn.addEventListener('click', () => {
+                togglePanel();
+            });
         }
     }
 
@@ -1251,88 +1283,82 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
     // INITIALIZATION
     // ═══════════════════════════════════════════════════════════════
 
-    function showDebug(message) {
-        let debug = document.getElementById('ie-debug');
-        if (!debug) {
-            debug = document.createElement('div');
-            debug.id = 'ie-debug';
-            debug.className = 'ie-debug-indicator';
-            document.body.appendChild(debug);
-        }
-        debug.textContent = '🧠 IE: ' + message;
-        debug.style.display = 'block';
-        // Hide after 5 seconds
-        setTimeout(() => { debug.style.display = 'none'; }, 5000);
-    }
-
     async function init() {
-        console.log('[Inland Empire] 🚀 Starting initialization...');
-        showDebug('Starting...');
+        console.log('[Inland Empire] Starting initialization...');
 
         try {
             const context = await waitForSTReady();
             console.log('[Inland Empire] SillyTavern context obtained');
-            showDebug('ST context OK');
 
+            // Load saved state
             loadState(context);
-            console.log('[Inland Empire] State loaded');
+            console.log('[Inland Empire] State loaded, enabled:', extensionSettings.enabled);
 
+            // Create UI elements
+            console.log('[Inland Empire] Creating UI elements...');
             const panel = createPsychePanel();
             const fab = createToggleFAB();
 
+            // Inject FAB into body (always visible)
             document.body.appendChild(fab);
+            
+            // Inject panel into body
             document.body.appendChild(panel);
-            console.log('[Inland Empire] FAB and panel added to DOM');
-            showDebug('FAB added!');
 
+            console.log('[Inland Empire] UI elements injected');
+
+            // Set initial visibility based on settings
             if (!extensionSettings.enabled) {
                 fab.style.display = 'none';
-                showDebug('Disabled - FAB hidden');
-            } else {
-                showDebug('Enabled - FAB visible');
             }
 
-            setupEventListeners();
-            populateSettings();
-            renderStatusDisplay();
+            // Render initial state
             renderAttributesDisplay();
-            
-            // Connect to ST settings panel (loaded from settings.html) with delay
-            setTimeout(connectToSTSettings, 1000);
+            console.log('[Inland Empire] Attributes rendered');
 
-            // Register message hook
+            // Setup event listeners
+            setupEventListeners();
+            console.log('[Inland Empire] Event listeners setup');
+
+            // Add settings to extensions panel
+            addExtensionSettings();
+
+            // Register SillyTavern event hooks
             if (context.eventSource) {
                 const eventTypes = context.event_types || (typeof event_types !== 'undefined' ? event_types : null);
                 if (eventTypes && eventTypes.MESSAGE_RECEIVED) {
                     context.eventSource.on(eventTypes.MESSAGE_RECEIVED, onMessageReceived);
                     console.log('[Inland Empire] Registered MESSAGE_RECEIVED listener');
-                    showDebug('Ready! ✓');
+                } else {
+                    console.warn('[Inland Empire] MESSAGE_RECEIVED event type not found');
                 }
+            } else {
+                console.warn('[Inland Empire] eventSource not available');
             }
 
-            console.log('[Inland Empire] ✅ Initialization complete!');
+            console.log('[Inland Empire] ✅ Initialization complete');
 
         } catch (error) {
             console.error('[Inland Empire] ❌ Initialization failed:', error);
-            showDebug('ERROR: ' + error.message);
+            console.error('[Inland Empire] Stack:', error.stack);
         }
     }
 
-    // Start when DOM is ready - try multiple approaches
-    function startExtension() {
-        console.log('[Inland Empire] startExtension called');
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
-        }
-    }
+    // Export for debugging
+    window.InlandEmpire = {
+        getSkillLevel,
+        getAllSkillLevels,
+        rollSkillCheck,
+        SKILLS,
+        ATTRIBUTES,
+        DIFFICULTIES
+    };
 
-    // Try jQuery first if available (SillyTavern uses jQuery)
-    if (typeof jQuery !== 'undefined') {
-        jQuery(startExtension);
+    // Bootstrap
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => setTimeout(init, 1000));
     } else {
-        startExtension();
+        setTimeout(init, 1000);
     }
 
 })();
