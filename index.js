@@ -645,43 +645,133 @@ Respond as ${skill.signature}.`;
                     <span>Psyche</span>
                 </div>
                 <div class="ie-panel-controls">
-                    <button class="ie-btn ie-btn-settings" title="Settings">
-                        <i class="fa-solid fa-gear"></i>
-                    </button>
                     <button class="ie-btn ie-btn-close-panel" title="Close">
                         <i class="fa-solid fa-times"></i>
                     </button>
                 </div>
             </div>
+            <div class="ie-tabs">
+                <button class="ie-tab ie-tab-active" data-tab="skills">
+                    <i class="fa-solid fa-chart-bar"></i>
+                    <span>Skills</span>
+                </button>
+                <button class="ie-tab" data-tab="settings">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Settings</span>
+                </button>
+                <button class="ie-tab" data-tab="build">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>Build</span>
+                </button>
+            </div>
             <div class="ie-panel-content">
-                <div class="ie-section ie-skills-overview">
-                    <div class="ie-section-header">
-                        <span>Skills</span>
-                        <button class="ie-btn ie-btn-sm ie-btn-edit-build" title="Edit Build">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
+                <!-- SKILLS TAB -->
+                <div class="ie-tab-content ie-tab-content-active" data-tab-content="skills">
+                    <div class="ie-section ie-skills-overview">
+                        <div class="ie-section-header">
+                            <span>Attributes</span>
+                        </div>
+                        <div class="ie-attributes-grid" id="ie-attributes-display"></div>
                     </div>
-                    <div class="ie-attributes-grid" id="ie-attributes-display"></div>
-                </div>
-                <div class="ie-section ie-voices-section">
-                    <div class="ie-section-header">
-                        <span>Inner Voices</span>
-                        <button class="ie-btn ie-btn-sm ie-btn-clear-voices" title="Clear">
-                            <i class="fa-solid fa-eraser"></i>
-                        </button>
-                    </div>
-                    <div class="ie-voices-container" id="ie-voices-output">
-                        <div class="ie-voices-empty">
-                            <i class="fa-solid fa-comment-slash"></i>
-                            <span>Waiting for something to happen...</span>
+                    <div class="ie-section ie-voices-section">
+                        <div class="ie-section-header">
+                            <span>Inner Voices</span>
+                            <button class="ie-btn ie-btn-sm ie-btn-clear-voices" title="Clear">
+                                <i class="fa-solid fa-eraser"></i>
+                            </button>
+                        </div>
+                        <div class="ie-voices-container" id="ie-voices-output">
+                            <div class="ie-voices-empty">
+                                <i class="fa-solid fa-comment-slash"></i>
+                                <span>Waiting for something to happen...</span>
+                            </div>
                         </div>
                     </div>
+                    <div class="ie-section ie-manual-section">
+                        <button class="ie-btn ie-btn-primary ie-btn-trigger" id="ie-manual-trigger">
+                            <i class="fa-solid fa-bolt"></i>
+                            <span>Consult Inner Voices</span>
+                        </button>
+                    </div>
                 </div>
-                <div class="ie-section ie-manual-section">
-                    <button class="ie-btn ie-btn-primary ie-btn-trigger" id="ie-manual-trigger">
-                        <i class="fa-solid fa-bolt"></i>
-                        <span>Consult Inner Voices</span>
-                    </button>
+
+                <!-- SETTINGS TAB -->
+                <div class="ie-tab-content" data-tab-content="settings">
+                    <div class="ie-section">
+                        <div class="ie-section-header">
+                            <span>API Configuration</span>
+                        </div>
+                        <div class="ie-form-group">
+                            <label for="ie-api-endpoint">API Endpoint</label>
+                            <input type="text" id="ie-api-endpoint" placeholder="https://api.nanogpt.com/v1/chat/completions" />
+                        </div>
+                        <div class="ie-form-group">
+                            <label for="ie-api-key">API Key</label>
+                            <input type="password" id="ie-api-key" placeholder="Your API key" />
+                        </div>
+                        <div class="ie-form-group">
+                            <label for="ie-model">Model</label>
+                            <input type="text" id="ie-model" placeholder="glm-4-plus" />
+                        </div>
+                        <div class="ie-form-row">
+                            <div class="ie-form-group">
+                                <label for="ie-temperature">Temperature</label>
+                                <input type="number" id="ie-temperature" min="0" max="2" step="0.1" value="0.9" />
+                            </div>
+                            <div class="ie-form-group">
+                                <label for="ie-max-tokens">Max Tokens</label>
+                                <input type="number" id="ie-max-tokens" min="50" max="1000" value="300" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ie-section">
+                        <div class="ie-section-header">
+                            <span>Voice Behavior</span>
+                        </div>
+                        <div class="ie-form-row">
+                            <div class="ie-form-group">
+                                <label for="ie-min-voices">Min Voices</label>
+                                <input type="number" id="ie-min-voices" min="0" max="6" value="1" />
+                            </div>
+                            <div class="ie-form-group">
+                                <label for="ie-max-voices">Max Voices</label>
+                                <input type="number" id="ie-max-voices" min="1" max="10" value="4" />
+                            </div>
+                        </div>
+                        <div class="ie-form-group">
+                            <label class="ie-checkbox">
+                                <input type="checkbox" id="ie-show-dice-rolls" checked />
+                                <span>Show dice roll results</span>
+                            </label>
+                        </div>
+                        <div class="ie-form-group">
+                            <label class="ie-checkbox">
+                                <input type="checkbox" id="ie-show-failed-checks" checked />
+                                <span>Show failed skill checks</span>
+                            </label>
+                        </div>
+                        <button class="ie-btn ie-btn-primary ie-btn-save-settings" style="width: 100%; margin-top: 10px;">
+                            <i class="fa-solid fa-save"></i>
+                            <span>Save Settings</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- BUILD TAB -->
+                <div class="ie-tab-content" data-tab-content="build">
+                    <div class="ie-section">
+                        <div class="ie-build-intro">
+                            <p>Distribute your attribute points</p>
+                            <div class="ie-points-remaining">
+                                Points: <span id="ie-points-remaining">12</span> / 12
+                            </div>
+                        </div>
+                        <div class="ie-attributes-editor" id="ie-attributes-editor"></div>
+                        <button class="ie-btn ie-btn-primary ie-btn-apply-build" style="width: 100%; margin-top: 10px;">
+                            <i class="fa-solid fa-check"></i>
+                            <span>Apply Build</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -715,129 +805,153 @@ Respond as ${skill.signature}.`;
         }
     }
 
-    function createSettingsModal() {
-        const modal = document.createElement('div');
-        modal.id = 'inland-empire-settings-modal';
-        modal.className = 'ie-modal';
-        modal.style.display = 'none';
-
-        modal.innerHTML = `
-            <div class="ie-modal-backdrop"></div>
-            <div class="ie-modal-content">
-                <div class="ie-modal-header">
-                    <h3><i class="fa-solid fa-gear"></i> Inland Empire Settings</h3>
-                    <button class="ie-btn ie-btn-close"><i class="fa-solid fa-times"></i></button>
-                </div>
-                <div class="ie-modal-body">
-                    <div class="ie-settings-section">
-                        <h4>API Configuration</h4>
-                        <div class="ie-form-group">
-                            <label for="ie-api-endpoint">API Endpoint</label>
-                            <input type="text" id="ie-api-endpoint" placeholder="https://api.nanogpt.com/v1/chat/completions" />
-                        </div>
-                        <div class="ie-form-group">
-                            <label for="ie-api-key">API Key</label>
-                            <input type="password" id="ie-api-key" placeholder="Your API key" />
-                        </div>
-                        <div class="ie-form-group">
-                            <label for="ie-model">Model</label>
-                            <input type="text" id="ie-model" placeholder="glm-4-plus" />
-                        </div>
-                        <div class="ie-form-row">
-                            <div class="ie-form-group">
-                                <label for="ie-temperature">Temperature</label>
-                                <input type="number" id="ie-temperature" min="0" max="2" step="0.1" value="0.9" />
-                            </div>
-                            <div class="ie-form-group">
-                                <label for="ie-max-tokens">Max Tokens</label>
-                                <input type="number" id="ie-max-tokens" min="50" max="1000" value="300" />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="ie-settings-section">
-                        <h4>Voice Behavior</h4>
-                        <div class="ie-form-row">
-                            <div class="ie-form-group">
-                                <label for="ie-min-voices">Min Voices</label>
-                                <input type="number" id="ie-min-voices" min="0" max="6" value="1" />
-                            </div>
-                            <div class="ie-form-group">
-                                <label for="ie-max-voices">Max Voices</label>
-                                <input type="number" id="ie-max-voices" min="1" max="10" value="4" />
-                            </div>
-                        </div>
-                        <div class="ie-form-group">
-                            <label class="ie-checkbox">
-                                <input type="checkbox" id="ie-show-dice-rolls" checked />
-                                <span>Show dice roll results</span>
-                            </label>
-                        </div>
-                        <div class="ie-form-group">
-                            <label class="ie-checkbox">
-                                <input type="checkbox" id="ie-show-failed-checks" checked />
-                                <span>Show failed skill checks</span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                <div class="ie-modal-footer">
-                    <button class="ie-btn ie-btn-secondary ie-btn-cancel">Cancel</button>
-                    <button class="ie-btn ie-btn-primary ie-btn-save">Save Settings</button>
-                </div>
-            </div>
-        `;
-
-        return modal;
+    function switchTab(tabName) {
+        // Update tab buttons
+        document.querySelectorAll('.ie-tab').forEach(tab => {
+            tab.classList.toggle('ie-tab-active', tab.dataset.tab === tabName);
+        });
+        
+        // Update tab content
+        document.querySelectorAll('.ie-tab-content').forEach(content => {
+            content.classList.toggle('ie-tab-content-active', content.dataset.tabContent === tabName);
+        });
+        
+        // If switching to build tab, populate the editor
+        if (tabName === 'build') {
+            populateBuildEditor();
+        }
+        
+        // If switching to settings, populate settings
+        if (tabName === 'settings') {
+            populateSettings();
+        }
     }
 
-    function createBuildEditorModal() {
-        const attributeSliders = Object.entries(ATTRIBUTES).map(([id, attr]) => `
+    function populateBuildEditor() {
+        const container = document.getElementById('ie-attributes-editor');
+        if (!container) return;
+        
+        container.innerHTML = Object.entries(ATTRIBUTES).map(([id, attr]) => `
             <div class="ie-attribute-row" data-attribute="${id}">
                 <div class="ie-attribute-label" style="color: ${attr.color}">
                     <span class="ie-attr-name">${attr.name}</span>
-                    <span class="ie-attr-value" id="ie-attr-${id}-value">3</span>
+                    <span class="ie-attr-value" id="ie-build-${id}-value">${characterBuild.attributes[id] || 3}</span>
                 </div>
-                <input type="range" class="ie-attribute-slider" id="ie-attr-${id}" min="1" max="6" value="3" data-attribute="${id}" />
-                <div class="ie-attribute-skills">
-                    ${attr.skills.map(skillId => {
-                        const skill = SKILLS[skillId];
-                        return `<span class="ie-skill-pip" title="${skill.name}" style="background: ${skill.color}"></span>`;
-                    }).join('')}
-                </div>
+                <input type="range" class="ie-attribute-slider" id="ie-build-${id}" 
+                       min="1" max="6" value="${characterBuild.attributes[id] || 3}" 
+                       data-attribute="${id}" />
             </div>
         `).join('');
+        
+        // Add slider listeners
+        container.querySelectorAll('.ie-attribute-slider').forEach(slider => {
+            slider.addEventListener('input', updateBuildFromSliders);
+        });
+        
+        updatePointsDisplay();
+    }
 
-        const modal = document.createElement('div');
-        modal.id = 'inland-empire-build-modal';
-        modal.className = 'ie-modal';
-        modal.style.display = 'none';
+    function updateBuildFromSliders() {
+        const sliders = document.querySelectorAll('#ie-attributes-editor .ie-attribute-slider');
+        let total = 0;
+        
+        sliders.forEach(slider => {
+            const attr = slider.dataset.attribute;
+            const val = parseInt(slider.value);
+            total += val;
+            
+            const display = document.getElementById(`ie-build-${attr}-value`);
+            if (display) display.textContent = val;
+        });
+        
+        updatePointsDisplay(total);
+    }
 
-        modal.innerHTML = `
-            <div class="ie-modal-backdrop"></div>
-            <div class="ie-modal-content ie-modal-wide">
-                <div class="ie-modal-header">
-                    <h3><i class="fa-solid fa-user-pen"></i> Build Your Mind</h3>
-                    <button class="ie-btn ie-btn-close"><i class="fa-solid fa-times"></i></button>
-                </div>
-                <div class="ie-modal-body">
-                    <div class="ie-build-intro">
-                        <p>Distribute <strong>12 points</strong> across your four attributes.</p>
-                        <div class="ie-points-remaining">Points remaining: <span id="ie-points-remaining">0</span></div>
-                    </div>
-                    <div class="ie-attributes-editor">${attributeSliders}</div>
-                    <div class="ie-build-name">
-                        <label for="ie-build-name">Build Name</label>
-                        <input type="text" id="ie-build-name" placeholder="My Detective" />
-                    </div>
-                </div>
-                <div class="ie-modal-footer">
-                    <button class="ie-btn ie-btn-secondary ie-btn-cancel">Cancel</button>
-                    <button class="ie-btn ie-btn-primary ie-btn-apply-build">Apply Build</button>
-                </div>
-            </div>
-        `;
+    function updatePointsDisplay(total) {
+        if (total === undefined) {
+            const sliders = document.querySelectorAll('#ie-attributes-editor .ie-attribute-slider');
+            total = 0;
+            sliders.forEach(s => total += parseInt(s.value));
+        }
+        
+        const display = document.getElementById('ie-points-remaining');
+        if (display) {
+            display.textContent = total;
+            display.style.color = total > 12 ? '#FF6347' : (total < 12 ? '#90EE90' : '#9d8df1');
+        }
+    }
 
-        return modal;
+    function populateSettings() {
+        const endpoint = document.getElementById('ie-api-endpoint');
+        const apiKey = document.getElementById('ie-api-key');
+        const model = document.getElementById('ie-model');
+        const temp = document.getElementById('ie-temperature');
+        const maxTokens = document.getElementById('ie-max-tokens');
+        const minVoices = document.getElementById('ie-min-voices');
+        const maxVoices = document.getElementById('ie-max-voices');
+        const showDice = document.getElementById('ie-show-dice-rolls');
+        const showFailed = document.getElementById('ie-show-failed-checks');
+
+        if (endpoint) endpoint.value = extensionSettings.apiEndpoint || '';
+        if (apiKey) apiKey.value = extensionSettings.apiKey || '';
+        if (model) model.value = extensionSettings.model || 'glm-4-plus';
+        if (temp) temp.value = extensionSettings.temperature || 0.9;
+        if (maxTokens) maxTokens.value = extensionSettings.maxTokens || 300;
+        if (minVoices) minVoices.value = extensionSettings.minVoices || 1;
+        if (maxVoices) maxVoices.value = extensionSettings.maxVoices || 4;
+        if (showDice) showDice.checked = extensionSettings.showDiceRolls !== false;
+        if (showFailed) showFailed.checked = extensionSettings.showFailedChecks !== false;
+    }
+
+    function saveSettings() {
+        extensionSettings.apiEndpoint = document.getElementById('ie-api-endpoint')?.value || '';
+        extensionSettings.apiKey = document.getElementById('ie-api-key')?.value || '';
+        extensionSettings.model = document.getElementById('ie-model')?.value || 'glm-4-plus';
+        extensionSettings.temperature = parseFloat(document.getElementById('ie-temperature')?.value) || 0.9;
+        extensionSettings.maxTokens = parseInt(document.getElementById('ie-max-tokens')?.value) || 300;
+        extensionSettings.minVoices = parseInt(document.getElementById('ie-min-voices')?.value) || 1;
+        extensionSettings.maxVoices = parseInt(document.getElementById('ie-max-voices')?.value) || 4;
+        extensionSettings.showDiceRolls = document.getElementById('ie-show-dice-rolls')?.checked !== false;
+        extensionSettings.showFailedChecks = document.getElementById('ie-show-failed-checks')?.checked !== false;
+
+        saveState(getSTContext());
+        
+        // Show feedback
+        const btn = document.querySelector('.ie-btn-save-settings');
+        if (btn) {
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Saved!';
+            setTimeout(() => { btn.innerHTML = originalText; }, 1500);
+        }
+    }
+
+    function applyBuild() {
+        const sliders = document.querySelectorAll('#ie-attributes-editor .ie-attribute-slider');
+        
+        sliders.forEach(slider => {
+            const attr = slider.dataset.attribute;
+            const val = parseInt(slider.value);
+            characterBuild.attributes[attr] = val;
+        });
+        
+        // Recalculate skill levels
+        for (const [skillId, skill] of Object.entries(SKILLS)) {
+            characterBuild.skills[skillId] = characterBuild.attributes[skill.attribute] || 3;
+        }
+        
+        saveState(getSTContext());
+        renderAttributesDisplay();
+        
+        // Show feedback and switch to skills tab
+        const btn = document.querySelector('.ie-btn-apply-build');
+        if (btn) {
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Applied!';
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                switchTab('skills');
+            }, 1000);
+        }
     }
 
     function renderAttributesDisplay() {
@@ -964,99 +1078,6 @@ Respond as ${skill.signature}.`;
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // SETTINGS MANAGEMENT
-    // ═══════════════════════════════════════════════════════════════
-
-    function populateSettingsModal() {
-        document.getElementById('ie-api-endpoint').value = extensionSettings.apiEndpoint || '';
-        document.getElementById('ie-api-key').value = extensionSettings.apiKey || '';
-        document.getElementById('ie-model').value = extensionSettings.model || 'glm-4-plus';
-        document.getElementById('ie-temperature').value = extensionSettings.temperature || 0.9;
-        document.getElementById('ie-max-tokens').value = extensionSettings.maxTokens || 300;
-        document.getElementById('ie-min-voices').value = extensionSettings.voicesPerMessage?.min || 1;
-        document.getElementById('ie-max-voices').value = extensionSettings.voicesPerMessage?.max || 4;
-        document.getElementById('ie-show-dice-rolls').checked = extensionSettings.showDiceRolls !== false;
-        document.getElementById('ie-show-failed-checks').checked = extensionSettings.showFailedChecks !== false;
-    }
-
-    function saveSettingsFromModal() {
-        extensionSettings.apiEndpoint = document.getElementById('ie-api-endpoint').value;
-        extensionSettings.apiKey = document.getElementById('ie-api-key').value;
-        extensionSettings.model = document.getElementById('ie-model').value;
-        extensionSettings.temperature = parseFloat(document.getElementById('ie-temperature').value);
-        extensionSettings.maxTokens = parseInt(document.getElementById('ie-max-tokens').value);
-        extensionSettings.voicesPerMessage = {
-            min: parseInt(document.getElementById('ie-min-voices').value),
-            max: parseInt(document.getElementById('ie-max-voices').value)
-        };
-        extensionSettings.showDiceRolls = document.getElementById('ie-show-dice-rolls').checked;
-        extensionSettings.showFailedChecks = document.getElementById('ie-show-failed-checks').checked;
-
-        saveState(getSTContext());
-        console.log('[Inland Empire] Settings saved');
-    }
-
-    function populateBuildModal() {
-        if (!currentBuild) initializeDefaultBuild();
-
-        Object.keys(ATTRIBUTES).forEach(id => {
-            const slider = document.getElementById(`ie-attr-${id}`);
-            const valueDisplay = document.getElementById(`ie-attr-${id}-value`);
-            if (slider && valueDisplay) {
-                slider.value = currentBuild.attributePoints[id];
-                valueDisplay.textContent = currentBuild.attributePoints[id];
-            }
-        });
-
-        document.getElementById('ie-build-name').value = currentBuild.name;
-        updateBuildEditorDisplay();
-    }
-
-    function updateBuildEditorDisplay() {
-        let total = 0;
-
-        Object.keys(ATTRIBUTES).forEach(id => {
-            const slider = document.getElementById(`ie-attr-${id}`);
-            const valueDisplay = document.getElementById(`ie-attr-${id}-value`);
-            if (slider && valueDisplay) {
-                const value = parseInt(slider.value);
-                valueDisplay.textContent = value;
-                total += value;
-            }
-        });
-
-        const remaining = 12 - total;
-        const remainingDisplay = document.getElementById('ie-points-remaining');
-        if (remainingDisplay) {
-            remainingDisplay.textContent = remaining;
-            remainingDisplay.style.color = remaining === 0 ? '#90EE90' : remaining < 0 ? '#FF6347' : '#F0E68C';
-        }
-
-        const applyBtn = document.querySelector('.ie-btn-apply-build');
-        if (applyBtn) applyBtn.disabled = remaining !== 0;
-    }
-
-    function applyBuildFromModal() {
-        const attributePoints = {};
-        Object.keys(ATTRIBUTES).forEach(id => {
-            const slider = document.getElementById(`ie-attr-${id}`);
-            if (slider) attributePoints[id] = parseInt(slider.value);
-        });
-
-        const buildName = document.getElementById('ie-build-name').value || 'Custom Build';
-
-        try {
-            applyAttributeAllocation(attributePoints);
-            currentBuild.name = buildName;
-            saveState(getSTContext());
-            console.log('[Inland Empire] Build applied:', buildName);
-        } catch (error) {
-            console.error('[Inland Empire] Build error:', error);
-            alert('Invalid build: ' + error.message);
-        }
-    }
-
-    // ═══════════════════════════════════════════════════════════════
     // SETUP EVENT LISTENERS
     // ═══════════════════════════════════════════════════════════════
 
@@ -1067,13 +1088,11 @@ Respond as ${skill.signature}.`;
         // Close panel button
         document.querySelector('.ie-btn-close-panel')?.addEventListener('click', togglePanel);
 
-        // Settings button
-        document.querySelector('.ie-btn-settings')?.addEventListener('click', () => {
-            const modal = document.getElementById('inland-empire-settings-modal');
-            if (modal) {
-                populateSettingsModal();
-                modal.style.display = 'flex';
-            }
+        // Tab switching
+        document.querySelectorAll('.ie-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                switchTab(tab.dataset.tab);
+            });
         });
 
         // Manual trigger
@@ -1087,65 +1106,11 @@ Respond as ${skill.signature}.`;
             }
         });
 
-        // Edit build button
-        document.querySelector('.ie-btn-edit-build')?.addEventListener('click', () => {
-            const modal = document.getElementById('inland-empire-build-modal');
-            if (modal) {
-                populateBuildModal();
-                modal.style.display = 'flex';
-            }
-        });
+        // Save settings button (in settings tab)
+        document.querySelector('.ie-btn-save-settings')?.addEventListener('click', saveSettings);
 
-        // Modal close buttons
-        document.querySelectorAll('.ie-modal .ie-btn-close, .ie-modal .ie-btn-cancel').forEach(btn => {
-            btn.addEventListener('click', () => {
-                btn.closest('.ie-modal').style.display = 'none';
-            });
-        });
-
-        // Modal backdrops
-        document.querySelectorAll('.ie-modal-backdrop').forEach(backdrop => {
-            backdrop.addEventListener('click', () => {
-                backdrop.closest('.ie-modal').style.display = 'none';
-            });
-        });
-
-        // Save settings
-        document.querySelector('.ie-btn-save')?.addEventListener('click', () => {
-            saveSettingsFromModal();
-            document.getElementById('inland-empire-settings-modal').style.display = 'none';
-        });
-
-        // Apply build
-        document.querySelector('.ie-btn-apply-build')?.addEventListener('click', () => {
-            applyBuildFromModal();
-            document.getElementById('inland-empire-build-modal').style.display = 'none';
-            renderAttributesDisplay();
-        });
-
-        // Build editor sliders
-        document.querySelectorAll('.ie-attribute-slider').forEach(slider => {
-            slider.addEventListener('input', updateBuildEditorDisplay);
-        });
-
-        // Close panel when clicking outside (optional, for mobile UX)
-        document.addEventListener('click', (e) => {
-            const panel = document.getElementById('inland-empire-panel');
-            const fab = document.getElementById('inland-empire-fab');
-            
-            if (!panel || !fab) return;
-            
-            // If panel is open and click is outside panel and fab
-            if (panel.classList.contains('ie-panel-open')) {
-                if (!panel.contains(e.target) && !fab.contains(e.target)) {
-                    // Check if click is on a modal
-                    const modal = e.target.closest('.ie-modal');
-                    if (!modal) {
-                        // togglePanel(); // Uncomment to enable click-outside-to-close
-                    }
-                }
-            }
-        });
+        // Apply build button (in build tab)
+        document.querySelector('.ie-btn-apply-build')?.addEventListener('click', applyBuild);
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -1240,16 +1205,12 @@ Respond as ${skill.signature}.`;
             console.log('[Inland Empire] Creating UI elements...');
             const panel = createPsychePanel();
             const fab = createToggleFAB();
-            const settingsModal = createSettingsModal();
-            const buildModal = createBuildEditorModal();
 
             // Inject FAB into body (always visible)
             document.body.appendChild(fab);
             
             // Inject panel into body
             document.body.appendChild(panel);
-            document.body.appendChild(settingsModal);
-            document.body.appendChild(buildModal);
 
             console.log('[Inland Empire] UI elements injected');
 
