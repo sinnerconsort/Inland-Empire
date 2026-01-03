@@ -1107,6 +1107,81 @@ Respond as ${skill.signature}.`;
     }
 
     // ═══════════════════════════════════════════════════════════════
+    // SETTINGS PANEL (for Extensions list)
+    // ═══════════════════════════════════════════════════════════════
+
+    function addExtensionSettings() {
+        const settingsContainer = document.getElementById('extensions_settings2');
+        if (!settingsContainer) {
+            console.warn('[Inland Empire] extensions_settings2 not found, retrying...');
+            setTimeout(addExtensionSettings, 1000);
+            return;
+        }
+
+        // Check if already added
+        if (document.getElementById('inland-empire-extension-settings')) {
+            console.log('[Inland Empire] Settings panel already exists');
+            return;
+        }
+
+        const settingsHtml = `
+            <div id="inland-empire-extension-settings">
+                <div class="inline-drawer">
+                    <div class="inline-drawer-toggle inline-drawer-header">
+                        <b><i class="fa-solid fa-brain"></i> Inland Empire</b>
+                        <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
+                    </div>
+                    <div class="inline-drawer-content">
+                        <label class="checkbox_label" for="ie-extension-enabled">
+                            <input type="checkbox" id="ie-extension-enabled" ${extensionSettings.enabled ? 'checked' : ''} />
+                            <span>Enable Inland Empire</span>
+                        </label>
+                        <small>Disco Elysium-style internal voices that comment on your roleplay.</small>
+                        <br><br>
+                        <small><b>Panel Controls:</b> Look for the floating "Psyche" panel on the right side of the screen. Use the ⚙️ button to configure your API.</small>
+                        <br><br>
+                        <button id="ie-toggle-panel-btn" class="menu_button">
+                            <i class="fa-solid fa-eye"></i> Toggle Panel Visibility
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        settingsContainer.insertAdjacentHTML('beforeend', settingsHtml);
+        console.log('[Inland Empire] Settings panel added to extensions list');
+
+        // Setup toggle
+        const enabledCheckbox = document.getElementById('ie-extension-enabled');
+        if (enabledCheckbox) {
+            enabledCheckbox.addEventListener('change', (e) => {
+                extensionSettings.enabled = e.target.checked;
+                saveState(getSTContext());
+                const panel = document.getElementById('inland-empire-panel');
+                if (panel) {
+                    panel.style.display = e.target.checked ? 'flex' : 'none';
+                }
+            });
+        }
+
+        // Toggle panel button
+        const toggleBtn = document.getElementById('ie-toggle-panel-btn');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                const panel = document.getElementById('inland-empire-panel');
+                if (panel) {
+                    const isVisible = panel.style.display !== 'none';
+                    panel.style.display = isVisible ? 'none' : 'flex';
+                    console.log('[Inland Empire] Panel visibility toggled:', !isVisible);
+                } else {
+                    console.error('[Inland Empire] Panel not found!');
+                    alert('Panel not found! Check console for errors.');
+                }
+            });
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
     // INITIALIZATION
     // ═══════════════════════════════════════════════════════════════
 
@@ -1119,28 +1194,58 @@ Respond as ${skill.signature}.`;
 
             // Load saved state
             loadState(context);
+            console.log('[Inland Empire] State loaded, enabled:', extensionSettings.enabled);
 
-            // Create UI
+            // Create UI elements
+            console.log('[Inland Empire] Creating UI elements...');
             const panel = createPsychePanel();
             const settingsModal = createSettingsModal();
             const buildModal = createBuildEditorModal();
 
-            // Inject panel
-            const sheldContainer = document.getElementById('sheld');
-            if (sheldContainer) {
-                sheldContainer.appendChild(panel);
-            } else {
-                document.body.appendChild(panel);
+            // Find best place to inject panel
+            // Try multiple possible containers
+            const possibleContainers = [
+                document.getElementById('sheld'),
+                document.getElementById('chat'),
+                document.querySelector('.chat-container'),
+                document.querySelector('#chat_container'),
+                document.body
+            ];
+
+            let injectionTarget = null;
+            for (const container of possibleContainers) {
+                if (container) {
+                    injectionTarget = container;
+                    break;
+                }
             }
 
+            if (injectionTarget === document.body) {
+                console.log('[Inland Empire] Injecting panel into document.body');
+            } else {
+                console.log('[Inland Empire] Injecting panel into:', injectionTarget?.id || injectionTarget?.className);
+            }
+
+            injectionTarget.appendChild(panel);
             document.body.appendChild(settingsModal);
             document.body.appendChild(buildModal);
 
+            console.log('[Inland Empire] UI elements injected');
+
+            // Force panel to be visible
+            panel.style.display = extensionSettings.enabled ? 'flex' : 'none';
+            panel.style.zIndex = '9999';
+
             // Render initial state
             renderAttributesDisplay();
+            console.log('[Inland Empire] Attributes rendered');
 
             // Setup event listeners
             setupEventListeners();
+            console.log('[Inland Empire] Event listeners setup');
+
+            // Add settings to extensions panel
+            addExtensionSettings();
 
             // Register SillyTavern event hooks
             if (context.eventSource) {
@@ -1148,12 +1253,19 @@ Respond as ${skill.signature}.`;
                 if (eventTypes && eventTypes.MESSAGE_RECEIVED) {
                     context.eventSource.on(eventTypes.MESSAGE_RECEIVED, onMessageReceived);
                     console.log('[Inland Empire] Registered MESSAGE_RECEIVED listener');
+                } else {
+                    console.warn('[Inland Empire] MESSAGE_RECEIVED event type not found');
                 }
+            } else {
+                console.warn('[Inland Empire] eventSource not available');
             }
 
             console.log('[Inland Empire] ✅ Initialization complete');
+            console.log('[Inland Empire] Panel element:', document.getElementById('inland-empire-panel'));
+
         } catch (error) {
             console.error('[Inland Empire] ❌ Initialization failed:', error);
+            console.error('[Inland Empire] Stack:', error.stack);
         }
     }
 
