@@ -1213,51 +1213,16 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // SILLYTAVERN EXTENSION PANEL
+    // CONNECT TO ST SETTINGS PANEL (loaded from settings.html)
     // ═══════════════════════════════════════════════════════════════
 
-    function addExtensionSettings() {
-        const settingsContainer = document.getElementById('extensions_settings2');
-        if (!settingsContainer) {
-            console.warn('[Inland Empire] extensions_settings2 not found, retrying...');
-            setTimeout(addExtensionSettings, 1000);
-            return;
-        }
-
-        if (document.getElementById('inland-empire-extension-settings')) {
-            console.log('[Inland Empire] Settings panel already exists');
-            return;
-        }
-
-        const settingsHtml = `
-            <div id="inland-empire-extension-settings">
-                <div class="inline-drawer">
-                    <div class="inline-drawer-toggle inline-drawer-header">
-                        <b><i class="fa-solid fa-brain"></i> Inland Empire</b>
-                        <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
-                    </div>
-                    <div class="inline-drawer-content">
-                        <label class="checkbox_label" for="ie-extension-enabled">
-                            <input type="checkbox" id="ie-extension-enabled" ${extensionSettings.enabled ? 'checked' : ''} />
-                            <span>Enable Inland Empire</span>
-                        </label>
-                        <small>Disco Elysium-style internal voices that comment on your roleplay.</small>
-                        <br><br>
-                        <small><b>Panel:</b> Click the 🧠 button on the left side to open the Psyche panel for settings, status effects, and character builds.</small>
-                        <br><br>
-                        <button id="ie-toggle-panel-btn" class="menu_button">
-                            <i class="fa-solid fa-eye"></i> Toggle Panel
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        settingsContainer.insertAdjacentHTML('beforeend', settingsHtml);
-        console.log('[Inland Empire] Settings panel added to extensions list');
-
+    function connectToSTSettings() {
+        // Connect to elements loaded from settings.html
         const enabledCheckbox = document.getElementById('ie-extension-enabled');
+        const toggleBtn = document.getElementById('ie-toggle-panel-btn');
+        
         if (enabledCheckbox) {
+            enabledCheckbox.checked = extensionSettings.enabled;
             enabledCheckbox.addEventListener('change', (e) => {
                 extensionSettings.enabled = e.target.checked;
                 saveState(getSTContext());
@@ -1271,12 +1236,14 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
                 if (panel && !e.target.checked) {
                     panel.classList.remove('ie-panel-open');
                 }
+                console.log('[Inland Empire] Enabled changed to:', e.target.checked);
             });
+            console.log('[Inland Empire] Connected to enable checkbox');
         }
-
-        const toggleBtn = document.getElementById('ie-toggle-panel-btn');
+        
         if (toggleBtn) {
             toggleBtn.addEventListener('click', togglePanel);
+            console.log('[Inland Empire] Connected to toggle button');
         }
     }
 
@@ -1285,22 +1252,26 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
     // ═══════════════════════════════════════════════════════════════
 
     async function init() {
-        console.log('[Inland Empire] Starting initialization...');
+        console.log('[Inland Empire] 🚀 Starting initialization...');
 
         try {
             const context = await waitForSTReady();
             console.log('[Inland Empire] SillyTavern context obtained');
 
             loadState(context);
+            console.log('[Inland Empire] State loaded');
 
             const panel = createPsychePanel();
             const fab = createToggleFAB();
 
             document.body.appendChild(fab);
             document.body.appendChild(panel);
+            console.log('[Inland Empire] FAB and panel added to DOM');
 
             if (!extensionSettings.enabled) {
                 fab.style.display = 'none';
+            } else {
+                console.log('[Inland Empire] FAB should be visible (enabled=true)');
             }
 
             setupEventListeners();
@@ -1308,8 +1279,8 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
             renderStatusDisplay();
             renderAttributesDisplay();
             
-            // Add to ST extensions panel
-            addExtensionSettings();
+            // Connect to ST settings panel (loaded from settings.html) with delay
+            setTimeout(connectToSTSettings, 1000);
 
             // Register message hook
             if (context.eventSource) {
@@ -1320,18 +1291,30 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
                 }
             }
 
-            console.log('[Inland Empire] ✅ Initialization complete');
+            console.log('[Inland Empire] ✅ Initialization complete!');
+            console.log('[Inland Empire] FAB element:', document.getElementById('inland-empire-fab'));
+            console.log('[Inland Empire] Panel element:', document.getElementById('inland-empire-panel'));
 
         } catch (error) {
             console.error('[Inland Empire] ❌ Initialization failed:', error);
         }
     }
 
-    // Start when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
+    // Start when DOM is ready - try multiple approaches
+    function startExtension() {
+        console.log('[Inland Empire] startExtension called');
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    }
+
+    // Try jQuery first if available (SillyTavern uses jQuery)
+    if (typeof jQuery !== 'undefined') {
+        jQuery(startExtension);
     } else {
-        init();
+        startExtension();
     }
 
 })();

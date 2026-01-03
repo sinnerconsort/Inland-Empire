@@ -1,11 +1,11 @@
 {
     "display_name": "Inland Empire",
-    "loading_order": 10,
+    "loading_order": 100,
     "requires": [],
     "optional": [],
     "js": "index.js",
     "css": "style.css",
     "author": "Judas",
-    "version": "0.3.1",
+    "version": "0.3.2",
     "description": "Disco Elysium-style internal voices with status effects, skill checks, and chat injection. Voices appear directly in chat below AI messages."
 }
