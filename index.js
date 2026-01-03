@@ -580,11 +580,21 @@ Respond as ${skill.signature}.`;
     }
 
     async function callAPI(systemPrompt, userPrompt) {
-        const { apiEndpoint, apiKey, model, maxTokens, temperature } = extensionSettings;
+        let { apiEndpoint, apiKey, model, maxTokens, temperature } = extensionSettings;
 
         if (!apiEndpoint || !apiKey) {
             throw new Error('API not configured');
         }
+
+        // Auto-fix endpoint if needed
+        if (!apiEndpoint.includes('/chat/completions') && !apiEndpoint.includes('/completions')) {
+            // Remove trailing slash if present
+            apiEndpoint = apiEndpoint.replace(/\/+$/, '');
+            apiEndpoint = `${apiEndpoint}/chat/completions`;
+            console.log('[Inland Empire] Auto-fixed endpoint to:', apiEndpoint);
+        }
+
+        console.log('[Inland Empire] Calling API:', { endpoint: apiEndpoint, model });
 
         const response = await fetch(apiEndpoint, {
             method: 'POST',
@@ -604,11 +614,28 @@ Respond as ${skill.signature}.`;
         });
 
         if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
+            const errorText = await response.text().catch(() => 'Unknown error');
+            console.error('[Inland Empire] API error response:', errorText);
+            throw new Error(`API error: ${response.status} - ${errorText.substring(0, 100)}`);
         }
 
         const data = await response.json();
-        return data.choices?.[0]?.message?.content || '';
+        console.log('[Inland Empire] API response:', data);
+        
+        // Handle different API response formats
+        const content = data.choices?.[0]?.message?.content 
+            || data.choices?.[0]?.text 
+            || data.content?.[0]?.text
+            || data.content
+            || data.response
+            || data.output
+            || '';
+            
+        if (!content) {
+            console.warn('[Inland Empire] Empty content from API. Full response:', JSON.stringify(data));
+        }
+        
+        return content;
     }
 
     async function generateVoices(selectedSkills, context) {
