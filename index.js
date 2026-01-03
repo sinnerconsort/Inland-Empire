@@ -1251,12 +1251,28 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
     // INITIALIZATION
     // ═══════════════════════════════════════════════════════════════
 
+    function showDebug(message) {
+        let debug = document.getElementById('ie-debug');
+        if (!debug) {
+            debug = document.createElement('div');
+            debug.id = 'ie-debug';
+            debug.className = 'ie-debug-indicator';
+            document.body.appendChild(debug);
+        }
+        debug.textContent = '🧠 IE: ' + message;
+        debug.style.display = 'block';
+        // Hide after 5 seconds
+        setTimeout(() => { debug.style.display = 'none'; }, 5000);
+    }
+
     async function init() {
         console.log('[Inland Empire] 🚀 Starting initialization...');
+        showDebug('Starting...');
 
         try {
             const context = await waitForSTReady();
             console.log('[Inland Empire] SillyTavern context obtained');
+            showDebug('ST context OK');
 
             loadState(context);
             console.log('[Inland Empire] State loaded');
@@ -1267,11 +1283,13 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
             document.body.appendChild(fab);
             document.body.appendChild(panel);
             console.log('[Inland Empire] FAB and panel added to DOM');
+            showDebug('FAB added!');
 
             if (!extensionSettings.enabled) {
                 fab.style.display = 'none';
+                showDebug('Disabled - FAB hidden');
             } else {
-                console.log('[Inland Empire] FAB should be visible (enabled=true)');
+                showDebug('Enabled - FAB visible');
             }
 
             setupEventListeners();
@@ -1288,15 +1306,15 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
                 if (eventTypes && eventTypes.MESSAGE_RECEIVED) {
                     context.eventSource.on(eventTypes.MESSAGE_RECEIVED, onMessageReceived);
                     console.log('[Inland Empire] Registered MESSAGE_RECEIVED listener');
+                    showDebug('Ready! ✓');
                 }
             }
 
             console.log('[Inland Empire] ✅ Initialization complete!');
-            console.log('[Inland Empire] FAB element:', document.getElementById('inland-empire-fab'));
-            console.log('[Inland Empire] Panel element:', document.getElementById('inland-empire-panel'));
 
         } catch (error) {
             console.error('[Inland Empire] ❌ Initialization failed:', error);
+            showDebug('ERROR: ' + error.message);
         }
     }
 

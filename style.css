@@ -226,47 +226,54 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   FAB
+   FAB - Bottom right corner for mobile visibility
    ═══════════════════════════════════════════════════════════════ */
 
 .ie-fab {
     position: fixed;
-    left: 10px;
-    top: calc(50% + 80px);
-    transform: translateY(-50%);
-    width: 50px;
-    height: 50px;
-    background: var(--ie-bg-medium);
-    border: 2px solid var(--ie-accent);
+    right: 20px;
+    bottom: 80px;
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #9d8df1 0%, #7b68d4 100%);
+    border: 3px solid #fff;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    z-index: 99998;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    z-index: 999999;
+    box-shadow: 0 4px 20px rgba(157, 141, 241, 0.6), 0 2px 10px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
 }
 
 .ie-fab:hover {
-    background: var(--ie-accent);
-    transform: translateY(-50%) scale(1.1);
-}
-
-.ie-fab:hover i {
-    color: var(--ie-bg-dark);
+    transform: scale(1.1);
+    box-shadow: 0 6px 30px rgba(157, 141, 241, 0.8);
 }
 
 .ie-fab i {
-    font-size: 22px;
-    color: var(--ie-accent);
-    transition: color 0.3s ease;
+    font-size: 24px;
+    color: #fff;
 }
 
 .ie-fab.ie-fab-active {
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(-50%) scale(0.5);
+    background: linear-gradient(135deg, #7b68d4 0%, #5a4abf 100%);
+}
+
+/* Debug indicator */
+.ie-debug-indicator {
+    position: fixed;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #4CAF50;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    z-index: 999999;
+    font-family: monospace;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -275,18 +282,16 @@
 
 .inland-empire-panel {
     position: fixed;
-    left: 10px;
-    top: 60px;
-    transform: scale(0.9);
-    transform-origin: top left;
+    right: 10px;
+    bottom: 140px;
     width: 320px;
     max-width: calc(100vw - 30px);
-    max-height: calc(100vh - 80px);
+    max-height: 60vh;
     background: var(--ie-bg-dark);
     border: 1px solid var(--ie-border-color);
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-    z-index: 99999;
+    border-radius: 12px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+    z-index: 999998;
     display: flex;
     flex-direction: column;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -294,12 +299,14 @@
     color: var(--ie-text-primary);
     overflow: hidden;
     transition: transform 0.3s ease, opacity 0.3s ease;
+    transform: scale(0.9) translateY(20px);
+    transform-origin: bottom right;
     opacity: 0;
     pointer-events: none;
 }
 
 .inland-empire-panel.ie-panel-open {
-    transform: scale(1);
+    transform: scale(1) translateY(0);
     opacity: 1;
     pointer-events: auto;
 }
@@ -589,18 +596,19 @@
 
 @media (max-width: 768px) {
     .ie-fab {
-        left: 8px;
-        top: calc(50% + 70px);
-        width: 44px;
-        height: 44px;
+        right: 15px;
+        bottom: 70px;
+        width: 50px;
+        height: 50px;
     }
     
-    .ie-fab i { font-size: 18px; }
+    .ie-fab i { font-size: 20px; }
     
     .inland-empire-panel {
-        left: 8px;
+        left: 10px;
+        right: 10px;
         top: 60px;
-        width: calc(100vw - 24px);
+        width: auto;
         max-height: calc(100vh - 80px);
     }
     
@@ -613,18 +621,26 @@
     
     .ie-voice-name { font-size: 11px; }
     .ie-voice-text { font-size: 12px; }
+    
+    .ie-status-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .ie-attributes-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 400px) {
     .ie-fab {
-        left: 5px;
-        width: 40px;
-        height: 40px;
+        right: 10px;
+        bottom: 65px;
+        width: 46px;
+        height: 46px;
     }
     
     .inland-empire-panel {
         left: 5px;
         right: 5px;
-        width: auto;
     }
 }
