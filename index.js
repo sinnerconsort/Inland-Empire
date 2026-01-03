@@ -228,6 +228,93 @@
     };
 
     // ═══════════════════════════════════════════════════════════════
+    // STATUS EFFECTS SYSTEM
+    // ═══════════════════════════════════════════════════════════════
+
+    const STATUS_EFFECTS = {
+        intoxicated: {
+            id: 'intoxicated',
+            name: 'Intoxicated',
+            icon: '🍺',
+            description: 'Drunk or high',
+            boosts: ['electrochemistry', 'inland_empire', 'suggestion'],
+            debuffs: ['logic', 'hand_eye_coordination', 'reaction_speed', 'composure'],
+            difficultyMod: 2, // harder checks for debuffed skills
+            keywords: ['drunk', 'intoxicated', 'wasted', 'high', 'tipsy', 'beer', 'wine', 'alcohol']
+        },
+        wounded: {
+            id: 'wounded',
+            name: 'Wounded',
+            icon: '🩸',
+            description: 'Injured or in pain',
+            boosts: ['pain_threshold', 'endurance', 'half_light'],
+            debuffs: ['composure', 'savoir_faire', 'hand_eye_coordination'],
+            difficultyMod: 2,
+            keywords: ['hurt', 'wounded', 'injured', 'bleeding', 'pain', 'wound', 'blood']
+        },
+        exhausted: {
+            id: 'exhausted',
+            name: 'Exhausted',
+            icon: '😴',
+            description: 'Tired or sleep-deprived',
+            boosts: ['volition', 'inland_empire'],
+            debuffs: ['reaction_speed', 'perception', 'logic', 'hand_eye_coordination'],
+            difficultyMod: 2,
+            keywords: ['tired', 'exhausted', 'sleepy', 'drowsy', 'fatigued', 'weary']
+        },
+        paranoid: {
+            id: 'paranoid',
+            name: 'Paranoid',
+            icon: '👁️',
+            description: 'Suspicious and on edge',
+            boosts: ['half_light', 'perception', 'shivers'],
+            debuffs: ['empathy', 'suggestion', 'esprit_de_corps'],
+            difficultyMod: 2,
+            keywords: ['paranoid', 'suspicious', 'watching', 'followed', 'conspiracy']
+        },
+        aroused: {
+            id: 'aroused',
+            name: 'Aroused',
+            icon: '💋',
+            description: 'Distracted by desire',
+            boosts: ['electrochemistry', 'suggestion', 'empathy'],
+            debuffs: ['logic', 'volition', 'composure'],
+            difficultyMod: 2,
+            keywords: ['aroused', 'desire', 'attraction', 'lust', 'seductive']
+        },
+        angry: {
+            id: 'angry',
+            name: 'Angry',
+            icon: '😤',
+            description: 'Furious and aggressive',
+            boosts: ['authority', 'physical_instrument', 'half_light'],
+            debuffs: ['empathy', 'composure', 'logic'],
+            difficultyMod: 2,
+            keywords: ['angry', 'furious', 'rage', 'mad', 'pissed', 'livid']
+        },
+        scared: {
+            id: 'scared',
+            name: 'Scared',
+            icon: '😨',
+            description: 'Frightened or anxious',
+            boosts: ['half_light', 'shivers', 'reaction_speed', 'perception'],
+            debuffs: ['authority', 'composure', 'rhetoric'],
+            difficultyMod: 2,
+            keywords: ['scared', 'afraid', 'terrified', 'fear', 'frightened', 'anxious']
+        },
+        confident: {
+            id: 'confident',
+            name: 'Confident',
+            icon: '😎',
+            description: 'Self-assured and bold',
+            boosts: ['authority', 'savoir_faire', 'rhetoric', 'suggestion'],
+            debuffs: ['inland_empire', 'empathy'],
+            difficultyMod: -1, // easier checks for boosted skills
+            keywords: ['confident', 'bold', 'assured', 'swagger', 'triumphant']
+        }
+    };
+
+    // ═══════════════════════════════════════════════════════════════
     // STATE MANAGEMENT
     // ═══════════════════════════════════════════════════════════════
 
@@ -242,9 +329,11 @@
         maxVoices: 4,
         showDiceRolls: true,
         showFailedChecks: true,
-        autoTrigger: true
+        autoTrigger: true,
+        autoDetectStatus: true
     };
 
+    let activeStatuses = new Set();
     let currentBuild = null;
     const DEFAULT_ATTRIBUTE_POINTS = { INTELLECT: 3, PSYCHE: 3, PHYSIQUE: 3, MOTORICS: 3 };
 
@@ -285,7 +374,11 @@
 
     function saveState(context) {
         if (!context) return;
-        const state = { extensionSettings, currentBuild };
+        const state = { 
+            extensionSettings, 
+            currentBuild,
+            activeStatuses: Array.from(activeStatuses)
+        };
         localStorage.setItem('inland_empire_state', JSON.stringify(state));
     }
 
@@ -300,11 +393,100 @@
                 if (state.currentBuild) {
                     currentBuild = state.currentBuild;
                 }
+                if (state.activeStatuses) {
+                    activeStatuses = new Set(state.activeStatuses);
+                }
             }
         } catch (e) {
             console.error('[Inland Empire] Error loading state:', e);
         }
         if (!currentBuild) initializeDefaultBuild();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // STATUS EFFECT FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════
+
+    function toggleStatus(statusId) {
+        if (activeStatuses.has(statusId)) {
+            activeStatuses.delete(statusId);
+        } else {
+            activeStatuses.add(statusId);
+        }
+        saveState(getSTContext());
+        renderStatusDisplay();
+    }
+
+    function detectStatusesFromText(text) {
+        const detected = [];
+        const lowerText = text.toLowerCase();
+        
+        for (const [statusId, status] of Object.entries(STATUS_EFFECTS)) {
+            for (const keyword of status.keywords) {
+                // Look for second-person references to avoid detecting NPC states
+                const patterns = [
+                    `you feel ${keyword}`,
+                    `you are ${keyword}`,
+                    `you're ${keyword}`,
+                    `your ${keyword}`,
+                    `you seem ${keyword}`,
+                    `you look ${keyword}`,
+                    `feeling ${keyword}`,
+                    keyword // fallback for obvious ones
+                ];
+                
+                for (const pattern of patterns) {
+                    if (lowerText.includes(pattern)) {
+                        detected.push(statusId);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        return [...new Set(detected)]; // dedupe
+    }
+
+    function getSkillModifier(skillId) {
+        let modifier = 0;
+        
+        for (const statusId of activeStatuses) {
+            const status = STATUS_EFFECTS[statusId];
+            if (!status) continue;
+            
+            if (status.boosts.includes(skillId)) {
+                modifier += 1; // boost
+            }
+            if (status.debuffs.includes(skillId)) {
+                modifier -= 1; // debuff
+            }
+        }
+        
+        return modifier;
+    }
+
+    function getDifficultyModifier(skillId) {
+        let modifier = 0;
+        
+        for (const statusId of activeStatuses) {
+            const status = STATUS_EFFECTS[statusId];
+            if (!status) continue;
+            
+            if (status.debuffs.includes(skillId)) {
+                modifier += status.difficultyMod; // harder
+            }
+            if (status.boosts.includes(skillId)) {
+                modifier -= 1; // slightly easier
+            }
+        }
+        
+        return modifier;
+    }
+
+    function getEffectiveSkillLevel(skillId) {
+        const baseLevel = getSkillLevel(skillId);
+        const modifier = getSkillModifier(skillId);
+        return Math.max(1, Math.min(10, baseLevel + modifier));
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -328,13 +510,28 @@
         return { die1, die2, total: die1 + die2, isSnakeEyes: die1 === 1 && die2 === 1, isBoxcars: die1 === 6 && die2 === 6 };
     }
 
-    function rollSkillCheck(skillLevel, difficulty) {
+    function rollSkillCheck(skillId, difficulty) {
         const roll = roll2d6();
-        const total = roll.total + skillLevel;
-        let success = total >= difficulty.target;
+        const effectiveLevel = getEffectiveSkillLevel(skillId);
+        const difficultyMod = getDifficultyModifier(skillId);
+        const adjustedTarget = difficulty.target + difficultyMod;
+        const total = roll.total + effectiveLevel;
+        
+        let success = total >= adjustedTarget;
         if (roll.isSnakeEyes) success = false;
         if (roll.isBoxcars) success = true;
-        return { ...roll, skillLevel, modifier: skillLevel, total, target: difficulty.target, difficultyName: difficulty.name, success };
+        
+        return { 
+            ...roll, 
+            skillLevel: effectiveLevel, 
+            modifier: effectiveLevel, 
+            total, 
+            target: adjustedTarget,
+            originalTarget: difficulty.target,
+            difficultyName: difficulty.name, 
+            success,
+            statusMod: difficultyMod
+        };
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -539,7 +736,7 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
             let checkResult = null;
 
             if (checkDecision.shouldCheck) {
-                checkResult = rollSkillCheck(selected.skillLevel, checkDecision.difficulty);
+                checkResult = rollSkillCheck(selected.skillId, checkDecision.difficulty);
             }
 
             return generateVoice(selected.skillId, context, checkResult);
@@ -626,7 +823,11 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
                 </div>
             </div>
             <div class="ie-tabs">
-                <button class="ie-tab ie-tab-active" data-tab="settings">
+                <button class="ie-tab ie-tab-active" data-tab="status">
+                    <i class="fa-solid fa-chart-bar"></i>
+                    <span>Status</span>
+                </button>
+                <button class="ie-tab" data-tab="settings">
                     <i class="fa-solid fa-gear"></i>
                     <span>Settings</span>
                 </button>
@@ -636,8 +837,20 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
                 </button>
             </div>
             <div class="ie-panel-content">
+                <!-- STATUS TAB -->
+                <div class="ie-tab-content ie-tab-content-active" data-tab-content="status">
+                    <div class="ie-section">
+                        <div class="ie-section-header">Active Effects</div>
+                        <div class="ie-status-grid" id="ie-status-grid"></div>
+                    </div>
+                    <div class="ie-section">
+                        <div class="ie-section-header">Attributes</div>
+                        <div class="ie-attributes-grid" id="ie-attributes-display"></div>
+                    </div>
+                </div>
+
                 <!-- SETTINGS TAB -->
-                <div class="ie-tab-content ie-tab-content-active" data-tab-content="settings">
+                <div class="ie-tab-content" data-tab-content="settings">
                     <div class="ie-section">
                         <div class="ie-section-header">API Configuration</div>
                         <div class="ie-form-group">
@@ -693,6 +906,12 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
                                 <span>Auto-trigger on messages</span>
                             </label>
                         </div>
+                        <div class="ie-form-group">
+                            <label class="ie-checkbox">
+                                <input type="checkbox" id="ie-auto-detect-status" checked />
+                                <span>Auto-detect status effects</span>
+                            </label>
+                        </div>
                         <button class="ie-btn ie-btn-primary ie-btn-save-settings" style="width: 100%; margin-top: 10px;">
                             <i class="fa-solid fa-save"></i>
                             <span>Save Settings</span>
@@ -722,6 +941,63 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
         return panel;
     }
 
+    function renderStatusDisplay() {
+        const container = document.getElementById('ie-status-grid');
+        if (!container) return;
+
+        container.innerHTML = Object.entries(STATUS_EFFECTS).map(([id, status]) => {
+            const isActive = activeStatuses.has(id);
+            return `
+                <button class="ie-status-btn ${isActive ? 'ie-status-active' : ''}" 
+                        data-status="${id}" title="${status.description}">
+                    <span class="ie-status-icon">${status.icon}</span>
+                    <span class="ie-status-name">${status.name}</span>
+                </button>
+            `;
+        }).join('');
+
+        // Add click listeners
+        container.querySelectorAll('.ie-status-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                toggleStatus(btn.dataset.status);
+            });
+        });
+    }
+
+    function renderAttributesDisplay() {
+        const container = document.getElementById('ie-attributes-display');
+        if (!container) return;
+
+        const attrPoints = getAttributePoints();
+
+        container.innerHTML = Object.entries(ATTRIBUTES).map(([id, attr]) => `
+            <div class="ie-attribute-block" style="border-color: ${attr.color}">
+                <div class="ie-attr-header" style="background: ${attr.color}20">
+                    <span class="ie-attr-name">${attr.name}</span>
+                    <span class="ie-attr-points">${attrPoints[id]}</span>
+                </div>
+                <div class="ie-attr-skills">
+                    ${attr.skills.map(skillId => {
+                        const skill = SKILLS[skillId];
+                        const baseLevel = getSkillLevel(skillId);
+                        const effectiveLevel = getEffectiveSkillLevel(skillId);
+                        const modifier = getSkillModifier(skillId);
+                        const modClass = modifier > 0 ? 'ie-skill-boosted' : modifier < 0 ? 'ie-skill-debuffed' : '';
+                        return `
+                            <div class="ie-skill-row ${modClass}" title="${skill.name}: ${effectiveLevel}${modifier !== 0 ? ` (${modifier > 0 ? '+' : ''}${modifier})` : ''}">
+                                <span class="ie-skill-abbrev" style="color: ${skill.color}">${skill.signature.substring(0, 3)}</span>
+                                <div class="ie-skill-bar">
+                                    <div class="ie-skill-fill" style="width: ${effectiveLevel * 10}%; background: ${skill.color}"></div>
+                                </div>
+                                <span class="ie-skill-level">${effectiveLevel}</span>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `).join('');
+    }
+
     function createToggleFAB() {
         const fab = document.createElement('div');
         fab.id = 'inland-empire-fab';
@@ -747,6 +1023,10 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
         document.querySelectorAll('.ie-tab-content').forEach(content => {
             content.classList.toggle('ie-tab-content-active', content.dataset.tabContent === tabName);
         });
+        if (tabName === 'status') {
+            renderStatusDisplay();
+            renderAttributesDisplay();
+        }
         if (tabName === 'build') populateBuildEditor();
         if (tabName === 'settings') populateSettings();
     }
@@ -807,7 +1087,8 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
             maxVoices: document.getElementById('ie-max-voices'),
             showDice: document.getElementById('ie-show-dice-rolls'),
             showFailed: document.getElementById('ie-show-failed-checks'),
-            autoTrigger: document.getElementById('ie-auto-trigger')
+            autoTrigger: document.getElementById('ie-auto-trigger'),
+            autoDetectStatus: document.getElementById('ie-auto-detect-status')
         };
 
         if (els.endpoint) els.endpoint.value = extensionSettings.apiEndpoint || '';
@@ -820,6 +1101,7 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
         if (els.showDice) els.showDice.checked = extensionSettings.showDiceRolls !== false;
         if (els.showFailed) els.showFailed.checked = extensionSettings.showFailedChecks !== false;
         if (els.autoTrigger) els.autoTrigger.checked = extensionSettings.autoTrigger !== false;
+        if (els.autoDetectStatus) els.autoDetectStatus.checked = extensionSettings.autoDetectStatus !== false;
     }
 
     function saveSettings() {
@@ -833,6 +1115,7 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
         extensionSettings.showDiceRolls = document.getElementById('ie-show-dice-rolls')?.checked !== false;
         extensionSettings.showFailedChecks = document.getElementById('ie-show-failed-checks')?.checked !== false;
         extensionSettings.autoTrigger = document.getElementById('ie-auto-trigger')?.checked !== false;
+        extensionSettings.autoDetectStatus = document.getElementById('ie-auto-detect-status')?.checked !== false;
 
         saveState(getSTContext());
         
@@ -872,6 +1155,19 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
         if (!messageContent || messageContent.length < 20) return;
 
         console.log('[Inland Empire] Processing message...');
+
+        // Auto-detect status effects from message
+        if (extensionSettings.autoDetectStatus) {
+            const detectedStatuses = detectStatusesFromText(messageContent);
+            if (detectedStatuses.length > 0) {
+                console.log('[Inland Empire] Auto-detected statuses:', detectedStatuses);
+                // Add detected statuses (don't remove existing ones)
+                detectedStatuses.forEach(s => activeStatuses.add(s));
+                saveState(getSTContext());
+                renderStatusDisplay();
+                renderAttributesDisplay();
+            }
+        }
 
         // Small delay to let the message render
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -917,6 +1213,74 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
     }
 
     // ═══════════════════════════════════════════════════════════════
+    // SILLYTAVERN EXTENSION PANEL
+    // ═══════════════════════════════════════════════════════════════
+
+    function addExtensionSettings() {
+        const settingsContainer = document.getElementById('extensions_settings2');
+        if (!settingsContainer) {
+            console.warn('[Inland Empire] extensions_settings2 not found, retrying...');
+            setTimeout(addExtensionSettings, 1000);
+            return;
+        }
+
+        if (document.getElementById('inland-empire-extension-settings')) {
+            console.log('[Inland Empire] Settings panel already exists');
+            return;
+        }
+
+        const settingsHtml = `
+            <div id="inland-empire-extension-settings">
+                <div class="inline-drawer">
+                    <div class="inline-drawer-toggle inline-drawer-header">
+                        <b><i class="fa-solid fa-brain"></i> Inland Empire</b>
+                        <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
+                    </div>
+                    <div class="inline-drawer-content">
+                        <label class="checkbox_label" for="ie-extension-enabled">
+                            <input type="checkbox" id="ie-extension-enabled" ${extensionSettings.enabled ? 'checked' : ''} />
+                            <span>Enable Inland Empire</span>
+                        </label>
+                        <small>Disco Elysium-style internal voices that comment on your roleplay.</small>
+                        <br><br>
+                        <small><b>Panel:</b> Click the 🧠 button on the left side to open the Psyche panel for settings, status effects, and character builds.</small>
+                        <br><br>
+                        <button id="ie-toggle-panel-btn" class="menu_button">
+                            <i class="fa-solid fa-eye"></i> Toggle Panel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        settingsContainer.insertAdjacentHTML('beforeend', settingsHtml);
+        console.log('[Inland Empire] Settings panel added to extensions list');
+
+        const enabledCheckbox = document.getElementById('ie-extension-enabled');
+        if (enabledCheckbox) {
+            enabledCheckbox.addEventListener('change', (e) => {
+                extensionSettings.enabled = e.target.checked;
+                saveState(getSTContext());
+                
+                const fab = document.getElementById('inland-empire-fab');
+                const panel = document.getElementById('inland-empire-panel');
+                
+                if (fab) {
+                    fab.style.display = e.target.checked ? 'flex' : 'none';
+                }
+                if (panel && !e.target.checked) {
+                    panel.classList.remove('ie-panel-open');
+                }
+            });
+        }
+
+        const toggleBtn = document.getElementById('ie-toggle-panel-btn');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', togglePanel);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
     // INITIALIZATION
     // ═══════════════════════════════════════════════════════════════
 
@@ -941,6 +1305,11 @@ What does ${skill.name} notice or think about this? Remember: only react to obse
 
             setupEventListeners();
             populateSettings();
+            renderStatusDisplay();
+            renderAttributesDisplay();
+            
+            // Add to ST extensions panel
+            addExtensionSettings();
 
             // Register message hook
             if (context.eventSource) {
