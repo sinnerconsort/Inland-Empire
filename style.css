@@ -417,9 +417,12 @@
     right: 0;
     bottom: 0;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    padding: 20px 10px;
+    padding-top: 80px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 20px;
     z-index: 9999999;
     overflow-y: auto;
 }
@@ -441,7 +444,7 @@
     border-radius: 8px;
     width: 90%;
     max-width: 400px;
-    max-height: calc(100vh - 40px);
+    max-height: calc(100vh - 100px);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -732,9 +735,13 @@
         grid-template-columns: 1fr;
     }
     
+    .ie-modal {
+        padding-top: 100px;
+    }
+    
     .ie-modal-content {
         width: 95%;
-        max-height: calc(100vh - 40px);
+        max-height: calc(100vh - 120px);
     }
     
     .ie-attribute-row {
@@ -774,8 +781,15 @@
         max-height: calc(100vh - 120px);
     }
     
+    .ie-modal {
+        padding-top: 90px;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    
     .ie-modal-content {
-        width: 98%;
-        max-height: calc(100vh - 20px);
+        width: 100%;
+        max-height: calc(100vh - 110px);
+        border-radius: 6px;
     }
 }
