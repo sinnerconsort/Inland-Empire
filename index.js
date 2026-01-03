@@ -831,14 +831,16 @@ Respond as ${skill.signature}.`;
         const container = document.getElementById('ie-attributes-editor');
         if (!container) return;
         
+        const attrPoints = getAttributePoints();
+        
         container.innerHTML = Object.entries(ATTRIBUTES).map(([id, attr]) => `
             <div class="ie-attribute-row" data-attribute="${id}">
                 <div class="ie-attribute-label" style="color: ${attr.color}">
                     <span class="ie-attr-name">${attr.name}</span>
-                    <span class="ie-attr-value" id="ie-build-${id}-value">${characterBuild.attributes[id] || 3}</span>
+                    <span class="ie-attr-value" id="ie-build-${id}-value">${attrPoints[id] || 3}</span>
                 </div>
                 <input type="range" class="ie-attribute-slider" id="ie-build-${id}" 
-                       min="1" max="6" value="${characterBuild.attributes[id] || 3}" 
+                       min="1" max="6" value="${attrPoints[id] || 3}" 
                        data-attribute="${id}" />
             </div>
         `).join('');
@@ -897,8 +899,8 @@ Respond as ${skill.signature}.`;
         if (model) model.value = extensionSettings.model || 'glm-4-plus';
         if (temp) temp.value = extensionSettings.temperature || 0.9;
         if (maxTokens) maxTokens.value = extensionSettings.maxTokens || 300;
-        if (minVoices) minVoices.value = extensionSettings.minVoices || 1;
-        if (maxVoices) maxVoices.value = extensionSettings.maxVoices || 4;
+        if (minVoices) minVoices.value = extensionSettings.minVoices || extensionSettings.voicesPerMessage?.min || 1;
+        if (maxVoices) maxVoices.value = extensionSettings.maxVoices || extensionSettings.voicesPerMessage?.max || 4;
         if (showDice) showDice.checked = extensionSettings.showDiceRolls !== false;
         if (showFailed) showFailed.checked = extensionSettings.showFailedChecks !== false;
     }
@@ -927,17 +929,16 @@ Respond as ${skill.signature}.`;
 
     function applyBuild() {
         const sliders = document.querySelectorAll('#ie-attributes-editor .ie-attribute-slider');
+        const attributePoints = {};
         
         sliders.forEach(slider => {
             const attr = slider.dataset.attribute;
             const val = parseInt(slider.value);
-            characterBuild.attributes[attr] = val;
+            attributePoints[attr] = val;
         });
         
-        // Recalculate skill levels
-        for (const [skillId, skill] of Object.entries(SKILLS)) {
-            characterBuild.skills[skillId] = characterBuild.attributes[skill.attribute] || 3;
-        }
+        // Apply the new attribute allocation
+        applyAttributeAllocation(attributePoints);
         
         saveState(getSTContext());
         renderAttributesDisplay();
