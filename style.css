@@ -75,18 +75,18 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   PANEL CONTAINER - Slides out from FAB position
+   PANEL CONTAINER - Positioned from top, grows downward
    ═══════════════════════════════════════════════════════════════ */
 
 .inland-empire-panel {
     position: fixed;
     left: 10px;
-    top: 50%;
-    transform: translateY(-50%) scale(0.9);
-    transform-origin: left center;
+    top: 60px;
+    transform: scale(0.9);
+    transform-origin: top left;
     width: 320px;
     max-width: calc(100vw - 30px);
-    max-height: 80vh;
+    max-height: calc(100vh - 140px);
     background: var(--ie-bg-dark, #1a1a2e);
     border: 1px solid var(--ie-border-color, #3a3a5a);
     border-radius: 8px;
@@ -104,7 +104,7 @@
 }
 
 .inland-empire-panel.ie-panel-open {
-    transform: translateY(-50%) scale(1);
+    transform: scale(1);
     opacity: 1;
     pointer-events: auto;
 }
@@ -718,8 +718,9 @@
     
     .inland-empire-panel {
         left: 8px;
+        top: 50px;
         width: calc(100vw - 24px);
-        max-height: 70vh;
+        max-height: calc(100vh - 130px);
     }
     
     .ie-attributes-grid {
@@ -763,7 +764,8 @@
     .inland-empire-panel {
         left: 5px;
         right: 5px;
+        top: 45px;
         width: auto;
-        max-height: 65vh;
+        max-height: calc(100vh - 120px);
     }
 }
