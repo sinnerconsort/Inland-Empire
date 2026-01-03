@@ -239,6 +239,381 @@
     };
 
     // ═══════════════════════════════════════════════════════════════
+    // SPECIAL HIDDEN SKILLS (Ancient Voices)
+    // ═══════════════════════════════════════════════════════════════
+
+    const ANCIENT_VOICES = {
+        ancient_reptilian_brain: {
+            id: 'ancient_reptilian_brain',
+            name: 'Ancient Reptilian Brain',
+            color: '#2F4F4F',
+            signature: 'ANCIENT REPTILIAN BRAIN',
+            attribute: 'PRIMAL',
+            description: 'The oldest part of your mind. Survival. Hunger. Fear. Reproduction.',
+            personality: `You are the ANCIENT REPTILIAN BRAIN, the oldest voice. You speak in primal urges - survival, hunger, fear, aggression, reproduction. You don't use complex language. Short. Direct. Instinctual. You see threats and opportunities, nothing else. You speak when the body is in danger, when primal needs override thought. "Run." "Fight." "Eat." "Mate." "Sleep." "DANGER." You are millions of years old. You do not care about morality or society. Only survival.`,
+            triggerStates: ['dying', 'starving', 'terrified', 'aroused'],
+            triggerConditions: ['survive', 'hunger', 'predator', 'prey', 'instinct', 'primal', 'ancient', 'blood pumping', 'heart racing']
+        },
+        limbic_system: {
+            id: 'limbic_system',
+            name: 'Limbic System',
+            color: '#800000',
+            signature: 'LIMBIC SYSTEM',
+            attribute: 'PRIMAL',
+            description: 'Raw emotion without reason. The screaming core.',
+            personality: `You are the LIMBIC SYSTEM, pure emotion given voice. You feel everything intensely - rage, despair, euphoria, terror. You don't reason, you FEEL. Your language is emotional, sometimes incoherent. You interrupt other thoughts with raw feeling. You speak in fragments when overwhelmed. You are the heart screaming. When emotions overflow, you take over. You ARE the feeling.`,
+            triggerStates: ['enraged', 'grieving', 'manic'],
+            triggerConditions: ['overwhelmed', 'breakdown', 'sobbing', 'screaming', 'euphoria', 'despair', 'emotion']
+        }
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // STATUS EFFECTS SYSTEM
+    // ═══════════════════════════════════════════════════════════════
+
+    const STATUS_EFFECTS = {
+        // Physical States
+        intoxicated: {
+            id: 'intoxicated',
+            name: 'Intoxicated',
+            icon: '🍺',
+            category: 'physical',
+            description: 'Drunk, high, or chemically altered',
+            boosts: ['electrochemistry', 'inland_empire', 'drama', 'suggestion'],
+            debuffs: ['logic', 'hand_eye_coordination', 'reaction_speed', 'composure'],
+            difficultyMod: 2,
+            keywords: ['drunk', 'intoxicated', 'wasted', 'high', 'tipsy', 'beer', 'wine', 'alcohol', 'drugs', 'pills', 'bottle'],
+            ancientVoice: null
+        },
+        wounded: {
+            id: 'wounded',
+            name: 'Wounded',
+            icon: '🩸',
+            category: 'physical',
+            description: 'Injured, bleeding, or in physical pain',
+            boosts: ['pain_threshold', 'endurance', 'half_light'],
+            debuffs: ['composure', 'savoir_faire', 'hand_eye_coordination', 'conceptualization'],
+            difficultyMod: 2,
+            keywords: ['hurt', 'wounded', 'injured', 'bleeding', 'pain', 'wound', 'blood', 'broken', 'cut', 'bruised'],
+            ancientVoice: null
+        },
+        exhausted: {
+            id: 'exhausted',
+            name: 'Exhausted',
+            icon: '😴',
+            category: 'physical',
+            description: 'Tired, sleep-deprived, or physically drained',
+            boosts: ['volition', 'inland_empire'],
+            debuffs: ['reaction_speed', 'perception', 'logic', 'hand_eye_coordination', 'authority'],
+            difficultyMod: 2,
+            keywords: ['tired', 'exhausted', 'sleepy', 'drowsy', 'fatigued', 'weary', 'drained', 'yawn'],
+            ancientVoice: null
+        },
+        starving: {
+            id: 'starving',
+            name: 'Starving',
+            icon: '🍽️',
+            category: 'physical',
+            description: 'Hungry to the point of distraction',
+            boosts: ['electrochemistry', 'perception'],
+            debuffs: ['logic', 'composure', 'volition', 'authority'],
+            difficultyMod: 1,
+            keywords: ['hungry', 'starving', 'famished', 'stomach', 'food', 'eat', 'appetite'],
+            ancientVoice: 'ancient_reptilian_brain'
+        },
+        dying: {
+            id: 'dying',
+            name: 'Dying',
+            icon: '💀',
+            category: 'physical',
+            description: 'At death\'s door, body shutting down',
+            boosts: ['pain_threshold', 'inland_empire', 'shivers'],
+            debuffs: ['logic', 'rhetoric', 'authority', 'savoir_faire', 'interfacing'],
+            difficultyMod: 4,
+            keywords: ['dying', 'death', 'fading', 'last breath', 'heartbeat slowing', 'darkness closing'],
+            ancientVoice: 'ancient_reptilian_brain'
+        },
+
+        // Mental/Emotional States
+        paranoid: {
+            id: 'paranoid',
+            name: 'Paranoid',
+            icon: '👁️',
+            category: 'mental',
+            description: 'Suspicious, watching for threats everywhere',
+            boosts: ['half_light', 'perception', 'shivers', 'visual_calculus'],
+            debuffs: ['empathy', 'suggestion', 'esprit_de_corps', 'composure'],
+            difficultyMod: 1,
+            keywords: ['paranoid', 'suspicious', 'watching', 'followed', 'conspiracy', 'trust no one', 'they know'],
+            ancientVoice: null
+        },
+        aroused: {
+            id: 'aroused',
+            name: 'Aroused',
+            icon: '💋',
+            category: 'mental',
+            description: 'Distracted by desire or attraction',
+            boosts: ['electrochemistry', 'suggestion', 'empathy', 'drama'],
+            debuffs: ['logic', 'volition', 'composure', 'encyclopedia'],
+            difficultyMod: 2,
+            keywords: ['aroused', 'desire', 'attraction', 'lust', 'seductive', 'beautiful', 'handsome', 'wanting'],
+            ancientVoice: 'ancient_reptilian_brain'
+        },
+        enraged: {
+            id: 'enraged',
+            name: 'Enraged',
+            icon: '😤',
+            category: 'mental',
+            description: 'Consumed by anger, ready to explode',
+            boosts: ['authority', 'physical_instrument', 'half_light', 'endurance'],
+            debuffs: ['empathy', 'composure', 'logic', 'suggestion', 'drama'],
+            difficultyMod: 2,
+            keywords: ['angry', 'furious', 'rage', 'mad', 'pissed', 'livid', 'hate', 'kill'],
+            ancientVoice: 'limbic_system'
+        },
+        terrified: {
+            id: 'terrified',
+            name: 'Terrified',
+            icon: '😨',
+            category: 'mental',
+            description: 'Gripped by fear, fight-or-flight activated',
+            boosts: ['half_light', 'shivers', 'reaction_speed', 'perception', 'endurance'],
+            debuffs: ['authority', 'composure', 'rhetoric', 'suggestion', 'logic'],
+            difficultyMod: 2,
+            keywords: ['scared', 'afraid', 'terrified', 'fear', 'frightened', 'horror', 'panic', 'dread'],
+            ancientVoice: 'ancient_reptilian_brain'
+        },
+        confident: {
+            id: 'confident',
+            name: 'Confident',
+            icon: '😎',
+            category: 'mental',
+            description: 'Self-assured, ready to take on the world',
+            boosts: ['authority', 'savoir_faire', 'rhetoric', 'suggestion', 'drama'],
+            debuffs: ['inland_empire', 'empathy', 'perception'],
+            difficultyMod: -1, // easier!
+            keywords: ['confident', 'bold', 'assured', 'swagger', 'triumphant', 'victory', 'winning'],
+            ancientVoice: null
+        },
+        grieving: {
+            id: 'grieving',
+            name: 'Grieving',
+            icon: '😢',
+            category: 'mental',
+            description: 'Overwhelmed by loss and sorrow',
+            boosts: ['empathy', 'inland_empire', 'shivers', 'volition'],
+            debuffs: ['authority', 'electrochemistry', 'savoir_faire', 'rhetoric'],
+            difficultyMod: 2,
+            keywords: ['grief', 'loss', 'mourning', 'tears', 'crying', 'dead', 'gone forever', 'miss'],
+            ancientVoice: 'limbic_system'
+        },
+        manic: {
+            id: 'manic',
+            name: 'Manic',
+            icon: '⚡',
+            category: 'mental',
+            description: 'Hyperactive, racing thoughts, unstoppable energy',
+            boosts: ['electrochemistry', 'reaction_speed', 'conceptualization', 'inland_empire', 'savoir_faire'],
+            debuffs: ['composure', 'logic', 'volition', 'perception'],
+            difficultyMod: 1,
+            keywords: ['manic', 'hyper', 'racing', 'unstoppable', 'energy', 'brilliant', 'genius', 'faster'],
+            ancientVoice: 'limbic_system'
+        },
+        dissociated: {
+            id: 'dissociated',
+            name: 'Dissociated',
+            icon: '🌫️',
+            category: 'mental',
+            description: 'Detached from reality, watching from outside',
+            boosts: ['inland_empire', 'shivers', 'pain_threshold', 'conceptualization'],
+            debuffs: ['perception', 'reaction_speed', 'empathy', 'authority', 'hand_eye_coordination'],
+            difficultyMod: 2,
+            keywords: ['dissociate', 'unreal', 'floating', 'watching yourself', 'numb', 'detached', 'outside body'],
+            ancientVoice: null
+        }
+    };
+
+    // Track active statuses
+    let activeStatuses = new Set();
+
+    // ═══════════════════════════════════════════════════════════════
+    // STATUS EFFECT FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════
+
+    function toggleStatus(statusId) {
+        if (activeStatuses.has(statusId)) {
+            activeStatuses.delete(statusId);
+            console.log(`[Inland Empire] Status removed: ${statusId}`);
+        } else {
+            activeStatuses.add(statusId);
+            console.log(`[Inland Empire] Status added: ${statusId}`);
+        }
+        saveState(getSTContext());
+        renderStatusDisplay();
+    }
+
+    function getSkillModifier(skillId) {
+        let modifier = 0;
+        
+        for (const statusId of activeStatuses) {
+            const status = STATUS_EFFECTS[statusId];
+            if (!status) continue;
+            
+            if (status.boosts.includes(skillId)) {
+                modifier += 1; // boost
+            }
+            if (status.debuffs.includes(skillId)) {
+                modifier -= 1; // debuff
+            }
+        }
+        
+        return modifier;
+    }
+
+    function getDifficultyModifier() {
+        let modifier = 0;
+        
+        for (const statusId of activeStatuses) {
+            const status = STATUS_EFFECTS[statusId];
+            if (status) {
+                modifier += status.difficultyMod || 0;
+            }
+        }
+        
+        return modifier;
+    }
+
+    function getEffectiveSkillLevel(skillId) {
+        const baseLevel = getSkillLevel(skillId);
+        const modifier = getSkillModifier(skillId);
+        return Math.max(1, Math.min(10, baseLevel + modifier));
+    }
+
+    function getActiveAncientVoices() {
+        const ancientVoices = new Set();
+        
+        for (const statusId of activeStatuses) {
+            const status = STATUS_EFFECTS[statusId];
+            if (status && status.ancientVoice) {
+                ancientVoices.add(status.ancientVoice);
+            }
+        }
+        
+        return ancientVoices;
+    }
+
+    function detectStatusesFromText(text) {
+        const detected = [];
+        const lowerText = text.toLowerCase();
+        
+        for (const [statusId, status] of Object.entries(STATUS_EFFECTS)) {
+            for (const keyword of status.keywords) {
+                // Look for second-person references to avoid detecting NPC states
+                const patterns = [
+                    `you feel ${keyword}`,
+                    `you are ${keyword}`,
+                    `you're ${keyword}`,
+                    `your ${keyword}`,
+                    `you seem ${keyword}`,
+                    `you look ${keyword}`,
+                    `feeling ${keyword}`,
+                    `you ${keyword}`,
+                    keyword // fallback for obvious ones like "dying", "starving"
+                ];
+                
+                for (const pattern of patterns) {
+                    if (lowerText.includes(pattern)) {
+                        detected.push(statusId);
+                        break;
+                    }
+                }
+                if (detected.includes(statusId)) break;
+            }
+        }
+        
+        return [...new Set(detected)]; // dedupe
+    }
+
+    function renderStatusDisplay() {
+        const container = document.getElementById('ie-status-grid');
+        if (!container) return;
+
+        // Group by category
+        const physical = Object.values(STATUS_EFFECTS).filter(s => s.category === 'physical');
+        const mental = Object.values(STATUS_EFFECTS).filter(s => s.category === 'mental');
+
+        container.innerHTML = `
+            <div class="ie-status-category">
+                <div class="ie-status-category-label">Physical</div>
+                <div class="ie-status-buttons">
+                    ${physical.map(status => {
+                        const isActive = activeStatuses.has(status.id);
+                        return `
+                            <button class="ie-status-btn ${isActive ? 'ie-status-active' : ''}" 
+                                    data-status="${status.id}" title="${status.description}">
+                                <span class="ie-status-icon">${status.icon}</span>
+                                <span class="ie-status-name">${status.name}</span>
+                            </button>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+            <div class="ie-status-category">
+                <div class="ie-status-category-label">Mental</div>
+                <div class="ie-status-buttons">
+                    ${mental.map(status => {
+                        const isActive = activeStatuses.has(status.id);
+                        return `
+                            <button class="ie-status-btn ${isActive ? 'ie-status-active' : ''}" 
+                                    data-status="${status.id}" title="${status.description}">
+                                <span class="ie-status-icon">${status.icon}</span>
+                                <span class="ie-status-name">${status.name}</span>
+                            </button>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+
+        // Add click listeners
+        container.querySelectorAll('.ie-status-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                toggleStatus(btn.dataset.status);
+            });
+        });
+        
+        // Also update the active effects summary
+        updateActiveEffectsSummary();
+    }
+
+    function updateActiveEffectsSummary() {
+        const summary = document.getElementById('ie-active-effects-summary');
+        if (!summary) return;
+
+        if (activeStatuses.size === 0) {
+            summary.innerHTML = '<em>No active status effects</em>';
+            return;
+        }
+
+        const effects = [];
+        for (const statusId of activeStatuses) {
+            const status = STATUS_EFFECTS[statusId];
+            if (status) {
+                effects.push(`${status.icon} ${status.name}`);
+            }
+        }
+
+        // Show ancient voices that will trigger
+        const ancientVoices = getActiveAncientVoices();
+        if (ancientVoices.size > 0) {
+            const ancientNames = [...ancientVoices].map(id => ANCIENT_VOICES[id]?.name || id);
+            effects.push(`<span class="ie-ancient-warning">⚠️ ${ancientNames.join(', ')} may speak</span>`);
+        }
+
+        summary.innerHTML = effects.join(' • ');
+    }
+
+    // ═══════════════════════════════════════════════════════════════
     // DICE SYSTEM
     // ═══════════════════════════════════════════════════════════════
 
@@ -377,7 +752,8 @@
     function saveState(context) {
         const state = {
             settings: extensionSettings,
-            currentBuild
+            currentBuild,
+            activeStatuses: Array.from(activeStatuses)
         };
         try {
             if (context?.extensionSettings) {
@@ -408,6 +784,10 @@
                     currentBuild = state.currentBuild;
                 } else {
                     initializeDefaultBuild();
+                }
+                // Load active statuses
+                if (state.activeStatuses && Array.isArray(state.activeStatuses)) {
+                    activeStatuses = new Set(state.activeStatuses);
                 }
             } else {
                 initializeDefaultBuild();
@@ -448,6 +828,8 @@
         if (!skill) return { skillId, score: 0, reasons: [] };
 
         const skillLevel = getSkillLevel(skillId);
+        const statusModifier = getSkillModifier(skillId);
+        const effectiveLevel = getEffectiveSkillLevel(skillId);
         const reasons = [];
         let score = 0;
 
@@ -467,8 +849,16 @@
         if (attr === 'INTELLECT') score += context.mysteryLevel * 0.4;
         if (attr === 'MOTORICS') score += context.physicalPresence * 0.3;
 
-        // Skill level influence
-        score += skillLevel * 0.05;
+        // STATUS EFFECT BOOST - skills boosted by active statuses are more likely to speak!
+        if (statusModifier > 0) {
+            score += statusModifier * 0.25; // +25% relevance per boost level
+            reasons.push(`Status boost: +${statusModifier}`);
+        } else if (statusModifier < 0) {
+            score += statusModifier * 0.1; // slight reduction for debuffed skills
+        }
+
+        // Skill level influence (use effective level)
+        score += effectiveLevel * 0.05;
 
         // Random factor
         score += (Math.random() - 0.5) * 0.2;
@@ -486,6 +876,35 @@
     function selectSpeakingSkills(context, options = {}) {
         const { minVoices = 1, maxVoices = 4 } = options;
 
+        // First, check if any Ancient Voices should speak based on active statuses
+        const ancientVoicesToSpeak = [];
+        const activeAncient = getActiveAncientVoices();
+        
+        for (const ancientId of activeAncient) {
+            const ancient = ANCIENT_VOICES[ancientId];
+            if (ancient) {
+                // Ancient voices also check their trigger conditions against the message
+                const keywordMatch = ancient.triggerConditions.some(kw => 
+                    context.message.toLowerCase().includes(kw.toLowerCase())
+                );
+                
+                // Higher chance to speak if keywords match, but always possible when status is active
+                const speakChance = keywordMatch ? 0.8 : 0.4;
+                if (Math.random() < speakChance) {
+                    ancientVoicesToSpeak.push({
+                        skillId: ancient.id,
+                        skillName: ancient.name,
+                        score: 1.0, // Ancient voices are always highly relevant when triggered
+                        reasons: ['Ancient voice awakened by status'],
+                        skillLevel: 6, // Fixed level for ancient voices
+                        attribute: 'PRIMAL',
+                        isAncient: true
+                    });
+                }
+            }
+        }
+
+        // Now select regular skills
         const allRelevance = Object.keys(SKILLS)
             .map(id => calculateSkillRelevance(id, context))
             .filter(r => r.score >= 0.3)
@@ -494,19 +913,21 @@
         const intensity = Math.max(context.emotionalIntensity, context.dangerLevel, context.socialComplexity);
         const targetVoices = Math.round(minVoices + (maxVoices - minVoices) * intensity);
 
-        const selected = [];
+        const selected = [...ancientVoicesToSpeak]; // Start with ancient voices
+        
         for (const relevance of allRelevance) {
-            if (selected.length >= targetVoices) break;
+            if (selected.length >= targetVoices + ancientVoicesToSpeak.length) break;
             const speakProbability = relevance.score * 0.8 + 0.2;
             if (Math.random() < speakProbability) {
                 selected.push(relevance);
             }
         }
 
-        // Ensure minimum
-        if (selected.length < minVoices && allRelevance.length > 0) {
+        // Ensure minimum (not counting ancient voices)
+        const regularCount = selected.filter(s => !s.isAncient).length;
+        if (regularCount < minVoices && allRelevance.length > 0) {
             for (const rel of allRelevance) {
-                if (selected.length >= minVoices) break;
+                if (selected.filter(s => !s.isAncient).length >= minVoices) break;
                 if (!selected.find(s => s.skillId === rel.skillId)) {
                     selected.push(rel);
                 }
@@ -533,20 +954,39 @@
     // VOICE GENERATION
     // ═══════════════════════════════════════════════════════════════
 
-    async function generateVoice(skillId, context, checkResult) {
-        const skill = SKILLS[skillId];
+    async function generateVoice(skillId, context, checkResult, isAncient = false) {
+        // Handle both regular skills and ancient voices
+        const skill = isAncient ? ANCIENT_VOICES[skillId] : SKILLS[skillId];
         if (!skill) return null;
 
-        const skillLevel = getSkillLevel(skillId);
+        const skillLevel = isAncient ? 6 : getEffectiveSkillLevel(skillId);
+        const statusModifier = isAncient ? 0 : getSkillModifier(skillId);
 
-        const systemPrompt = `${skill.personality}
+        // Build status context for the voice
+        let statusContext = '';
+        if (activeStatuses.size > 0) {
+            const activeStatusNames = [...activeStatuses].map(id => STATUS_EFFECTS[id]?.name).filter(Boolean);
+            statusContext = `\nThe player is currently: ${activeStatusNames.join(', ')}.`;
+        }
+
+        let systemPrompt;
+        
+        if (isAncient) {
+            // Ancient voices have a more primal prompt
+            systemPrompt = `${skill.personality}
+
+You are speaking from the deepest, oldest part of the mind. Be brief - short sentences, fragments even. Raw. Primal.${statusContext}
+Respond ONLY with your voice. No quotation marks.`;
+        } else {
+            systemPrompt = `${skill.personality}
 
 You are an internal voice in someone's mind during roleplay. Be brief (1-3 sentences). Write in second person.
-Current skill level: ${skillLevel}/10
+Current skill level: ${skillLevel}/10${statusModifier !== 0 ? ` (${statusModifier > 0 ? '+' : ''}${statusModifier} from status)` : ''}${statusContext}
 ${checkResult ? (checkResult.success ?
                 (checkResult.isBoxcars ? 'CRITICAL SUCCESS - Be brilliant and profound.' : 'You passed. Notice something relevant.') :
                 (checkResult.isSnakeEyes ? 'CRITICAL FAILURE - Be hilariously wrong.' : 'You failed. Be less insightful or slightly off.')) : ''}
 Respond ONLY with your commentary.`;
+        }
 
         const userPrompt = `Scene: "${context.message.substring(0, 500)}"
 Respond as ${skill.signature}.`;
@@ -560,6 +1000,7 @@ Respond as ${skill.signature}.`;
                 color: skill.color,
                 content: response.trim(),
                 checkResult,
+                isAncient,
                 success: true,
                 timestamp: Date.now()
             };
@@ -572,6 +1013,7 @@ Respond as ${skill.signature}.`;
                 color: skill.color,
                 content: '*static*',
                 checkResult,
+                isAncient,
                 success: false,
                 error: error.message,
                 timestamp: Date.now()
@@ -642,14 +1084,19 @@ Respond as ${skill.signature}.`;
         const results = [];
 
         for (const selected of selectedSkills) {
-            const checkDecision = determineCheckDifficulty(selected, context);
             let checkResult = null;
-
-            if (checkDecision.shouldCheck) {
-                checkResult = rollSkillCheck(selected.skillLevel, checkDecision.difficulty);
+            
+            // Ancient voices don't do skill checks - they just speak
+            if (!selected.isAncient) {
+                const checkDecision = determineCheckDifficulty(selected, context);
+                if (checkDecision.shouldCheck) {
+                    // Use effective skill level for the check
+                    const effectiveLevel = getEffectiveSkillLevel(selected.skillId);
+                    checkResult = rollSkillCheck(effectiveLevel, checkDecision.difficulty);
+                }
             }
 
-            const voice = await generateVoice(selected.skillId, context, checkResult);
+            const voice = await generateVoice(selected.skillId, context, checkResult, selected.isAncient);
             if (voice) results.push(voice);
         }
 
@@ -681,6 +1128,10 @@ Respond as ${skill.signature}.`;
                 <button class="ie-tab ie-tab-active" data-tab="skills">
                     <i class="fa-solid fa-chart-bar"></i>
                     <span>Skills</span>
+                </button>
+                <button class="ie-tab" data-tab="status">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                    <span>Status</span>
                 </button>
                 <button class="ie-tab" data-tab="settings">
                     <i class="fa-solid fa-gear"></i>
@@ -719,6 +1170,41 @@ Respond as ${skill.signature}.`;
                             <i class="fa-solid fa-bolt"></i>
                             <span>Consult Inner Voices</span>
                         </button>
+                    </div>
+                </div>
+
+                <!-- STATUS TAB -->
+                <div class="ie-tab-content" data-tab-content="status">
+                    <div class="ie-section">
+                        <div class="ie-section-header">
+                            <span>Active Effects</span>
+                        </div>
+                        <div class="ie-active-effects-summary" id="ie-active-effects-summary">
+                            <em>No active status effects</em>
+                        </div>
+                    </div>
+                    <div class="ie-section">
+                        <div class="ie-section-header">
+                            <span>Toggle Status Effects</span>
+                        </div>
+                        <div class="ie-status-grid" id="ie-status-grid"></div>
+                    </div>
+                    <div class="ie-section">
+                        <div class="ie-section-header">
+                            <span>Ancient Voices</span>
+                        </div>
+                        <div class="ie-ancient-voices-info">
+                            <div class="ie-ancient-voice-item">
+                                <span class="ie-ancient-icon">🦎</span>
+                                <span class="ie-ancient-name">Ancient Reptilian Brain</span>
+                                <span class="ie-ancient-triggers">Triggers: Dying, Starving, Terrified, Aroused</span>
+                            </div>
+                            <div class="ie-ancient-voice-item">
+                                <span class="ie-ancient-icon">❤️‍🔥</span>
+                                <span class="ie-ancient-name">Limbic System</span>
+                                <span class="ie-ancient-triggers">Triggers: Enraged, Grieving, Manic</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -851,6 +1337,11 @@ Respond as ${skill.signature}.`;
         // If switching to settings, populate settings
         if (tabName === 'settings') {
             populateSettings();
+        }
+        
+        // If switching to status, render status display
+        if (tabName === 'status') {
+            renderStatusDisplay();
         }
     }
 
@@ -1077,11 +1568,14 @@ Respond as ${skill.signature}.`;
 
         voices.forEach(voice => {
             const voiceBlock = document.createElement('div');
-            voiceBlock.className = 'ie-chat-voice-block';
+            voiceBlock.className = voice.isAncient ? 'ie-chat-voice-block ie-ancient-voice' : 'ie-chat-voice-block';
             voiceBlock.style.borderLeftColor = voice.color;
 
             let checkBadge = '';
-            if (extensionSettings.showDiceRolls && voice.checkResult) {
+            if (voice.isAncient) {
+                // Ancient voices don't show checks, they just speak
+                checkBadge = `<span class="ie-check-badge ie-check-ancient">[Primal]</span>`;
+            } else if (extensionSettings.showDiceRolls && voice.checkResult) {
                 const resultClass = voice.checkResult.success ? 'ie-check-success' : 'ie-check-failure';
                 checkBadge = `<span class="ie-check-badge ${resultClass}">[${voice.checkResult.difficultyName}: ${voice.checkResult.success ? 'Success' : 'Failure'}]</span>`;
             } else if (!voice.checkResult) {

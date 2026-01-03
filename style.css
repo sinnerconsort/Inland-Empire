@@ -738,6 +738,12 @@
     color: var(--ie-accent, #9d8df1);
 }
 
+.ie-check-ancient {
+    background: rgba(47, 79, 79, 0.4);
+    color: #8FBC8F;
+    font-weight: 600;
+}
+
 .ie-check-success {
     background: rgba(144, 238, 144, 0.2);
     color: var(--ie-success, #90EE90);
@@ -767,5 +773,155 @@
     
     .ie-voice-text {
         font-size: 12px;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   STATUS EFFECTS UI
+   ═══════════════════════════════════════════════════════════════ */
+
+.ie-active-effects-summary {
+    padding: 10px;
+    background: var(--ie-bg-light);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--ie-text-secondary);
+    text-align: center;
+}
+
+.ie-ancient-warning {
+    color: var(--ie-failure);
+    font-weight: 600;
+}
+
+.ie-status-category {
+    margin-bottom: 12px;
+}
+
+.ie-status-category-label {
+    font-size: 11px;
+    color: var(--ie-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    padding-left: 2px;
+}
+
+.ie-status-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+}
+
+.ie-status-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 4px;
+    background: var(--ie-bg-light);
+    border: 1px solid var(--ie-border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 52px;
+}
+
+.ie-status-btn:hover {
+    background: var(--ie-bg-medium);
+    border-color: var(--ie-accent);
+}
+
+.ie-status-btn.ie-status-active {
+    background: var(--ie-accent);
+    border-color: var(--ie-accent);
+}
+
+.ie-status-btn.ie-status-active .ie-status-name {
+    color: var(--ie-bg-dark);
+}
+
+.ie-status-btn.ie-status-active .ie-status-icon {
+    transform: scale(1.1);
+}
+
+.ie-status-icon {
+    font-size: 18px;
+    margin-bottom: 2px;
+    transition: transform 0.2s ease;
+}
+
+.ie-status-name {
+    font-size: 9px;
+    color: var(--ie-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    text-align: center;
+}
+
+/* Ancient Voices Info */
+.ie-ancient-voices-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ie-ancient-voice-item {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    background: var(--ie-bg-light);
+    border-radius: 6px;
+    border-left: 3px solid #2F4F4F;
+}
+
+.ie-ancient-voice-item:last-child {
+    border-left-color: #800000;
+}
+
+.ie-ancient-icon {
+    font-size: 16px;
+    margin-bottom: 4px;
+}
+
+.ie-ancient-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ie-text-primary);
+    margin-bottom: 2px;
+}
+
+.ie-ancient-triggers {
+    font-size: 10px;
+    color: var(--ie-text-muted);
+}
+
+/* Chat injected ancient voice special styling */
+.ie-chat-voice-block.ie-ancient-voice {
+    background: linear-gradient(135deg, rgba(47, 79, 79, 0.9) 0%, rgba(26, 26, 46, 0.9) 100%);
+    border-left-width: 4px;
+}
+
+.ie-chat-voice-block.ie-ancient-voice .ie-voice-text {
+    font-weight: 500;
+}
+
+/* Mobile responsive for status */
+@media (max-width: 768px) {
+    .ie-status-buttons {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .ie-status-btn {
+        padding: 6px 2px;
+        min-height: 48px;
+    }
+    
+    .ie-status-icon {
+        font-size: 16px;
+    }
+    
+    .ie-status-name {
+        font-size: 8px;
     }
 }
