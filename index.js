@@ -1393,6 +1393,7 @@ Respond as ${skill.signature}.`;
         fab.className = 'ie-fab';
         fab.title = 'Toggle Psyche Panel';
         fab.innerHTML = `<i class="fa-solid fa-brain"></i>`;
+        fab.style.display = 'flex'; // Explicitly show
         return fab;
     }
 
