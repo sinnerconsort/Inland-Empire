@@ -46,7 +46,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    z-index: 500; /* Lowered so ST panels appear above */
+    z-index: 99998; /* Restored to original */
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
     transition: all 0.3s ease;
 }
@@ -90,7 +90,7 @@
     border: 1px solid var(--ie-border-color, #3a3a5a);
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-    z-index: 800; /* Lowered so ST panels appear above */
+    z-index: 99999; /* Restored to original */
     display: flex;
     flex-direction: column;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
