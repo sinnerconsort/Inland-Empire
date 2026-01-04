@@ -485,7 +485,8 @@
 .ie-form-group input[type="text"],
 .ie-form-group input[type="password"],
 .ie-form-group input[type="number"],
-.ie-form-group select {
+.ie-form-group select,
+.ie-form-group textarea {
     width: 100%;
     padding: 8px 10px;
     background: var(--ie-bg-dark, #1a1a2e);
@@ -496,8 +497,16 @@
     box-sizing: border-box;
 }
 
+.ie-form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+    line-height: 1.4;
+}
+
 .ie-form-group input:focus,
-.ie-form-group select:focus {
+.ie-form-group select:focus,
+.ie-form-group textarea:focus {
     outline: none;
     border-color: var(--ie-accent, #9d8df1);
 }

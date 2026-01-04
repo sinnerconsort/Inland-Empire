@@ -690,6 +690,7 @@
         povStyle: 'second', // 'second' (you), 'third' (they/name), 'first' (I)
         characterName: '', // Player character name for third-person
         characterPronouns: 'they', // they/he/she for third-person
+        characterContext: '', // Custom context about who the player is and who they're observing
         autoDetectStatus: true
     };
 
@@ -978,6 +979,7 @@
         const povStyle = extensionSettings.povStyle || 'second';
         const charName = extensionSettings.characterName || '';
         const pronouns = extensionSettings.characterPronouns || 'they';
+        const characterContext = extensionSettings.characterContext || '';
         
         let povInstruction;
         let subjectRef;
@@ -996,6 +998,16 @@
                 break;
         }
 
+        // Build character context section if provided
+        let characterContextSection = '';
+        if (characterContext.trim()) {
+            characterContextSection = `
+IMPORTANT CONTEXT - WHOSE VOICE YOU ARE:
+${characterContext}
+You are THIS character's internal voice, commenting on what THEY observe. Do NOT write from any NPC's perspective.
+`;
+        }
+
         let systemPrompt;
         
         if (isAncient) {
@@ -1009,13 +1021,13 @@
             systemPrompt = `${skill.personality}
 
 You are speaking from the deepest, oldest part of the mind. Be brief - short sentences, fragments even. Raw. Primal.
-${ancientPov}${statusContext}
+${ancientPov}${characterContextSection}${statusContext}
 Respond ONLY with your voice. No quotation marks.`;
         } else {
             systemPrompt = `${skill.personality}
 
 You are an internal voice/skill in someone's mind during a roleplay scene. Be brief (1-3 sentences).
-
+${characterContextSection}
 CRITICAL - POV RULES: ${povInstruction}
 
 Current skill level: ${skillLevel}/10${statusModifier !== 0 ? ` (${statusModifier > 0 ? '+' : ''}${statusModifier} from status)` : ''}${statusContext}
@@ -1334,6 +1346,11 @@ Respond as ${skill.signature}.`;
                                 <option value="it">It/Its</option>
                             </select>
                         </div>
+                        <div class="ie-form-group">
+                            <label for="ie-character-context">Character Context</label>
+                            <textarea id="ie-character-context" rows="4" placeholder="Example: I am a recovering addict meeting Danny Johnson for the first time. Danny is an NPC - a charming but dangerous stranger. These voices are MY internal thoughts about what I observe."></textarea>
+                            <small class="ie-hint">Tell the voices WHO you are and WHO you're observing. This helps them comment from YOUR perspective.</small>
+                        </div>
                         <button class="ie-btn ie-btn-primary ie-btn-save-settings" style="width: 100%; margin-top: 10px;">
                             <i class="fa-solid fa-save"></i>
                             <span>Save Settings</span>
@@ -1501,6 +1518,10 @@ Respond as ${skill.signature}.`;
         if (charName) charName.value = extensionSettings.characterName || '';
         if (charPronouns) charPronouns.value = extensionSettings.characterPronouns || 'they';
         
+        // Character context textarea
+        const charContext = document.getElementById('ie-character-context');
+        if (charContext) charContext.value = extensionSettings.characterContext || '';
+        
         // Show/hide third-person options based on POV style
         updateThirdPersonVisibility();
     }
@@ -1527,6 +1548,7 @@ Respond as ${skill.signature}.`;
         extensionSettings.povStyle = document.getElementById('ie-pov-style')?.value || 'second';
         extensionSettings.characterName = document.getElementById('ie-character-name')?.value || '';
         extensionSettings.characterPronouns = document.getElementById('ie-character-pronouns')?.value || 'they';
+        extensionSettings.characterContext = document.getElementById('ie-character-context')?.value || '';
 
         saveState(getSTContext());
         
