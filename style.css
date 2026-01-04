@@ -502,6 +502,17 @@
     border-color: var(--ie-accent, #9d8df1);
 }
 
+.ie-form-group .ie-hint {
+    display: block;
+    font-size: 10px;
+    color: var(--ie-text-muted);
+    margin-top: 4px;
+}
+
+.ie-third-person-options {
+    display: none;
+}
+
 .ie-form-row {
     display: flex;
     gap: 10px;

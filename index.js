@@ -685,7 +685,12 @@
         apiKey: '',
         model: 'glm-4-plus',
         maxTokens: 300,
-        temperature: 0.9
+        temperature: 0.9,
+        // POV and character context
+        povStyle: 'second', // 'second' (you), 'third' (they/name), 'first' (I)
+        characterName: '', // Player character name for third-person
+        characterPronouns: 'they', // they/he/she for third-person
+        autoDetectStatus: true
     };
 
     const DEFAULT_ATTRIBUTE_POINTS = {
@@ -966,26 +971,59 @@
         let statusContext = '';
         if (activeStatuses.size > 0) {
             const activeStatusNames = [...activeStatuses].map(id => STATUS_EFFECTS[id]?.name).filter(Boolean);
-            statusContext = `\nThe player is currently: ${activeStatusNames.join(', ')}.`;
+            statusContext = `\nCurrent state: ${activeStatusNames.join(', ')}.`;
+        }
+
+        // Build POV instruction based on settings
+        const povStyle = extensionSettings.povStyle || 'second';
+        const charName = extensionSettings.characterName || '';
+        const pronouns = extensionSettings.characterPronouns || 'they';
+        
+        let povInstruction;
+        let subjectRef;
+        
+        switch (povStyle) {
+            case 'third':
+                subjectRef = charName || 'the character';
+                povInstruction = `Write in THIRD PERSON about ${subjectRef}. Use "${charName || pronouns}" and "${pronouns}/them" - NEVER "you" or "your". Example: "${charName || 'They'} should be careful here" NOT "You should be careful."`;
+                break;
+            case 'first':
+                povInstruction = `Write in FIRST PERSON as if you ARE the character's inner voice speaking to themselves. Use "I", "me", "my" - NEVER "you". Example: "I notice something wrong" NOT "You notice something."`;
+                break;
+            case 'second':
+            default:
+                povInstruction = `Write in SECOND PERSON addressing the character. Use "you" and "your". Example: "You notice something off about this."`;
+                break;
         }
 
         let systemPrompt;
         
         if (isAncient) {
-            // Ancient voices have a more primal prompt
+            // Ancient voices have a more primal prompt - POV adapted
+            const ancientPov = povStyle === 'third' 
+                ? `Refer to ${charName || 'the host'} in third person.`
+                : povStyle === 'first' 
+                    ? `Speak as primal urges in first person fragments.`
+                    : `Address the host as "you".`;
+            
             systemPrompt = `${skill.personality}
 
-You are speaking from the deepest, oldest part of the mind. Be brief - short sentences, fragments even. Raw. Primal.${statusContext}
+You are speaking from the deepest, oldest part of the mind. Be brief - short sentences, fragments even. Raw. Primal.
+${ancientPov}${statusContext}
 Respond ONLY with your voice. No quotation marks.`;
         } else {
             systemPrompt = `${skill.personality}
 
-You are an internal voice in someone's mind during roleplay. Be brief (1-3 sentences). Write in second person.
+You are an internal voice/skill in someone's mind during a roleplay scene. Be brief (1-3 sentences).
+
+CRITICAL - POV RULES: ${povInstruction}
+
 Current skill level: ${skillLevel}/10${statusModifier !== 0 ? ` (${statusModifier > 0 ? '+' : ''}${statusModifier} from status)` : ''}${statusContext}
 ${checkResult ? (checkResult.success ?
-                (checkResult.isBoxcars ? 'CRITICAL SUCCESS - Be brilliant and profound.' : 'You passed. Notice something relevant.') :
-                (checkResult.isSnakeEyes ? 'CRITICAL FAILURE - Be hilariously wrong.' : 'You failed. Be less insightful or slightly off.')) : ''}
-Respond ONLY with your commentary.`;
+                (checkResult.isBoxcars ? 'CRITICAL SUCCESS - Be brilliant and profound.' : 'Check passed. Notice something relevant.') :
+                (checkResult.isSnakeEyes ? 'CRITICAL FAILURE - Be hilariously wrong or misguided.' : 'Check failed. Be less insightful or slightly off.')) : ''}
+
+Respond ONLY with your commentary. No meta-text, no quotation marks around your response.`;
         }
 
         const userPrompt = `Scene: "${context.message.substring(0, 500)}"
@@ -1263,6 +1301,39 @@ Respond as ${skill.signature}.`;
                                 <span>Show failed skill checks</span>
                             </label>
                         </div>
+                        <div class="ie-form-group">
+                            <label class="ie-checkbox">
+                                <input type="checkbox" id="ie-auto-detect-status" checked />
+                                <span>Auto-detect status from narrative</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="ie-section">
+                        <div class="ie-section-header">
+                            <span>POV & Character</span>
+                        </div>
+                        <div class="ie-form-group">
+                            <label for="ie-pov-style">Voice POV Style</label>
+                            <select id="ie-pov-style">
+                                <option value="second">Second Person (you/your)</option>
+                                <option value="third">Third Person (name/they)</option>
+                                <option value="first">First Person (I/me)</option>
+                            </select>
+                        </div>
+                        <div class="ie-form-group ie-third-person-options">
+                            <label for="ie-character-name">Character Name</label>
+                            <input type="text" id="ie-character-name" placeholder="e.g. Somnolence" />
+                            <small class="ie-hint">Used for third-person references</small>
+                        </div>
+                        <div class="ie-form-group ie-third-person-options">
+                            <label for="ie-character-pronouns">Pronouns</label>
+                            <select id="ie-character-pronouns">
+                                <option value="they">They/Them</option>
+                                <option value="he">He/Him</option>
+                                <option value="she">She/Her</option>
+                                <option value="it">It/Its</option>
+                            </select>
+                        </div>
                         <button class="ie-btn ie-btn-primary ie-btn-save-settings" style="width: 100%; margin-top: 10px;">
                             <i class="fa-solid fa-save"></i>
                             <span>Save Settings</span>
@@ -1411,6 +1482,10 @@ Respond as ${skill.signature}.`;
         const maxVoices = document.getElementById('ie-max-voices');
         const showDice = document.getElementById('ie-show-dice-rolls');
         const showFailed = document.getElementById('ie-show-failed-checks');
+        const autoDetectStatus = document.getElementById('ie-auto-detect-status');
+        const povStyle = document.getElementById('ie-pov-style');
+        const charName = document.getElementById('ie-character-name');
+        const charPronouns = document.getElementById('ie-character-pronouns');
 
         if (endpoint) endpoint.value = extensionSettings.apiEndpoint || '';
         if (apiKey) apiKey.value = extensionSettings.apiKey || '';
@@ -1421,6 +1496,21 @@ Respond as ${skill.signature}.`;
         if (maxVoices) maxVoices.value = extensionSettings.maxVoices || extensionSettings.voicesPerMessage?.max || 4;
         if (showDice) showDice.checked = extensionSettings.showDiceRolls !== false;
         if (showFailed) showFailed.checked = extensionSettings.showFailedChecks !== false;
+        if (autoDetectStatus) autoDetectStatus.checked = extensionSettings.autoDetectStatus !== false;
+        if (povStyle) povStyle.value = extensionSettings.povStyle || 'second';
+        if (charName) charName.value = extensionSettings.characterName || '';
+        if (charPronouns) charPronouns.value = extensionSettings.characterPronouns || 'they';
+        
+        // Show/hide third-person options based on POV style
+        updateThirdPersonVisibility();
+    }
+    
+    function updateThirdPersonVisibility() {
+        const povStyle = document.getElementById('ie-pov-style')?.value;
+        const thirdPersonOptions = document.querySelectorAll('.ie-third-person-options');
+        thirdPersonOptions.forEach(el => {
+            el.style.display = povStyle === 'third' ? 'block' : 'none';
+        });
     }
 
     function saveSettings() {
@@ -1433,6 +1523,10 @@ Respond as ${skill.signature}.`;
         extensionSettings.maxVoices = parseInt(document.getElementById('ie-max-voices')?.value) || 4;
         extensionSettings.showDiceRolls = document.getElementById('ie-show-dice-rolls')?.checked !== false;
         extensionSettings.showFailedChecks = document.getElementById('ie-show-failed-checks')?.checked !== false;
+        extensionSettings.autoDetectStatus = document.getElementById('ie-auto-detect-status')?.checked !== false;
+        extensionSettings.povStyle = document.getElementById('ie-pov-style')?.value || 'second';
+        extensionSettings.characterName = document.getElementById('ie-character-name')?.value || '';
+        extensionSettings.characterPronouns = document.getElementById('ie-character-pronouns')?.value || 'they';
 
         saveState(getSTContext());
         
@@ -1618,6 +1712,25 @@ Respond as ${skill.signature}.`;
         await new Promise(resolve => setTimeout(resolve, 200));
 
         try {
+            // Auto-detect status effects from narrative
+            if (extensionSettings.autoDetectStatus !== false) {
+                const detectedStatuses = detectStatusesFromText(messageContent);
+                if (detectedStatuses.length > 0) {
+                    console.log('[Inland Empire] Auto-detected statuses:', detectedStatuses);
+                    let newStatusAdded = false;
+                    detectedStatuses.forEach(statusId => {
+                        if (!activeStatuses.has(statusId)) {
+                            activeStatuses.add(statusId);
+                            newStatusAdded = true;
+                        }
+                    });
+                    if (newStatusAdded) {
+                        saveState(getSTContext());
+                        renderStatusDisplay();
+                    }
+                }
+            }
+
             const context = analyzeContext(messageContent);
             const selectedSkills = selectSpeakingSkills(context, {
                 minVoices: extensionSettings.voicesPerMessage?.min || extensionSettings.minVoices || 1,
@@ -1693,11 +1806,16 @@ Respond as ${skill.signature}.`;
             }
         });
 
-        // Save settings button (in settings tab)
-        document.querySelector('.ie-btn-save-settings')?.addEventListener('click', saveSettings);
+        // Save settings buttons (there may be multiple)
+        document.querySelectorAll('.ie-btn-save-settings').forEach(btn => {
+            btn.addEventListener('click', saveSettings);
+        });
 
         // Apply build button (in build tab)
         document.querySelector('.ie-btn-apply-build')?.addEventListener('click', applyBuild);
+        
+        // POV style dropdown - show/hide third-person options
+        document.getElementById('ie-pov-style')?.addEventListener('change', updateThirdPersonVisibility);
     }
 
     // ═══════════════════════════════════════════════════════════════
