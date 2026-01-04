@@ -1043,15 +1043,22 @@ Respond as ${skill.signature}.`;
 
         try {
             const response = await callAPI(systemPrompt, userPrompt);
+            const content = response.trim();
+            
+            // Handle empty responses with a fallback
+            const fallbackContent = isAncient 
+                ? '*...silence from the depths...*'
+                : '*the voice hesitates, uncertain...*';
+            
             return {
                 skillId,
                 skillName: skill.name,
                 signature: skill.signature,
                 color: skill.color,
-                content: response.trim(),
+                content: content || fallbackContent,
                 checkResult,
                 isAncient,
-                success: true,
+                success: !!content, // Mark as unsuccessful if empty
                 timestamp: Date.now()
             };
         } catch (error) {
