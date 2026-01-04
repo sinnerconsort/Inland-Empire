@@ -691,7 +691,10 @@
         characterName: '', // Player character name for third-person
         characterPronouns: 'they', // they/he/she for third-person
         characterContext: '', // Custom context about who the player is and who they're observing
-        autoDetectStatus: true
+        autoDetectStatus: true,
+        // FAB position
+        fabPositionTop: 140, // pixels from top
+        fabPositionLeft: 10 // pixels from left
     };
 
     const DEFAULT_ATTRIBUTE_POINTS = {
@@ -1355,13 +1358,18 @@ Respond as ${skill.signature}.`;
                         </div>
                         <div class="ie-form-group">
                             <label for="ie-character-context">Character Context</label>
-                            <textarea id="ie-character-context" rows="4" placeholder="Example: I am a recovering addict meeting Danny Johnson for the first time. Danny is an NPC - a charming but dangerous stranger. These voices are MY internal thoughts about what I observe."></textarea>
+                            <textarea id="ie-character-context" rows="4" placeholder="Example: I am {{user}}, meeting {{char}} for the first time. {{char}} is an NPC I'm observing. These voices are MY internal thoughts about what I see."></textarea>
                             <small class="ie-hint">Tell the voices WHO you are and WHO you're observing. This helps them comment from YOUR perspective.</small>
                         </div>
                         <button class="ie-btn ie-btn-primary ie-btn-save-settings" style="width: 100%; margin-top: 10px;">
                             <i class="fa-solid fa-save"></i>
                             <span>Save Settings</span>
                         </button>
+                        <button class="ie-btn ie-btn-reset-fab" style="width: 100%; margin-top: 8px;">
+                            <i class="fa-solid fa-arrows-to-dot"></i>
+                            <span>Reset Icon Position</span>
+                        </button>
+                        <small class="ie-hint" style="text-align: center; display: block; margin-top: 4px;">Tip: You can drag the brain icon to reposition it!</small>
                     </div>
                 </div>
 
@@ -1391,9 +1399,89 @@ Respond as ${skill.signature}.`;
         const fab = document.createElement('div');
         fab.id = 'inland-empire-fab';
         fab.className = 'ie-fab';
-        fab.title = 'Toggle Psyche Panel';
+        fab.title = 'Toggle Psyche Panel (drag to reposition)';
         fab.innerHTML = `<i class="fa-solid fa-brain"></i>`;
         fab.style.display = 'flex'; // Explicitly show
+        
+        // Apply saved position
+        const top = extensionSettings.fabPositionTop ?? 140;
+        const left = extensionSettings.fabPositionLeft ?? 10;
+        fab.style.top = `${top}px`;
+        fab.style.left = `${left}px`;
+        
+        // Make draggable
+        let isDragging = false;
+        let dragStartX, dragStartY, fabStartX, fabStartY;
+        let hasMoved = false;
+        
+        fab.addEventListener('mousedown', startDrag);
+        fab.addEventListener('touchstart', startDrag, { passive: false });
+        
+        function startDrag(e) {
+            isDragging = true;
+            hasMoved = false;
+            
+            const touch = e.touches ? e.touches[0] : e;
+            dragStartX = touch.clientX;
+            dragStartY = touch.clientY;
+            fabStartX = fab.offsetLeft;
+            fabStartY = fab.offsetTop;
+            
+            fab.style.transition = 'none';
+            fab.style.cursor = 'grabbing';
+            
+            document.addEventListener('mousemove', doDrag);
+            document.addEventListener('touchmove', doDrag, { passive: false });
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
+        }
+        
+        function doDrag(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            
+            const touch = e.touches ? e.touches[0] : e;
+            const deltaX = touch.clientX - dragStartX;
+            const deltaY = touch.clientY - dragStartY;
+            
+            // Check if actually moved (threshold to distinguish from click)
+            if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+                hasMoved = true;
+            }
+            
+            let newLeft = fabStartX + deltaX;
+            let newTop = fabStartY + deltaY;
+            
+            // Constrain to viewport
+            newLeft = Math.max(0, Math.min(window.innerWidth - fab.offsetWidth, newLeft));
+            newTop = Math.max(0, Math.min(window.innerHeight - fab.offsetHeight, newTop));
+            
+            fab.style.left = `${newLeft}px`;
+            fab.style.top = `${newTop}px`;
+        }
+        
+        function endDrag() {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            fab.style.transition = 'all 0.3s ease';
+            fab.style.cursor = 'pointer';
+            
+            document.removeEventListener('mousemove', doDrag);
+            document.removeEventListener('touchmove', doDrag);
+            document.removeEventListener('mouseup', endDrag);
+            document.removeEventListener('touchend', endDrag);
+            
+            // Save position if moved
+            if (hasMoved) {
+                fab.dataset.justDragged = 'true'; // Prevent click from triggering
+                extensionSettings.fabPositionTop = fab.offsetTop;
+                extensionSettings.fabPositionLeft = fab.offsetLeft;
+                saveState(getSTContext());
+                console.log('[Inland Empire] FAB position saved:', fab.offsetTop, fab.offsetLeft);
+            }
+        }
+        
         return fab;
     }
 
@@ -1812,8 +1900,18 @@ Respond as ${skill.signature}.`;
     // ═══════════════════════════════════════════════════════════════
 
     function setupEventListeners() {
-        // FAB toggle
-        document.getElementById('inland-empire-fab')?.addEventListener('click', togglePanel);
+        // FAB toggle - only if not dragging
+        const fab = document.getElementById('inland-empire-fab');
+        if (fab) {
+            fab.addEventListener('click', (e) => {
+                // Check if we just finished dragging (hasMoved flag set by drag handler)
+                if (fab.dataset.justDragged === 'true') {
+                    fab.dataset.justDragged = 'false';
+                    return;
+                }
+                togglePanel();
+            });
+        }
 
         // Close panel button
         document.querySelector('.ie-btn-close-panel')?.addEventListener('click', togglePanel);
@@ -1846,6 +1944,19 @@ Respond as ${skill.signature}.`;
         
         // POV style dropdown - show/hide third-person options
         document.getElementById('ie-pov-style')?.addEventListener('change', updateThirdPersonVisibility);
+        
+        // Reset FAB position button
+        document.querySelector('.ie-btn-reset-fab')?.addEventListener('click', () => {
+            const fab = document.getElementById('inland-empire-fab');
+            if (fab) {
+                extensionSettings.fabPositionTop = 140;
+                extensionSettings.fabPositionLeft = 10;
+                fab.style.top = '140px';
+                fab.style.left = '10px';
+                saveState(getSTContext());
+                console.log('[Inland Empire] FAB position reset to default');
+            }
+        });
     }
 
     // ═══════════════════════════════════════════════════════════════
