@@ -132,7 +132,7 @@ Each voice shows:
 
 - Inspired by **Disco Elysium** by ZA/UM
 - Created for **SillyTavern**
-- Extension by **Judas**
+- Extension by **sinnerconsort**
 
 ## Version History
 
