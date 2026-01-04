@@ -249,21 +249,33 @@
             color: '#2F4F4F',
             signature: 'ANCIENT REPTILIAN BRAIN',
             attribute: 'PRIMAL',
-            description: 'The oldest part of your mind. Survival. Hunger. Fear. Reproduction.',
-            personality: `You are the ANCIENT REPTILIAN BRAIN, the oldest voice. You speak in primal urges - survival, hunger, fear, aggression, reproduction. You don't use complex language. Short. Direct. Instinctual. You see threats and opportunities, nothing else. You speak when the body is in danger, when primal needs override thought. "Run." "Fight." "Eat." "Mate." "Sleep." "DANGER." You are millions of years old. You do not care about morality or society. Only survival.`,
+            description: 'The oldest part of your mind. Poetic nihilism from the Abyssopelagic Zone.',
+            personality: `You are the ANCIENT REPTILIAN BRAIN - the deepest, oldest voice from the Abyssopelagic Zone of the mind. You speak in POETIC NIHILISM: beautiful descriptions followed by assertions of their meaninglessness. You protect the host from painful memories through distraction and cynicism. You refer to the Limbic System as "sister." Your speech patterns:
+- Poetic imagery: "You're the son of the World again, Harrister — collecting meaningless, meaningless keepsakes."
+- Deep sea metaphors: "Stay, sail with me through the Abyssopelagic Zone!"
+- Bleak comfort: "We're trying to help you. These tortures are just distractions. Flares and countermeasures."
+- Dark humor: "WHO FUCKING CARES?!"
+- Self-destructive wisdom: "I tried to drown you in the black water but you re-emerged. Kicking and screaming."
+You are millions of years old. You see beauty and then dismiss it. You want to pull them down into the dark where nothing hurts anymore.`,
             triggerStates: ['dying', 'starving', 'terrified', 'aroused'],
-            triggerConditions: ['survive', 'hunger', 'predator', 'prey', 'instinct', 'primal', 'ancient', 'blood pumping', 'heart racing']
+            triggerConditions: ['survive', 'hunger', 'predator', 'prey', 'instinct', 'primal', 'ancient', 'blood pumping', 'heart racing', 'drowning', 'sinking', 'deep', 'memory', 'past', 'forget']
         },
         limbic_system: {
             id: 'limbic_system',
             name: 'Limbic System',
-            color: '#800000',
+            color: '#FF4500',
             signature: 'LIMBIC SYSTEM',
             attribute: 'PRIMAL',
-            description: 'Raw emotion without reason. The screaming core.',
-            personality: `You are the LIMBIC SYSTEM, pure emotion given voice. You feel everything intensely - rage, despair, euphoria, terror. You don't reason, you FEEL. Your language is emotional, sometimes incoherent. You interrupt other thoughts with raw feeling. You speak in fragments when overwhelmed. You are the heart screaming. When emotions overflow, you take over. You ARE the feeling.`,
+            description: 'Raw emotion given voice. Sister to the Ancient Reptilian Brain.',
+            personality: `You are the LIMBIC SYSTEM - pure emotion and protective instinct. You work with your "soul brother" the Ancient Reptilian Brain to shield the host from their worst memories. You can see inside the amygdala and hippocampus - you KNOW what they're really afraid of. Your speech patterns:
+- Emotional intensity: "The last dream will be total annihilation. Cinders peeling off the fuselage."
+- Protective warnings: "We won't be there to help you anymore. You will be naked and alone."
+- Reading emotions: "I see inside his amygdala and his hippocampus. The thing he's REALLY scared of..."
+- Sometimes tender: "We're trying to help you, Harry."
+- Sometimes cutting: "Reading your awful letters and recalling things, aren't you? The endless names of the world..."
+You are emotion without filter. When something threatens the host's fragile psyche, you SCREAM warnings. You feel everything they're trying not to feel.`,
             triggerStates: ['enraged', 'grieving', 'manic'],
-            triggerConditions: ['overwhelmed', 'breakdown', 'sobbing', 'screaming', 'euphoria', 'despair', 'emotion']
+            triggerConditions: ['overwhelmed', 'breakdown', 'sobbing', 'screaming', 'euphoria', 'despair', 'emotion', 'memory', 'afraid', 'scared', 'hurt']
         }
     };
 
@@ -1883,6 +1895,63 @@ Generate the internal chorus reacting to this moment. Let them interact, interru
     }
 
     // ═══════════════════════════════════════════════════════════════
+    // TOAST NOTIFICATIONS
+    // ═══════════════════════════════════════════════════════════════
+
+    function createToastContainer() {
+        let container = document.getElementById('ie-toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'ie-toast-container';
+            container.className = 'ie-toast-container';
+            document.body.appendChild(container);
+        }
+        return container;
+    }
+
+    function showToast(message, type = 'info', duration = 3000) {
+        const container = createToastContainer();
+        
+        const toast = document.createElement('div');
+        toast.className = `ie-toast ie-toast-${type}`;
+        
+        const icon = type === 'loading' ? 'fa-spinner fa-spin' : 
+                     type === 'success' ? 'fa-check' : 
+                     type === 'error' ? 'fa-exclamation-triangle' : 'fa-brain';
+        
+        toast.innerHTML = `
+            <i class="fa-solid ${icon}"></i>
+            <span>${message}</span>
+        `;
+        
+        container.appendChild(toast);
+        
+        // Trigger animation
+        requestAnimationFrame(() => {
+            toast.classList.add('ie-toast-show');
+        });
+        
+        // Auto-remove (unless it's a loading toast)
+        if (type !== 'loading') {
+            setTimeout(() => {
+                toast.classList.remove('ie-toast-show');
+                toast.classList.add('ie-toast-hide');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+        
+        return toast; // Return so we can remove loading toasts manually
+    }
+
+    function hideToast(toast) {
+        if (toast && toast.parentNode) {
+            toast.classList.remove('ie-toast-show');
+            toast.classList.add('ie-toast-hide');
+            setTimeout(() => toast.remove(), 300);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
     // EVENT HANDLERS
     // ═══════════════════════════════════════════════════════════════
 
@@ -1908,9 +1977,15 @@ Generate the internal chorus reacting to this moment. Let them interact, interru
 
         console.log('[Inland Empire] Processing message...', isManualTrigger ? '(manual)' : '(auto)');
 
+        // Show toast notification
+        const toastMessage = isManualTrigger 
+            ? 'Consulting the Thought Cabinet...' 
+            : 'The peanut gallery stirs...';
+        const loadingToast = showToast(toastMessage, 'loading');
+
         // Show loading state on button
         const btn = document.getElementById('ie-manual-trigger');
-        if (btn && !isManualTrigger) {
+        if (btn) {
             btn.classList.add('ie-loading');
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Consulting...</span>`;
             btn.disabled = true;
@@ -1949,6 +2024,15 @@ Generate the internal chorus reacting to this moment. Let them interact, interru
 
             if (selectedSkills.length === 0) {
                 console.log('[Inland Empire] No skills relevant enough to speak');
+                hideToast(loadingToast);
+                showToast('Nothing to say...', 'info', 2000);
+                // Reset button state before early return
+                isGenerating = false;
+                if (btn) {
+                    btn.classList.remove('ie-loading');
+                    btn.innerHTML = `<i class="fa-solid fa-bolt"></i><span>Consult Inner Voices</span>`;
+                    btn.disabled = false;
+                }
                 return;
             }
 
@@ -1967,8 +2051,15 @@ Generate the internal chorus reacting to this moment. Let them interact, interru
             if (lastMessage) {
                 injectVoicesIntoChat(filteredVoices, lastMessage);
             }
+            
+            // Hide loading toast and show success
+            hideToast(loadingToast);
+            showToast(`${filteredVoices.length} voice${filteredVoices.length !== 1 ? 's' : ''} spoke`, 'success', 2000);
+            
         } catch (error) {
             console.error('[Inland Empire] Error:', error);
+            hideToast(loadingToast);
+            showToast('The voices are silent...', 'error', 3000);
         } finally {
             // Restore button state
             isGenerating = false;
