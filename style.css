@@ -73,13 +73,6 @@
     transform: scale(0.5);
 }
 
-/* Hide FAB when ST drawers are open */
-.ie-fab.ie-fab-hidden {
-    opacity: 0.2;
-    pointer-events: none;
-    transform: scale(0.8);
-}
-
 /* ═══════════════════════════════════════════════════════════════
    PANEL CONTAINER
    ═══════════════════════════════════════════════════════════════ */
