@@ -960,125 +960,205 @@
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // VOICE GENERATION
+    // VOICE GENERATION - REACTIVE CHORUS MODE
     // ═══════════════════════════════════════════════════════════════
 
-    async function generateVoice(skillId, context, checkResult, isAncient = false) {
-        // Handle both regular skills and ancient voices
-        const skill = isAncient ? ANCIENT_VOICES[skillId] : SKILLS[skillId];
-        if (!skill) return null;
+    async function generateVoices(selectedSkills, context) {
+        // Roll checks for all non-ancient skills first
+        const voiceData = selectedSkills.map(selected => {
+            let checkResult = null;
+            
+            if (!selected.isAncient) {
+                const checkDecision = determineCheckDifficulty(selected, context);
+                if (checkDecision.shouldCheck) {
+                    const effectiveLevel = getEffectiveSkillLevel(selected.skillId);
+                    checkResult = rollSkillCheck(effectiveLevel, checkDecision.difficulty);
+                }
+            }
+            
+            const skill = selected.isAncient ? ANCIENT_VOICES[selected.skillId] : SKILLS[selected.skillId];
+            return {
+                ...selected,
+                skill,
+                checkResult,
+                effectiveLevel: selected.isAncient ? 6 : getEffectiveSkillLevel(selected.skillId)
+            };
+        });
 
-        const skillLevel = isAncient ? 6 : getEffectiveSkillLevel(skillId);
-        const statusModifier = isAncient ? 0 : getSkillModifier(skillId);
-
-        // Build status context for the voice
-        let statusContext = '';
-        if (activeStatuses.size > 0) {
-            const activeStatusNames = [...activeStatuses].map(id => STATUS_EFFECTS[id]?.name).filter(Boolean);
-            statusContext = `\nCurrent state: ${activeStatusNames.join(', ')}.`;
+        // Build the reactive chorus prompt
+        const chorusPrompt = buildChorusPrompt(voiceData, context);
+        
+        try {
+            const response = await callAPI(chorusPrompt.system, chorusPrompt.user);
+            const parsedVoices = parseChorusResponse(response, voiceData);
+            return parsedVoices;
+        } catch (error) {
+            console.error('[Inland Empire] Chorus generation failed:', error);
+            // Return fallback voices
+            return voiceData.map(v => ({
+                skillId: v.skillId,
+                skillName: v.skill.name,
+                signature: v.skill.signature,
+                color: v.skill.color,
+                content: '*static*',
+                checkResult: v.checkResult,
+                isAncient: v.isAncient,
+                success: false,
+                timestamp: Date.now()
+            }));
         }
+    }
 
-        // Build POV instruction based on settings
+    function buildChorusPrompt(voiceData, context) {
+        // Get POV settings
         const povStyle = extensionSettings.povStyle || 'second';
         const charName = extensionSettings.characterName || '';
         const pronouns = extensionSettings.characterPronouns || 'they';
         const characterContext = extensionSettings.characterContext || '';
         
         let povInstruction;
-        let subjectRef;
-        
         switch (povStyle) {
             case 'third':
-                subjectRef = charName || 'the character';
-                povInstruction = `Write in THIRD PERSON about ${subjectRef}. Use "${charName || pronouns}" and "${pronouns}/them" - NEVER "you" or "your". Example: "${charName || 'They'} should be careful here" NOT "You should be careful."`;
+                povInstruction = `Write in THIRD PERSON about ${charName || 'the character'}. Use "${charName || pronouns}" - NEVER "you".`;
                 break;
             case 'first':
-                povInstruction = `Write in FIRST PERSON as if you ARE the character's inner voice speaking to themselves. Use "I", "me", "my" - NEVER "you". Example: "I notice something wrong" NOT "You notice something."`;
+                povInstruction = `Write in FIRST PERSON as the character's inner voices. Use "I/me/my" - NEVER "you".`;
                 break;
             case 'second':
             default:
-                povInstruction = `Write in SECOND PERSON addressing the character. Use "you" and "your". Example: "You notice something off about this."`;
+                povInstruction = `Write in SECOND PERSON. Address the character as "you".`;
                 break;
         }
 
-        // Build character context section if provided
-        let characterContextSection = '';
+        // Build character context section
+        let contextSection = '';
         if (characterContext.trim()) {
-            characterContextSection = `
-IMPORTANT CONTEXT - WHOSE VOICE YOU ARE:
-${characterContext}
-You are THIS character's internal voice, commenting on what THEY observe. Do NOT write from any NPC's perspective.
-`;
+            contextSection = `\nCHARACTER CONTEXT:\n${characterContext}\nThese are THIS character's internal voices. Do NOT speak from any NPC's perspective.\n`;
         }
 
-        let systemPrompt;
+        // Build status context
+        let statusContext = '';
+        if (activeStatuses.size > 0) {
+            const activeStatusNames = [...activeStatuses].map(id => STATUS_EFFECTS[id]?.name).filter(Boolean);
+            statusContext = `\nCurrent mental/physical state: ${activeStatusNames.join(', ')}.`;
+        }
+
+        // Build voice descriptions with check results
+        const voiceDescriptions = voiceData.map(v => {
+            let checkInfo = '';
+            if (v.checkResult) {
+                if (v.checkResult.isBoxcars) {
+                    checkInfo = ' [CRITICAL SUCCESS - brilliant insight]';
+                } else if (v.checkResult.isSnakeEyes) {
+                    checkInfo = ' [CRITICAL FAILURE - hilariously wrong]';
+                } else if (v.checkResult.success) {
+                    checkInfo = ' [Success - relevant observation]';
+                } else {
+                    checkInfo = ' [Failed - uncertain, possibly off-base]';
+                }
+            } else if (v.isAncient) {
+                checkInfo = ' [PRIMAL - raw, instinctual]';
+            } else {
+                checkInfo = ' [Passive - observational]';
+            }
+            
+            return `${v.skill.signature} (${v.skill.name})${checkInfo}: ${v.skill.personality}`;
+        }).join('\n\n');
+
+        const systemPrompt = `You generate internal mental voices for a roleplayer, inspired by Disco Elysium's skill system.
+
+THE VOICES SPEAKING THIS ROUND:
+${voiceDescriptions}
+
+RULES:
+1. ${povInstruction}
+2. Voices REACT to each other - they can agree, argue, interrupt, build on ideas, or panic together
+3. Format EXACTLY as: SKILL_NAME - dialogue (one line per voice, can have multiple lines per skill)
+4. Keep each line 1-2 sentences. Some voices may speak multiple times.
+5. Failed checks mean that voice is uncertain, rambling, or misguided
+6. Critical successes are profound; critical failures are comically wrong
+7. Voices can interrupt: "COMPOSURE - Stop. RHETORIC - No wait, let me finish—"
+8. Create natural flow - not everyone needs to speak in order
+9. Ancient/Primal voices speak in fragments, raw urges
+10. Total response: 4-12 voice lines depending on complexity
+${contextSection}${statusContext}
+
+Output ONLY the voice dialogue. No narration, no meta-text.`;
+
+        const userPrompt = `Scene: "${context.message.substring(0, 800)}"
+
+Generate the internal chorus reacting to this moment. Let them interact, interrupt, and build off each other naturally.`;
+
+        return { system: systemPrompt, user: userPrompt };
+    }
+
+    function parseChorusResponse(response, voiceData) {
+        const lines = response.trim().split('\n').filter(line => line.trim());
+        const results = [];
         
-        if (isAncient) {
-            // Ancient voices have a more primal prompt - POV adapted
-            const ancientPov = povStyle === 'third' 
-                ? `Refer to ${charName || 'the host'} in third person.`
-                : povStyle === 'first' 
-                    ? `Speak as primal urges in first person fragments.`
-                    : `Address the host as "you".`;
-            
-            systemPrompt = `${skill.personality}
+        // Build lookup map for skills
+        const skillMap = {};
+        voiceData.forEach(v => {
+            // Map by signature (uppercase), name, and common variations
+            const sig = v.skill.signature.toUpperCase();
+            const name = v.skill.name.toUpperCase();
+            skillMap[sig] = v;
+            skillMap[name] = v;
+            // Handle "HAND/EYE COORDINATION" vs "HAND/EYE" etc
+            if (sig.includes('/')) {
+                skillMap[sig.split('/')[0]] = v;
+            }
+        });
 
-You are speaking from the deepest, oldest part of the mind. Be brief - short sentences, fragments even. Raw. Primal.
-${ancientPov}${characterContextSection}${statusContext}
-Respond ONLY with your voice. No quotation marks.`;
-        } else {
-            systemPrompt = `${skill.personality}
-
-You are an internal voice/skill in someone's mind during a roleplay scene. Be brief (1-3 sentences).
-${characterContextSection}
-CRITICAL - POV RULES: ${povInstruction}
-
-Current skill level: ${skillLevel}/10${statusModifier !== 0 ? ` (${statusModifier > 0 ? '+' : ''}${statusModifier} from status)` : ''}${statusContext}
-${checkResult ? (checkResult.success ?
-                (checkResult.isBoxcars ? 'CRITICAL SUCCESS - Be brilliant and profound.' : 'Check passed. Notice something relevant.') :
-                (checkResult.isSnakeEyes ? 'CRITICAL FAILURE - Be hilariously wrong or misguided.' : 'Check failed. Be less insightful or slightly off.')) : ''}
-
-Respond ONLY with your commentary. No meta-text, no quotation marks around your response.`;
+        for (const line of lines) {
+            // Match pattern: SKILL_NAME - content or SKILL_NAME: content
+            const match = line.match(/^([A-Z][A-Z\s\/]+)\s*[-:–—]\s*(.+)$/i);
+            if (match) {
+                const skillKey = match[1].trim().toUpperCase();
+                const content = match[2].trim();
+                
+                // Find matching voice data
+                const voiceInfo = skillMap[skillKey];
+                if (voiceInfo) {
+                    results.push({
+                        skillId: voiceInfo.skillId,
+                        skillName: voiceInfo.skill.name,
+                        signature: voiceInfo.skill.signature,
+                        color: voiceInfo.skill.color,
+                        content: content,
+                        checkResult: voiceInfo.checkResult,
+                        isAncient: voiceInfo.isAncient,
+                        success: true,
+                        timestamp: Date.now()
+                    });
+                } else {
+                    // Unknown skill mentioned - might be model hallucinating a skill
+                    console.log('[Inland Empire] Unknown skill in response:', skillKey);
+                }
+            }
         }
 
-        const userPrompt = `Scene: "${context.message.substring(0, 500)}"
-Respond as ${skill.signature}.`;
-
-        try {
-            const response = await callAPI(systemPrompt, userPrompt);
-            const content = response.trim();
-            
-            // Handle empty responses with a fallback
-            const fallbackContent = isAncient 
-                ? '*...silence from the depths...*'
-                : '*the voice hesitates, uncertain...*';
-            
-            return {
-                skillId,
-                skillName: skill.name,
-                signature: skill.signature,
-                color: skill.color,
-                content: content || fallbackContent,
-                checkResult,
-                isAncient,
-                success: !!content, // Mark as unsuccessful if empty
-                timestamp: Date.now()
-            };
-        } catch (error) {
-            console.error(`[Inland Empire] API error for ${skill.name}:`, error);
-            return {
-                skillId,
-                skillName: skill.name,
-                signature: skill.signature,
-                color: skill.color,
-                content: '*static*',
-                checkResult,
-                isAncient,
-                success: false,
-                error: error.message,
-                timestamp: Date.now()
-            };
+        // If parsing failed, create single fallback
+        if (results.length === 0) {
+            console.warn('[Inland Empire] Failed to parse chorus response:', response);
+            // Try to use the whole response as first voice
+            if (voiceData.length > 0 && response.trim()) {
+                const v = voiceData[0];
+                results.push({
+                    skillId: v.skillId,
+                    skillName: v.skill.name,
+                    signature: v.skill.signature,
+                    color: v.skill.color,
+                    content: response.trim().substring(0, 200),
+                    checkResult: v.checkResult,
+                    isAncient: v.isAncient,
+                    success: true,
+                    timestamp: Date.now()
+                });
+            }
         }
+
+        return results;
     }
 
     async function callAPI(systemPrompt, userPrompt) {
@@ -1138,29 +1218,6 @@ Respond as ${skill.signature}.`;
         }
         
         return content;
-    }
-
-    async function generateVoices(selectedSkills, context) {
-        const results = [];
-
-        for (const selected of selectedSkills) {
-            let checkResult = null;
-            
-            // Ancient voices don't do skill checks - they just speak
-            if (!selected.isAncient) {
-                const checkDecision = determineCheckDifficulty(selected, context);
-                if (checkDecision.shouldCheck) {
-                    // Use effective skill level for the check
-                    const effectiveLevel = getEffectiveSkillLevel(selected.skillId);
-                    checkResult = rollSkillCheck(effectiveLevel, checkDecision.difficulty);
-                }
-            }
-
-            const voice = await generateVoice(selected.skillId, context, checkResult, selected.isAncient);
-            if (voice) results.push(voice);
-        }
-
-        return results;
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -1774,36 +1831,36 @@ Respond as ${skill.signature}.`;
         const existingContainer = messageElement.querySelector('.ie-chat-voices');
         if (existingContainer) existingContainer.remove();
 
-        // Create voice container
+        // Create single chorus bubble container
         const voiceContainer = document.createElement('div');
-        voiceContainer.className = 'ie-chat-voices';
+        voiceContainer.className = 'ie-chat-voices ie-chorus-bubble';
 
-        voices.forEach(voice => {
-            const voiceBlock = document.createElement('div');
-            voiceBlock.className = voice.isAncient ? 'ie-chat-voice-block ie-ancient-voice' : 'ie-chat-voice-block';
-            voiceBlock.style.borderLeftColor = voice.color;
+        // Check if any ancient voices are present
+        const hasAncient = voices.some(v => v.isAncient);
+        if (hasAncient) {
+            voiceContainer.classList.add('ie-has-ancient');
+        }
 
-            let checkBadge = '';
-            if (voice.isAncient) {
-                // Ancient voices don't show checks, they just speak
-                checkBadge = `<span class="ie-check-badge ie-check-ancient">[Primal]</span>`;
-            } else if (extensionSettings.showDiceRolls && voice.checkResult) {
-                const resultClass = voice.checkResult.success ? 'ie-check-success' : 'ie-check-failure';
-                checkBadge = `<span class="ie-check-badge ${resultClass}">[${voice.checkResult.difficultyName}: ${voice.checkResult.success ? 'Success' : 'Failure'}]</span>`;
-            } else if (!voice.checkResult) {
-                checkBadge = `<span class="ie-check-badge ie-check-passive">[Passive]</span>`;
-            }
+        // Build the chorus content - all voices in one bubble with colored names
+        const chorusLines = voices.map(voice => {
+            const nameSpan = `<span class="ie-chorus-name" style="color: ${voice.color}">${voice.signature}</span>`;
+            const content = voice.content;
+            
+            // Add ancient class for styling if needed
+            const lineClass = voice.isAncient ? 'ie-chorus-line ie-ancient-line' : 'ie-chorus-line';
+            
+            return `<div class="${lineClass}">${nameSpan} - ${content}</div>`;
+        }).join('');
 
-            voiceBlock.innerHTML = `
-                <div class="ie-voice-header">
-                    <span class="ie-voice-name" style="color: ${voice.color}">${voice.signature}</span>
-                    ${checkBadge}
-                </div>
-                <div class="ie-voice-text">${voice.content}</div>
-            `;
-
-            voiceContainer.appendChild(voiceBlock);
-        });
+        voiceContainer.innerHTML = `
+            <div class="ie-chorus-header">
+                <i class="fa-solid fa-brain"></i>
+                <span>Inner Voices</span>
+            </div>
+            <div class="ie-chorus-content">
+                ${chorusLines}
+            </div>
+        `;
 
         // Insert after the message content
         const mesText = messageElement.querySelector('.mes_text');

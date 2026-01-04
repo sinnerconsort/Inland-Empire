@@ -708,18 +708,76 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   CHAT INJECTED VOICES
+   CHAT INJECTED VOICES - CHORUS BUBBLE
    ═══════════════════════════════════════════════════════════════ */
 
 .ie-chat-voices {
     margin-top: 15px;
     padding-top: 10px;
     border-top: 1px solid rgba(157, 141, 241, 0.2);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
 }
 
+.ie-chorus-bubble {
+    background: linear-gradient(135deg, rgba(37, 37, 64, 0.95) 0%, rgba(26, 26, 46, 0.95) 100%);
+    border-left: 3px solid var(--ie-accent, #9d8df1);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+.ie-chorus-bubble.ie-has-ancient {
+    border-left-color: #2F4F4F;
+    background: linear-gradient(135deg, rgba(37, 47, 47, 0.95) 0%, rgba(26, 36, 36, 0.95) 100%);
+}
+
+.ie-chorus-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(157, 141, 241, 0.2);
+}
+
+.ie-chorus-header i {
+    color: var(--ie-accent, #9d8df1);
+    font-size: 14px;
+}
+
+.ie-chorus-header span {
+    color: var(--ie-text-secondary, #a0a0b0);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+}
+
+.ie-chorus-content {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ie-chorus-line {
+    color: var(--ie-text-primary, #e0e0e0);
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 4px 0;
+}
+
+.ie-chorus-line.ie-ancient-line {
+    font-style: italic;
+    color: #8FBC8F;
+}
+
+.ie-chorus-name {
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Legacy support for old format */
 .ie-chat-voice-block {
     background: linear-gradient(135deg, rgba(37, 37, 64, 0.9) 0%, rgba(26, 26, 46, 0.9) 100%);
     border-left: 3px solid var(--ie-accent, #9d8df1);
@@ -780,6 +838,18 @@
 
 /* Mobile adjustments for chat voices */
 @media (max-width: 768px) {
+    .ie-chorus-bubble {
+        padding: 10px 12px;
+    }
+    
+    .ie-chorus-line {
+        font-size: 12px;
+    }
+    
+    .ie-chorus-name {
+        font-size: 11px;
+    }
+    
     .ie-chat-voice-block {
         padding: 8px 10px;
     }

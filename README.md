@@ -1,6 +1,27 @@
 # Inland Empire 🧠
 
-A SillyTavern extension that adds **Disco Elysium-style internal voices** to your roleplay sessions. Your character's psyche comes alive with skill-based commentary, dice checks, and status effects that influence which voices speak and what they say.
+A SillyTavern extension that adds **Disco Elysium-style internal voices** to your roleplay sessions. Your character's psyche comes alive with skill-based commentary that **reacts to itself** - voices argue, agree, interrupt, and build off each other just like in the game.
+
+## ✨ What's New in v0.4.0 - Reactive Chorus Mode
+
+**The voices now interact with each other!** Instead of each skill speaking in isolation, they form a reactive chorus:
+
+```
+COMPOSURE - Get a hold of yourself.
+RHETORIC - Such a fucking embarrassment.
+SAVOIR FAIRE - Remember when you did this in front of *everyone*?
+RHETORIC - This has graduated from a cock carousel to a cock cascade.
+AUTHORITY - A *colossal* cock-up.
+DRAMA - A cockinalia.
+INLAND EMPIRE - At the end of all things. The A-cock-alypse.
+```
+
+This creates authentic Disco Elysium-style internal monologues where your skills can:
+- **Argue** with each other
+- **Interrupt** mid-thought
+- **Build** on each other's observations
+- **Panic together** during crises
+- **Gang up** on poor COMPOSURE
 
 ## Features
 
@@ -22,6 +43,7 @@ All 24 skills from Disco Elysium organized into four attributes:
 - Skill level affects success threshold
 - **Boxcars (12)**: Critical success - brilliant insights
 - **Snake Eyes (2)**: Critical failure - hilariously wrong
+- Failed checks make voices uncertain or misguided
 - Passive checks for observational skills
 
 ### 📊 Status Effects
@@ -60,7 +82,7 @@ The extension uses its own API connection (separate from your main ST API):
    - **API Endpoint**: Your OpenAI-compatible endpoint (e.g., `https://api.openai.com/v1/` or `https://nano-gpt.com/api/v1/`)
    - **API Key**: Your API key
    - **Model**: Model name (e.g., `gpt-4o-mini`, `glm-4-plus`)
-4. Adjust **Temperature** (0.7-1.0 recommended) and **Max Tokens** (300-600)
+4. Adjust **Temperature** (0.8-1.0 recommended for creative chorus) and **Max Tokens** (500-800 for longer interactions)
 5. Click **Save Settings**
 
 ### Character Context
@@ -77,7 +99,7 @@ This prevents the voices from accidentally speaking from the NPC's perspective.
 ## Usage
 
 ### Automatic Mode
-Voices automatically trigger when the AI sends a message. They analyze the narrative and relevant skills speak up.
+Voices automatically trigger when the AI sends a message. They analyze the narrative and the relevant skills form a reactive chorus.
 
 ### Manual Mode
 Click **"⚡ Consult Inner Voices"** to manually trigger voice generation on the last AI message.
@@ -96,28 +118,28 @@ Click **"⚡ Consult Inner Voices"** to manually trigger voice generation on the
 
 ## Voice Display
 
-Voices appear:
+Voices appear in a unified chorus bubble:
 - In the **Psyche Panel** under "Inner Voices"
-- **Injected into chat** below AI messages (with pagination)
+- **Injected into chat** below AI messages
 
-Each voice shows:
-- Skill name and color
-- Check result badge (e.g., `[Easy: Success]`, `[Challenging: Failure]`)
-- The voice's commentary
+Each voice line shows:
+- Colored skill name
+- The voice's commentary (possibly reacting to previous voices)
 
 ## Tips
 
-- **High Electrochemistry?** Expect lots of commentary about substances and pleasures
-- **Low Volition?** Your self-control voices will often fail their checks
-- **Enable Failed Checks** to see what your weaker skills *tried* to tell you
-- **Status Effects** dramatically change which voices speak - try "Terrified" for lots of Half Light and Shivers
+- **Higher Max Tokens** gives voices more room to interact
+- **Temperature 0.9-1.0** produces more creative exchanges
+- **Status Effects** dramatically change the conversation tone
 - **Drag the brain icon** to reposition it if it's in the way
+- Failed checks make voices uncertain - they might contradict themselves or trail off
 
 ## Troubleshooting
 
 **Voices not generating?**
 - Check API configuration in Settings tab
 - Verify your API key is valid
+- Increase Max Tokens if responses seem cut off
 - Check browser console for errors (F12)
 
 **Icon disappeared?**
@@ -128,14 +150,20 @@ Each voice shows:
 - Fill in Character Context explaining who YOU are
 - Make sure POV Style matches your RP style
 
+**Voices not interacting?**
+- Some models handle multi-voice better than others
+- GPT-4, Claude, GLM-4 work well
+- Smaller models may produce more isolated responses
+
 ## Credits
 
 - Inspired by **Disco Elysium** by ZA/UM
 - Created for **SillyTavern**
-- Extension by **sinnerconsort**
+- Extension by **Judas**
 
 ## Version History
 
+- **v0.4.0** - 🎉 **REACTIVE CHORUS MODE** - Voices now interact with each other!
 - **v0.3.4** - Draggable FAB, updated placeholders, README
 - **v0.3.3** - FAB position fixes
 - **v0.2.7** - Empty response fallbacks
