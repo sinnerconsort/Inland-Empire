@@ -1847,6 +1847,58 @@ Respond as ${skill.signature}.`;
         document.getElementById('ie-pov-style')?.addEventListener('change', updateThirdPersonVisibility);
     }
 
+    function setupDrawerDetection(fab) {
+        // Hide FAB when ST drawers/panels are visible
+        // Common ST panel selectors
+        const drawerSelectors = [
+            '#left-nav-panel.drawer-visible',
+            '#right-nav-panel.drawer-visible', 
+            '.drawer-content:not(.drawer-content-hidden)',
+            '#character_popup[style*="display: block"]',
+            '#character_popup[style*="display: flex"]',
+            '.popup:not([style*="display: none"])',
+            '#select_chat_popup[style*="display: block"]',
+            '#select_chat_popup[style*="display: flex"]'
+        ];
+        
+        function checkDrawerState() {
+            const anyDrawerOpen = drawerSelectors.some(selector => {
+                try {
+                    return document.querySelector(selector) !== null;
+                } catch {
+                    return false;
+                }
+            });
+            
+            // Also check for specific drawer classes on body
+            const bodyHasDrawer = document.body.classList.contains('drawer-open') ||
+                                  document.body.classList.contains('big-sidebar');
+            
+            if (anyDrawerOpen || bodyHasDrawer) {
+                fab.classList.add('ie-fab-hidden');
+            } else {
+                fab.classList.remove('ie-fab-hidden');
+            }
+        }
+        
+        // Initial check
+        checkDrawerState();
+        
+        // Watch for DOM changes
+        const observer = new MutationObserver(() => {
+            checkDrawerState();
+        });
+        
+        observer.observe(document.body, {
+            attributes: true,
+            attributeFilter: ['class', 'style'],
+            subtree: true,
+            childList: true
+        });
+        
+        console.log('[Inland Empire] Drawer detection setup');
+    }
+
     // ═══════════════════════════════════════════════════════════════
     // SETTINGS PANEL (for Extensions list)
     // ═══════════════════════════════════════════════════════════════
@@ -1960,6 +2012,9 @@ Respond as ${skill.signature}.`;
             // Setup event listeners
             setupEventListeners();
             console.log('[Inland Empire] Event listeners setup');
+
+            // Setup drawer detection to hide FAB when ST panels overlap
+            setupDrawerDetection(fab);
 
             // Add settings to extensions panel
             addExtensionSettings();

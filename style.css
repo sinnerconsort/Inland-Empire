@@ -36,8 +36,7 @@
 .ie-fab {
     position: fixed;
     left: 10px;
-    top: calc(50% + 80px);
-    transform: translateY(-50%);
+    bottom: 80px; /* Moved to bottom instead of middle */
     width: 50px;
     height: 50px;
     background: var(--ie-bg-medium, #252540);
@@ -47,14 +46,14 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    z-index: 99998;
+    z-index: 500; /* Lowered so ST panels appear above */
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
     transition: all 0.3s ease;
 }
 
 .ie-fab:hover {
     background: var(--ie-accent, #9d8df1);
-    transform: translateY(-50%) scale(1.1);
+    transform: scale(1.1);
 }
 
 .ie-fab:hover i {
@@ -71,7 +70,14 @@
 .ie-fab.ie-fab-active {
     opacity: 0;
     pointer-events: none;
-    transform: translateY(-50%) scale(0.5);
+    transform: scale(0.5);
+}
+
+/* Hide FAB when ST drawers are open */
+.ie-fab.ie-fab-hidden {
+    opacity: 0.2;
+    pointer-events: none;
+    transform: scale(0.8);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -91,7 +97,7 @@
     border: 1px solid var(--ie-border-color, #3a3a5a);
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-    z-index: 99999;
+    z-index: 800; /* Lowered so ST panels appear above */
     display: flex;
     flex-direction: column;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -659,7 +665,7 @@
 @media (max-width: 768px) {
     .ie-fab {
         left: 8px;
-        top: calc(50% + 70px);
+        bottom: 70px;
         width: 44px;
         height: 44px;
     }
@@ -692,7 +698,7 @@
 @media (max-width: 400px) {
     .ie-fab {
         left: 5px;
-        top: calc(50% + 60px);
+        bottom: 60px;
         width: 40px;
         height: 40px;
     }
