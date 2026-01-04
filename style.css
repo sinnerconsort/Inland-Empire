@@ -282,11 +282,28 @@
     color: var(--ie-bg-dark, #1a1a2e);
 }
 
+.ie-btn-primary.ie-loading {
+    background: var(--ie-bg-medium, #252540);
+    color: var(--ie-accent, #9d8df1);
+    border-color: var(--ie-accent, #9d8df1);
+    cursor: wait;
+    opacity: 0.8;
+}
+
+.ie-btn-primary.ie-loading:hover {
+    background: var(--ie-bg-medium, #252540);
+}
+
 .ie-btn-trigger {
     width: 100%;
     justify-content: center;
     padding: 10px;
     font-size: 13px;
+}
+
+.ie-btn-trigger:disabled {
+    cursor: wait;
+    pointer-events: none;
 }
 
 .ie-btn-close-panel {

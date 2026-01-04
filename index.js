@@ -692,6 +692,7 @@
         characterPronouns: 'they', // they/he/she for third-person
         characterContext: '', // Custom context about who the player is and who they're observing
         autoDetectStatus: true,
+        autoTrigger: true, // Auto-run voices on every AI message
         // FAB position
         fabPositionTop: 140, // pixels from top
         fabPositionLeft: 10 // pixels from left
@@ -1382,6 +1383,13 @@ Generate the internal chorus reacting to this moment. Let them interact, interru
                         </div>
                         <div class="ie-form-group">
                             <label class="ie-checkbox">
+                                <input type="checkbox" id="ie-auto-trigger" checked />
+                                <span>Auto-trigger on AI messages</span>
+                            </label>
+                            <small class="ie-hint">Uncheck to only use manual "Consult Inner Voices" button</small>
+                        </div>
+                        <div class="ie-form-group">
+                            <label class="ie-checkbox">
                                 <input type="checkbox" id="ie-auto-detect-status" checked />
                                 <span>Auto-detect status from narrative</span>
                             </label>
@@ -1652,6 +1660,7 @@ Generate the internal chorus reacting to this moment. Let them interact, interru
         const maxVoices = document.getElementById('ie-max-voices');
         const showDice = document.getElementById('ie-show-dice-rolls');
         const showFailed = document.getElementById('ie-show-failed-checks');
+        const autoTrigger = document.getElementById('ie-auto-trigger');
         const autoDetectStatus = document.getElementById('ie-auto-detect-status');
         const povStyle = document.getElementById('ie-pov-style');
         const charName = document.getElementById('ie-character-name');
@@ -1666,6 +1675,7 @@ Generate the internal chorus reacting to this moment. Let them interact, interru
         if (maxVoices) maxVoices.value = extensionSettings.maxVoices || extensionSettings.voicesPerMessage?.max || 4;
         if (showDice) showDice.checked = extensionSettings.showDiceRolls !== false;
         if (showFailed) showFailed.checked = extensionSettings.showFailedChecks !== false;
+        if (autoTrigger) autoTrigger.checked = extensionSettings.autoTrigger !== false;
         if (autoDetectStatus) autoDetectStatus.checked = extensionSettings.autoDetectStatus !== false;
         if (povStyle) povStyle.value = extensionSettings.povStyle || 'second';
         if (charName) charName.value = extensionSettings.characterName || '';
@@ -1697,6 +1707,7 @@ Generate the internal chorus reacting to this moment. Let them interact, interru
         extensionSettings.maxVoices = parseInt(document.getElementById('ie-max-voices')?.value) || 4;
         extensionSettings.showDiceRolls = document.getElementById('ie-show-dice-rolls')?.checked !== false;
         extensionSettings.showFailedChecks = document.getElementById('ie-show-failed-checks')?.checked !== false;
+        extensionSettings.autoTrigger = document.getElementById('ie-auto-trigger')?.checked !== false;
         extensionSettings.autoDetectStatus = document.getElementById('ie-auto-detect-status')?.checked !== false;
         extensionSettings.povStyle = document.getElementById('ie-pov-style')?.value || 'second';
         extensionSettings.characterName = document.getElementById('ie-character-name')?.value || '';
@@ -1875,13 +1886,37 @@ Generate the internal chorus reacting to this moment. Let them interact, interru
     // EVENT HANDLERS
     // ═══════════════════════════════════════════════════════════════
 
-    async function onMessageReceived(messageData) {
+    let isGenerating = false; // Track if we're currently generating voices
+
+    async function onMessageReceived(messageData, isManualTrigger = false) {
         if (!extensionSettings.enabled) return;
+
+        // Skip auto-trigger if disabled (but allow manual triggers)
+        if (!isManualTrigger && extensionSettings.autoTrigger === false) {
+            console.log('[Inland Empire] Auto-trigger disabled, skipping...');
+            return;
+        }
+
+        // Prevent duplicate calls
+        if (isGenerating && !isManualTrigger) {
+            console.log('[Inland Empire] Already generating, skipping auto-trigger...');
+            return;
+        }
 
         const messageContent = messageData?.message || messageData?.mes || '';
         if (!messageContent || messageContent.length < 10) return;
 
-        console.log('[Inland Empire] Processing message...');
+        console.log('[Inland Empire] Processing message...', isManualTrigger ? '(manual)' : '(auto)');
+
+        // Show loading state on button
+        const btn = document.getElementById('ie-manual-trigger');
+        if (btn && !isManualTrigger) {
+            btn.classList.add('ie-loading');
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Consulting...</span>`;
+            btn.disabled = true;
+        }
+
+        isGenerating = true;
 
         // Small delay to let the message render in DOM
         await new Promise(resolve => setTimeout(resolve, 200));
@@ -1934,10 +1969,23 @@ Generate the internal chorus reacting to this moment. Let them interact, interru
             }
         } catch (error) {
             console.error('[Inland Empire] Error:', error);
+        } finally {
+            // Restore button state
+            isGenerating = false;
+            if (btn) {
+                btn.classList.remove('ie-loading');
+                btn.innerHTML = `<i class="fa-solid fa-bolt"></i><span>Consult Inner Voices</span>`;
+                btn.disabled = false;
+            }
         }
     }
 
     async function onManualTrigger() {
+        if (isGenerating) {
+            console.log('[Inland Empire] Already generating voices, please wait...');
+            return;
+        }
+
         const context = getSTContext();
         if (!context) return;
 
@@ -1949,7 +1997,7 @@ Generate the internal chorus reacting to this moment. Let them interact, interru
             return;
         }
 
-        await onMessageReceived({ message: lastAIMessage.mes });
+        await onMessageReceived({ message: lastAIMessage.mes }, true); // true = manual trigger
     }
 
     // ═══════════════════════════════════════════════════════════════

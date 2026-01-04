@@ -6,7 +6,7 @@
     "js": "index.js",
     "css": "style.css",
     "author": "Judas",
-    "version": "0.4.0",
-    "description": "Disco Elysium-style internal voices - now with reactive chorus mode where voices interact and argue with each other!",
+    "version": "0.4.1",
+    "description": "Disco Elysium-style internal voices - reactive chorus mode with auto/manual trigger options!",
     "auto_update": false
 }
