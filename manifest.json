@@ -6,7 +6,7 @@
     "js": "index.js",
     "css": "style.css",
     "author": "Judas",
-    "version": "0.5.0",
-    "description": "Disco Elysium-style internal voices with trigger delay, persona profiles, and the Thought Cabinet!",
+    "version": "0.6.0",
+    "description": "Disco Elysium-style internal voices with intrusive thoughts, object voices, and expanded toasts!",
     "auto_update": false
 }
