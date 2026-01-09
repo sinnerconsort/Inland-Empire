@@ -1,12 +1,12 @@
 {
     "display_name": "Inland Empire",
-    "loading_order": 150,
+    "loading_order": 10,
     "requires": [],
     "optional": [],
     "js": "index.js",
     "css": "style.css",
     "author": "Judas",
-    "version": "0.7.0",
-    "description": "Disco Elysium-style internal voices with Thought Cabinet, theme tracking, and skill caps!",
+    "version": "0.8.0",
+    "homePage": "",
     "auto_update": false
 }
