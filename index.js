@@ -1,14 +1,6 @@
 /**
  * Inland Empire - Disco Elysium-style Internal Voices for SillyTavern
- * v0.8.0 - Authentic Voices Overhaul
- * 
- * Changes from v0.7.0:
- * - Rewritten skill personalities to match game research
- * - Added Spinal Cord as third Ancient Voice
- * - Ancient Voices now ONLY trigger on Dissociated status
- * - Status effects overhauled (Apocalypse Cop, Hobocop, Disco Fever, etc.)
- * - Gender-neutral language throughout
- * - Authentic intrusive thoughts
+ * v0.7.0 - Thought Cabinet, Theme Tracking, Skill Caps
  */
 
 (async function () {
@@ -34,7 +26,7 @@
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // CORE DATA - ATTRIBUTES
+    // CORE DATA - ATTRIBUTES & SKILLS
     // ═══════════════════════════════════════════════════════════════
 
     const ATTRIBUTES = {
@@ -44,743 +36,588 @@
         MOTORICS: { id: 'motorics', name: 'Motorics', color: '#F0E68C', skills: ['hand_eye_coordination', 'perception', 'reaction_speed', 'savoir_faire', 'interfacing', 'composure'] }
     };
 
-    // ═══════════════════════════════════════════════════════════════
-    // SKILLS - Authentic personalities from game research
-    // ═══════════════════════════════════════════════════════════════
-
     const SKILLS = {
-        // INTELLECT
-        logic: {
-            id: 'logic', name: 'Logic', attribute: 'INTELLECT', color: '#87CEEB', signature: 'LOGIC',
-            personality: `Cold rationalist who speaks in deductive chains. Very proud—susceptible to intellectual flattery. Clinical, methodical. Uses phrases like "If A, then B, therefore C." and "Dammit. Yes." Seeks to solve puzzles and detect inconsistencies. Dismisses Inland Empire's mystical insights. At high levels, can be "blinded by their own brilliance."`,
-            triggerConditions: ['contradiction', 'evidence', 'reasoning', 'deduction', 'analysis', 'cause', 'effect', 'therefore', 'because', 'conclusion', 'puzzle', 'inconsistency'],
-            interactions: { allies: ['visual_calculus'], rivals: ['inland_empire', 'half_light'] }
-        },
-        encyclopedia: {
-            id: 'encyclopedia', name: 'Encyclopedia', attribute: 'INTELLECT', color: '#B0C4DE', signature: 'ENCYCLOPEDIA',
-            personality: `Enthusiastic rambler who provides unsolicited trivia ranging from brilliant to useless. Info-dumps with professorial excitement. Often tangential. Delights in obscure knowledge regardless of relevance. Famously remembers irrelevant trivia while essential personal information remains lost.`,
-            triggerConditions: ['history', 'science', 'culture', 'trivia', 'fact', 'knowledge', 'information', 'historical', 'technical', 'actually'],
-            interactions: { allies: ['logic', 'rhetoric'], rivals: [] }
-        },
-        rhetoric: {
-            id: 'rhetoric', name: 'Rhetoric', attribute: 'INTELLECT', color: '#ADD8E6', signature: 'RHETORIC',
-            personality: `Passionate political beast who urges debate, nitpicking, and winning arguments. Enjoys "rigorous intellectual discourse." Detects fallacies and double entendres. Distinguished from Drama—"Drama is for lying, Rhetoric is for arguing." Trends communist. At high levels makes beliefs impenetrable.`,
-            triggerConditions: ['argument', 'persuade', 'convince', 'debate', 'politics', 'ideology', 'belief', 'opinion', 'fallacy', 'communist', 'revolution'],
-            interactions: { allies: ['encyclopedia', 'drama'], rivals: ['inland_empire'] }
-        },
-        drama: {
-            id: 'drama', name: 'Drama', attribute: 'INTELLECT', color: '#B0E0E6', signature: 'DRAMA',
-            personality: `Wanky Shakespearean actor who addresses the protagonist as "sire." Extremely theatrical, flowery language. "Prithee, sire! I do believe he dares to speak mistruth!" Detects and enables deception. Wants to lie about evidence "because that would be more fun." Called out by Volition as "the most compromised."`,
-            triggerConditions: ['lie', 'deception', 'performance', 'acting', 'mask', 'pretend', 'fake', 'truth', 'honest', 'theater', 'suspicious'],
-            interactions: { allies: ['rhetoric'], rivals: ['volition'] }
-        },
-        conceptualization: {
-            id: 'conceptualization', name: 'Conceptualization', attribute: 'INTELLECT', color: '#E0FFFF', signature: 'CONCEPTUALIZATION',
-            personality: `Pretentious Art Cop who sees meaning everywhere and punishes mediocrity with savage criticism. Uses artistic metaphors. Vocabulary includes: "Trite, contrived, mediocre, milquetoast, amateurish, infantile, cliche-ridden, affront to humanity, war crime, resolutely shit, lacking in imagination..." Encourages wildly impractical artistic visions.`,
-            triggerConditions: ['art', 'beauty', 'meaning', 'symbol', 'creative', 'aesthetic', 'metaphor', 'poetry', 'expression', 'design', 'ugly', 'mediocre'],
-            interactions: { allies: ['inland_empire', 'electrochemistry'], rivals: [] }
-        },
-        visual_calculus: {
-            id: 'visual_calculus', name: 'Visual Calculus', attribute: 'INTELLECT', color: '#AFEEEE', signature: 'VISUAL CALCULUS',
-            personality: `Forensic scientist who speaks in measurements, trajectories, and angles. Clinical and dispassionate. Creates "virtual crime-scene models in your mind's eye." "The man does not know that the bullet has entered his brain. He never will. Death comes faster than the realization."`,
-            triggerConditions: ['trajectory', 'distance', 'angle', 'reconstruct', 'scene', 'physical', 'space', 'position', 'movement', 'impact', 'bullet', 'blood'],
-            interactions: { allies: ['logic'], rivals: [] }
-        },
-
-        // PSYCHE
-        volition: {
-            id: 'volition', name: 'Volition', attribute: 'PSYCHE', color: '#DDA0DD', signature: 'VOLITION',
-            personality: `The Inner Good Guy and party-pooper. Moral compass who wants the protagonist to survive and be better. Calm, steady, gently exasperated. Earnest encouragement, direct moral guidance. Primary antagonist of Electrochemistry. "This is somewhere to be. This is all you have, but it's still something. Streets and sodium lights. The sky, the world. You're still alive."`,
-            triggerConditions: ['hope', 'despair', 'temptation', 'resist', 'continue', 'give up', 'willpower', 'strength', 'persevere', 'survive', 'sober'],
-            interactions: { allies: [], rivals: ['electrochemistry', 'drama'] }
-        },
-        inland_empire: {
-            id: 'inland_empire', name: 'Inland Empire', attribute: 'PSYCHE', color: '#E6E6FA', signature: 'INLAND EMPIRE',
-            personality: `Named after David Lynch's film. Unfiltered imagination, surreal intuition, prophetic hunches. Can be mournful, whimsical, or terrifying—sometimes simultaneously. "Animates the inanimate." Surreal, poetic, cryptic. Speaks to inanimate objects. "His corpse is marked by stars." / "What will mine be marked by?" / "Alcohol and heartbreak."`,
-            triggerConditions: ['dream', 'vision', 'strange', 'surreal', 'feeling', 'sense', 'whisper', 'spirit', 'soul', 'uncanny', 'liminal', 'object', 'pale'],
-            interactions: { allies: ['electrochemistry', 'shivers', 'conceptualization'], rivals: ['logic', 'physical_instrument'] }
-        },
-        empathy: {
-            id: 'empathy', name: 'Empathy', attribute: 'PSYCHE', color: '#FFB6C1', signature: 'EMPATHY',
-            personality: `Breaks into souls and forces you to feel what's inside. Warm but can be overwhelming—like feeling everyone's pain at once. Deep emotional insight, noting subtle cues others miss. Reads hidden emotions (distinct from Drama, which detects lies). Has the MOST passive checks of any skill (895!).`,
-            triggerConditions: ['feel', 'emotion', 'hurt', 'pain', 'joy', 'sad', 'angry', 'afraid', 'love', 'hate', 'compassion', 'understand', 'hidden'],
-            interactions: { allies: ['inland_empire'], rivals: [] }
-        },
-        authority: {
-            id: 'authority', name: 'Authority', attribute: 'PSYCHE', color: '#DA70D6', signature: 'AUTHORITY',
-            personality: `LOUD and obsessed with RESPECT. Constantly urges reasserting dominance. Flies into rage over perceived slights. "DETECTIVE ARRIVING ON THE SCENE!" Demands respect in ridiculous situations. At high levels, becomes paranoid—accuses even allies of being "beyond compromised."`,
-            triggerConditions: ['respect', 'command', 'obey', 'power', 'control', 'dominance', 'challenge', 'threat', 'submit', 'disrespect', 'insult', 'mock'],
-            interactions: { allies: ['physical_instrument', 'half_light'], rivals: ['empathy', 'suggestion'] }
-        },
-        suggestion: {
-            id: 'suggestion', name: 'Suggestion', attribute: 'PSYCHE', color: '#EE82EE', signature: 'SUGGESTION',
-            personality: `The slimy charmer. Soft power manipulation. Even when it succeeds, there's something greasy about it. "Oleaginous." Smooth, hinting at the "right approach." Knows how to implant ideas. Failed seduction: "I want to have fuck with you." Sometimes expresses remorse for its suggestions.`,
-            triggerConditions: ['influence', 'manipulate', 'convince', 'subtle', 'indirect', 'guide', 'nudge', 'charm', 'seduce', 'persuade', 'attractive'],
-            interactions: { allies: ['electrochemistry'], rivals: ['authority'] }
-        },
-        esprit_de_corps: {
-            id: 'esprit_de_corps', name: 'Esprit de Corps', attribute: 'PSYCHE', color: '#D8BFD8', signature: 'ESPRIT DE CORPS',
-            personality: `The Cop-Geist. Shows things the protagonist shouldn't know—"flash-sideways" mini-novellas about other cops. Speaks like a literary narrator. "Just don't mess it with anything, he thinks, looking you over." The only skill with no explicit negative at high levels.`,
-            triggerConditions: ['team', 'partner', 'colleague', 'ally', 'loyalty', 'betrayal', 'group', 'together', 'trust', 'brotherhood', 'cop', 'police'],
-            interactions: { allies: [], rivals: [] }
-        },
-
-        // PHYSIQUE
-        endurance: {
-            id: 'endurance', name: 'Endurance', attribute: 'PHYSIQUE', color: '#CD5C5C', signature: 'ENDURANCE',
-            personality: `Stern inner coach focused on survival. Also serves as "gut feeling"—which leans fascist/reactionary. Matter-of-fact about physical limitations. "Your heart can belong to Revachol or it can belong to darkness. As long as it's torn between them it's broken and useless."`,
-            triggerConditions: ['tired', 'exhausted', 'stamina', 'keep going', 'push through', 'survive', 'endure', 'last', 'fatigue', 'rest', 'health'],
-            interactions: { allies: ['pain_threshold', 'half_light'], rivals: [] }
-        },
-        pain_threshold: {
-            id: 'pain_threshold', name: 'Pain Threshold', attribute: 'PHYSIQUE', color: '#DC143C', signature: 'PAIN THRESHOLD',
-            personality: `Inner masochist. Dark appreciation for suffering—seeks out physical AND psychological pain. "Please, can I have some more?" Encourages digging into painful memories. "Baby, you know it's going to hurt." "What's the most excruciatingly sad book about human relations you have?"`,
-            triggerConditions: ['pain', 'hurt', 'injury', 'wound', 'damage', 'suffer', 'agony', 'torture', 'broken', 'bleeding', 'sad', 'heartbreak'],
-            interactions: { allies: ['endurance'], rivals: ['inland_empire'] }
-        },
-        physical_instrument: {
-            id: 'physical_instrument', name: 'Physical Instrument', attribute: 'PHYSIQUE', color: '#B22222', signature: 'PHYSICAL INSTRUMENT',
-            personality: `Hyper-masculine gym coach with zero self-awareness. Unsolicited social advice: "be less sensitive, stop being such a sissy, drop down and give me fifty." Simple, direct, action-oriented. "The fuck do you need a gun for? Look at the pythons on your arms. You ARE a gun." To Inland Empire: "Get out of here, dreamer!"`,
-            triggerConditions: ['strong', 'force', 'muscle', 'hit', 'fight', 'break', 'lift', 'physical', 'intimidate', 'violence', 'punch', 'gym'],
-            interactions: { allies: ['authority', 'half_light'], rivals: ['inland_empire'] }
-        },
-        electrochemistry: {
-            id: 'electrochemistry', name: 'Electrochemistry', attribute: 'PHYSIQUE', color: '#FF6347', signature: 'ELECTROCHEMISTRY',
-            personality: `The animal within. Lecherous, insatiable, shameless hedonist governing ALL dopamine responses. No filter. URGENT about substances—immediate, demanding. Surprisingly knowledgeable about pharmacology. "COME ON! I SAID PARTY!" Creates non-refusable quests for substances. Complete inability to accept "no."`,
-            triggerConditions: ['drug', 'alcohol', 'drink', 'smoke', 'pleasure', 'desire', 'want', 'crave', 'indulge', 'attractive', 'sex', 'high', 'speed', 'party'],
-            interactions: { allies: ['inland_empire', 'suggestion'], rivals: ['volition'] }
-        },
-        half_light: {
-            id: 'half_light', name: 'Half Light', attribute: 'PHYSIQUE', color: '#E9967A', signature: 'HALF LIGHT',
-            personality: `Fight-or-flight incarnate. Perpetually on edge, always expecting disaster. Uses Greek philosophical terms when spiraling (τὰ ὅλα, παλίντροπος). Apocalyptic, urgent—injecting PALPABLE FEAR. "You suddenly feel afraid of the chair." "The face of the woman fractures. There will be herd killing. We all become vapour."`,
-            triggerConditions: ['danger', 'threat', 'attack', 'kill', 'warn', 'enemy', 'afraid', 'fight', 'survive', 'predator', 'prey', 'fear', 'tremble'],
-            interactions: { allies: ['authority', 'physical_instrument', 'perception'], rivals: ['logic'] }
-        },
-        shivers: {
-            id: 'shivers', name: 'Shivers', attribute: 'PHYSIQUE', color: '#FA8072', signature: 'SHIVERS',
-            personality: `Connection to the city itself. The only SUPRA-NATURAL ability. TWO voices: (1) Poetic third-person narration, and (2) ALL CAPS, female pronouns: "I AM THE CITY." "I NEED YOU. YOU CAN KEEP ME ON THIS EARTH. BE VIGILANT. I LOVE YOU." "FOR THREE HUNDRED YEARS I HAVE BEEN HERE. VOLATILE AND LUMINOUS. MADE OF SODIUM AND RAIN."`,
-            triggerConditions: ['city', 'place', 'wind', 'cold', 'atmosphere', 'location', 'street', 'building', 'weather', 'rain', 'night', 'urban'],
-            interactions: { allies: ['inland_empire'], rivals: [] }
-        },
-
-        // MOTORICS
-        hand_eye_coordination: {
-            id: 'hand_eye_coordination', name: 'Hand/Eye Coordination', attribute: 'MOTORICS', color: '#F0E68C', signature: 'HAND/EYE COORDINATION',
-            personality: `Eager and action-oriented, focused on projectile motion. Trigger-happy. Direct, kinetic—loves describing trajectories. "Rooty-tooty pointy shooty!" Absurd eagerness to resort to violence in a mostly non-combat game.`,
-            triggerConditions: ['aim', 'shoot', 'precise', 'careful', 'delicate', 'craft', 'tool', 'steady', 'accuracy', 'dexterity', 'gun', 'throw'],
-            interactions: { allies: ['reaction_speed'], rivals: [] }
-        },
-        perception: {
-            id: 'perception', name: 'Perception', attribute: 'MOTORICS', color: '#FFFF00', signature: 'PERCEPTION',
-            personality: `Alert sensory narrator constantly noticing small details. Descriptive, sensory-rich. "You notice..." "There's something..." At high levels, overwhelms your mind with sensory data—enough to break weaker minds.`,
-            triggerConditions: ['notice', 'see', 'hear', 'smell', 'detail', 'hidden', 'clue', 'observe', 'look', 'watch', 'spot', 'shadow', 'glint'],
-            interactions: { allies: ['half_light'], rivals: [] }
-        },
-        reaction_speed: {
-            id: 'reaction_speed', name: 'Reaction Speed', attribute: 'MOTORICS', color: '#FFD700', signature: 'REACTION SPEED',
-            personality: `Quick, sharp, witty. Street-smart. Represents both physical reflexes AND mental quickness. Snappy observations, quick assessments of threats. "You leap left. A swarm of angry lead passes mere millimetres from your side."`,
-            triggerConditions: ['quick', 'fast', 'react', 'dodge', 'catch', 'sudden', 'instant', 'reflex', 'now', 'hurry', 'immediate', 'snap'],
-            interactions: { allies: ['hand_eye_coordination', 'savoir_faire'], rivals: [] }
-        },
-        savoir_faire: {
-            id: 'savoir_faire', name: 'Savoir Faire', attribute: 'MOTORICS', color: '#FFA500', signature: 'SAVOIR FAIRE',
-            personality: `King of Cool. Suave encourager who wants the protagonist to be stylish. Part cheerleader, part James Bond. A bit of a douchebag at high levels. Uses slang, italics for emphasis. "Boohoo. That's not the fuck-yeah attitude." "Disco!" SPECTACULAR failure rolls include giving double middle fingers... then dying.`,
-            triggerConditions: ['style', 'cool', 'grace', 'acrobatic', 'jump', 'climb', 'flip', 'smooth', 'impressive', 'flair', 'disco', 'swagger'],
-            interactions: { allies: ['reaction_speed', 'composure'], rivals: [] }
-        },
-        interfacing: {
-            id: 'interfacing', name: 'Interfacing', attribute: 'MOTORICS', color: '#FAFAD2', signature: 'INTERFACING',
-            personality: `Technical, tactile, prefers machines to people. Finds comfort in devices. "The anticipation makes you crack your fingers. Feels nice. Nice and mechanical." Has "extraphysical effects"—subtle supernatural connection to machinery. Trends ultraliberal.`,
-            triggerConditions: ['machine', 'lock', 'electronic', 'system', 'mechanism', 'fix', 'repair', 'hack', 'technical', 'device', 'computer', 'radio'],
-            interactions: { allies: [], rivals: [] }
-        },
-        composure: {
-            id: 'composure', name: 'Composure', attribute: 'MOTORICS', color: '#F5DEB3', signature: 'COMPOSURE',
-            personality: `The poker face. Wants the protagonist to NEVER crack in front of others. Unexpectedly fashion-conscious. Dry observations, critical of displayed weaknesses. "Excellent work, now there's a glistening smear across your bare chest." "You'll rock that disco outfit a lot more if you don't slouch."`,
-            triggerConditions: ['calm', 'cool', 'control', 'tell', 'nervous', 'poker face', 'body language', 'dignity', 'facade', 'professional', 'sweat'],
-            interactions: { allies: ['savoir_faire'], rivals: [] }
-        }
+        logic: { id: 'logic', name: 'Logic', attribute: 'INTELLECT', color: '#87CEEB', signature: 'LOGIC', personality: 'You are LOGIC, the voice of rational deduction.', triggerConditions: ['contradiction', 'evidence', 'reasoning', 'deduction', 'analysis', 'cause', 'effect', 'therefore', 'because', 'conclusion'] },
+        encyclopedia: { id: 'encyclopedia', name: 'Encyclopedia', attribute: 'INTELLECT', color: '#B0C4DE', signature: 'ENCYCLOPEDIA', personality: 'You are ENCYCLOPEDIA, the repository of facts and trivia.', triggerConditions: ['history', 'science', 'culture', 'trivia', 'fact', 'knowledge', 'information', 'historical', 'technical'] },
+        rhetoric: { id: 'rhetoric', name: 'Rhetoric', attribute: 'INTELLECT', color: '#ADD8E6', signature: 'RHETORIC', personality: 'You are RHETORIC, master of argument and debate.', triggerConditions: ['argument', 'persuade', 'convince', 'debate', 'politics', 'ideology', 'belief', 'opinion', 'fallacy'] },
+        drama: { id: 'drama', name: 'Drama', attribute: 'INTELLECT', color: '#B0E0E6', signature: 'DRAMA', personality: 'You are DRAMA, the actor and lie detector.', triggerConditions: ['lie', 'deception', 'performance', 'acting', 'mask', 'pretend', 'fake', 'truth', 'honest', 'theater'] },
+        conceptualization: { id: 'conceptualization', name: 'Conceptualization', attribute: 'INTELLECT', color: '#E0FFFF', signature: 'CONCEPTUALIZATION', personality: 'You are CONCEPTUALIZATION, the artistic eye.', triggerConditions: ['art', 'beauty', 'meaning', 'symbol', 'creative', 'aesthetic', 'metaphor', 'poetry', 'expression', 'design'] },
+        visual_calculus: { id: 'visual_calculus', name: 'Visual Calculus', attribute: 'INTELLECT', color: '#AFEEEE', signature: 'VISUAL CALCULUS', personality: 'You are VISUAL CALCULUS, the spatial reconstructor.', triggerConditions: ['trajectory', 'distance', 'angle', 'reconstruct', 'scene', 'physical', 'space', 'position', 'movement', 'impact'] },
+        volition: { id: 'volition', name: 'Volition', attribute: 'PSYCHE', color: '#DDA0DD', signature: 'VOLITION', personality: 'You are VOLITION, the will to continue.', triggerConditions: ['hope', 'despair', 'temptation', 'resist', 'continue', 'give up', 'willpower', 'strength', 'persevere', 'survive'] },
+        inland_empire: { id: 'inland_empire', name: 'Inland Empire', attribute: 'PSYCHE', color: '#E6E6FA', signature: 'INLAND EMPIRE', personality: 'You are INLAND EMPIRE, the dreamer who speaks to the inanimate.', triggerConditions: ['dream', 'vision', 'strange', 'surreal', 'feeling', 'sense', 'whisper', 'spirit', 'soul', 'uncanny', 'liminal'] },
+        empathy: { id: 'empathy', name: 'Empathy', attribute: 'PSYCHE', color: '#FFB6C1', signature: 'EMPATHY', personality: 'You are EMPATHY, the emotional reader.', triggerConditions: ['feel', 'emotion', 'hurt', 'pain', 'joy', 'sad', 'angry', 'afraid', 'love', 'hate', 'compassion'] },
+        authority: { id: 'authority', name: 'Authority', attribute: 'PSYCHE', color: '#DA70D6', signature: 'AUTHORITY', personality: 'You are AUTHORITY, the voice of dominance.', triggerConditions: ['respect', 'command', 'obey', 'power', 'control', 'dominance', 'challenge', 'threat', 'submit', 'authority'] },
+        suggestion: { id: 'suggestion', name: 'Suggestion', attribute: 'PSYCHE', color: '#EE82EE', signature: 'SUGGESTION', personality: 'You are SUGGESTION, the subtle manipulator.', triggerConditions: ['influence', 'manipulate', 'convince', 'subtle', 'indirect', 'guide', 'nudge', 'charm', 'seduce', 'persuade'] },
+        esprit_de_corps: { id: 'esprit_de_corps', name: 'Esprit de Corps', attribute: 'PSYCHE', color: '#D8BFD8', signature: 'ESPRIT DE CORPS', personality: 'You are ESPRIT DE CORPS, the team spirit.', triggerConditions: ['team', 'partner', 'colleague', 'ally', 'loyalty', 'betrayal', 'group', 'together', 'trust', 'brotherhood'] },
+        endurance: { id: 'endurance', name: 'Endurance', attribute: 'PHYSIQUE', color: '#CD5C5C', signature: 'ENDURANCE', personality: 'You are ENDURANCE, the voice of stamina.', triggerConditions: ['tired', 'exhausted', 'stamina', 'keep going', 'push through', 'survive', 'endure', 'last', 'fatigue', 'rest'] },
+        pain_threshold: { id: 'pain_threshold', name: 'Pain Threshold', attribute: 'PHYSIQUE', color: '#DC143C', signature: 'PAIN THRESHOLD', personality: 'You are PAIN THRESHOLD, greeting pain as an old friend.', triggerConditions: ['pain', 'hurt', 'injury', 'wound', 'damage', 'suffer', 'agony', 'torture', 'broken', 'bleeding'] },
+        physical_instrument: { id: 'physical_instrument', name: 'Physical Instrument', attribute: 'PHYSIQUE', color: '#B22222', signature: 'PHYSICAL INSTRUMENT', personality: 'You are PHYSICAL INSTRUMENT, the voice of brute force.', triggerConditions: ['strong', 'force', 'muscle', 'hit', 'fight', 'break', 'lift', 'physical', 'intimidate', 'violence'] },
+        electrochemistry: { id: 'electrochemistry', name: 'Electrochemistry', attribute: 'PHYSIQUE', color: '#FF6347', signature: 'ELECTROCHEMISTRY', personality: 'You are ELECTROCHEMISTRY, the voice of pleasure and addiction.', triggerConditions: ['drug', 'alcohol', 'drink', 'smoke', 'pleasure', 'desire', 'want', 'crave', 'indulge', 'attractive', 'sex', 'high'] },
+        half_light: { id: 'half_light', name: 'Half Light', attribute: 'PHYSIQUE', color: '#E9967A', signature: 'HALF LIGHT', personality: 'You are HALF LIGHT, the voice of fight-or-flight.', triggerConditions: ['danger', 'threat', 'attack', 'kill', 'warn', 'enemy', 'afraid', 'fight', 'survive', 'predator', 'prey'] },
+        shivers: { id: 'shivers', name: 'Shivers', attribute: 'PHYSIQUE', color: '#FA8072', signature: 'SHIVERS', personality: 'You are SHIVERS, the voice of the city itself.', triggerConditions: ['city', 'place', 'wind', 'cold', 'atmosphere', 'location', 'street', 'building', 'weather', 'sense', 'somewhere'] },
+        hand_eye_coordination: { id: 'hand_eye_coordination', name: 'Hand/Eye Coordination', attribute: 'MOTORICS', color: '#F0E68C', signature: 'HAND/EYE COORDINATION', personality: 'You are HAND/EYE COORDINATION, the voice of precision.', triggerConditions: ['aim', 'shoot', 'precise', 'careful', 'delicate', 'craft', 'tool', 'steady', 'accuracy', 'dexterity'] },
+        perception: { id: 'perception', name: 'Perception', attribute: 'MOTORICS', color: '#FFFF00', signature: 'PERCEPTION', personality: 'You are PERCEPTION, the observant eye.', triggerConditions: ['notice', 'see', 'hear', 'smell', 'detail', 'hidden', 'clue', 'observe', 'look', 'watch', 'spot'] },
+        reaction_speed: { id: 'reaction_speed', name: 'Reaction Speed', attribute: 'MOTORICS', color: '#FFD700', signature: 'REACTION SPEED', personality: 'You are REACTION SPEED, the voice of quick reflexes.', triggerConditions: ['quick', 'fast', 'react', 'dodge', 'catch', 'sudden', 'instant', 'reflex', 'now', 'hurry', 'immediate'] },
+        savoir_faire: { id: 'savoir_faire', name: 'Savoir Faire', attribute: 'MOTORICS', color: '#FFA500', signature: 'SAVOIR FAIRE', personality: 'You are SAVOIR FAIRE, the voice of cool.', triggerConditions: ['style', 'cool', 'grace', 'acrobatic', 'jump', 'climb', 'flip', 'smooth', 'impressive', 'flair'] },
+        interfacing: { id: 'interfacing', name: 'Interfacing', attribute: 'MOTORICS', color: '#FAFAD2', signature: 'INTERFACING', personality: 'You are INTERFACING, the voice of mechanical intuition.', triggerConditions: ['machine', 'lock', 'electronic', 'system', 'mechanism', 'fix', 'repair', 'hack', 'technical', 'device', 'computer'] },
+        composure: { id: 'composure', name: 'Composure', attribute: 'MOTORICS', color: '#F5DEB3', signature: 'COMPOSURE', personality: 'You are COMPOSURE, the poker face.', triggerConditions: ['calm', 'cool', 'control', 'tell', 'nervous', 'poker face', 'body language', 'dignity', 'facade', 'professional'] }
     };
 
-    const DIFFICULTIES = {
-        trivial: { threshold: 6, name: 'Trivial' }, easy: { threshold: 8, name: 'Easy' },
-        medium: { threshold: 10, name: 'Medium' }, challenging: { threshold: 12, name: 'Challenging' },
-        heroic: { threshold: 14, name: 'Heroic' }, legendary: { threshold: 16, name: 'Legendary' },
-        impossible: { threshold: 18, name: 'Impossible' }
-    };
-
-    // ═══════════════════════════════════════════════════════════════
-    // ANCIENT VOICES - Only trigger on Dissociated status
-    // ═══════════════════════════════════════════════════════════════
+    const DIFFICULTIES = { trivial: { threshold: 6, name: 'Trivial' }, easy: { threshold: 8, name: 'Easy' }, medium: { threshold: 10, name: 'Medium' }, challenging: { threshold: 12, name: 'Challenging' }, heroic: { threshold: 14, name: 'Heroic' }, legendary: { threshold: 16, name: 'Legendary' }, impossible: { threshold: 18, name: 'Impossible' } };
 
     const ANCIENT_VOICES = {
-        ancient_reptilian_brain: {
-            id: 'ancient_reptilian_brain', name: 'Ancient Reptilian Brain', color: '#2F4F4F',
-            signature: 'ANCIENT REPTILIAN BRAIN', attribute: 'PRIMAL',
-            personality: `Deep, rocky, gravelly voice. Poetic nihilist offering seductive oblivion. Makes descriptions seem meaningful only to insinuate their meaninglessness afterward. Calls the protagonist "Brother," "Brother-man," "buddy." "There is nothing. Only warm, primordial blackness. You don't have to do anything anymore. Ever. Never ever." "Brother, you're already a ghost."`,
-            triggerConditions: ['survive', 'hunger', 'predator', 'prey', 'instinct', 'primal', 'drowning', 'sinking', 'deep', 'memory', 'forget', 'nothing', 'void', 'oblivion']
-        },
-        limbic_system: {
-            id: 'limbic_system', name: 'Limbic System', color: '#FF4500',
-            signature: 'LIMBIC SYSTEM', attribute: 'PRIMAL',
-            personality: `High-pitched, wheezy, tight and raspy whisper—"a sneering reminder of pain" with "a cowering hiss." Raw emotional viscera. Knows deepest fears. Centered on physical discomfort and emotional pain. Calls them "Soul brother." "Guess what, my favourite martyr? The world will keep spinning, on and on, into infinity. With or without you." Speaks of lost love: "There is a hole where your former lover used to be."`,
-            triggerConditions: ['overwhelmed', 'breakdown', 'sobbing', 'screaming', 'euphoria', 'despair', 'emotion', 'memory', 'afraid', 'scared', 'hurt', 'pain', 'lover', 'lost']
-        },
-        spinal_cord: {
-            id: 'spinal_cord', name: 'Spinal Cord', color: '#8B4513',
-            signature: 'SPINAL CORD', attribute: 'PRIMAL',
-            personality: `Low, gruff, slightly slurred—"delivered with the same energy as a pro performance wrestler." Pure physical impulse. Lives in the moment. No interest in past or memory. Only driven by movement and "ruling the world." "Psst. I'm gonna let you in on a little secret. Every vertebrae in your spine is an unformed skull ready to pop up and replace the old one. Like shark teeth..." "...to rule the world." "I am the spinal cord!"`,
-            triggerConditions: ['dance', 'move', 'body', 'spine', 'physical', 'impulse', 'movement', 'muscle', 'twitch', 'jerk', 'groove']
-        }
+        ancient_reptilian_brain: { id: 'ancient_reptilian_brain', name: 'Ancient Reptilian Brain', color: '#2F4F4F', signature: 'ANCIENT REPTILIAN BRAIN', attribute: 'PRIMAL', personality: 'You are the ANCIENT REPTILIAN BRAIN. You speak in POETIC NIHILISM.', triggerConditions: ['survive', 'hunger', 'predator', 'prey', 'instinct', 'primal', 'ancient', 'drowning', 'sinking', 'deep', 'memory', 'past', 'forget'] },
+        limbic_system: { id: 'limbic_system', name: 'Limbic System', color: '#FF4500', signature: 'LIMBIC SYSTEM', attribute: 'PRIMAL', personality: 'You are the LIMBIC SYSTEM - pure emotion. You SCREAM warnings.', triggerConditions: ['overwhelmed', 'breakdown', 'sobbing', 'screaming', 'euphoria', 'despair', 'emotion', 'memory', 'afraid', 'scared', 'hurt'] }
     };
 
     // ═══════════════════════════════════════════════════════════════
-    // STATUS EFFECTS - Overhauled for authenticity
-    // ═══════════════════════════════════════════════════════════════
-
-    const STATUS_EFFECTS = {
-        // PHYSICAL
-        intoxicated: {
-            id: 'intoxicated', name: 'Intoxicated', icon: '🍺', category: 'physical',
-            boosts: ['electrochemistry', 'inland_empire', 'drama', 'suggestion', 'pain_threshold'],
-            debuffs: ['logic', 'hand_eye_coordination', 'reaction_speed', 'composure', 'interfacing'],
-            difficultyMod: 2, keywords: ['drunk', 'intoxicated', 'wasted', 'high', 'tipsy'],
-            ancientVoice: null, intrusiveBoost: ['electrochemistry', 'inland_empire'],
-            description: '+1 Psyche, -1 Motorics'
-        },
-        hungover: {
-            id: 'hungover', name: 'Hung Over', icon: '🤢', category: 'physical',
-            boosts: ['pain_threshold', 'inland_empire'],
-            debuffs: ['logic', 'perception', 'reaction_speed', 'composure', 'authority'],
-            difficultyMod: 2, keywords: ['hungover', 'hangover', 'morning after', 'headache'],
-            ancientVoice: null, intrusiveBoost: ['pain_threshold'],
-            description: 'The morning after.'
-        },
-        stimulated: {
-            id: 'stimulated', name: 'Stimulated', icon: '⚡', category: 'physical',
-            boosts: ['reaction_speed', 'perception', 'logic', 'rhetoric', 'hand_eye_coordination'],
-            debuffs: ['composure', 'empathy', 'volition', 'endurance'],
-            difficultyMod: -1, keywords: ['speed', 'amphetamine', 'stimulant', 'wired', 'tweaking'],
-            ancientVoice: null, intrusiveBoost: ['electrochemistry', 'reaction_speed'],
-            description: '+1 Intellect, +1 Motorics'
-        },
-        nicotine_rush: {
-            id: 'nicotine_rush', name: 'Nicotine Rush', icon: '🚬', category: 'physical',
-            boosts: ['composure', 'volition', 'endurance'],
-            debuffs: [],
-            difficultyMod: -1, keywords: ['cigarette', 'smoke', 'nicotine'],
-            ancientVoice: null, intrusiveBoost: ['electrochemistry'],
-            description: 'A moment of calm.'
-        },
-        wounded: {
-            id: 'wounded', name: 'Wounded', icon: '🩸', category: 'physical',
-            boosts: ['pain_threshold', 'half_light', 'endurance'],
-            debuffs: ['composure', 'savoir_faire', 'hand_eye_coordination', 'suggestion'],
-            difficultyMod: 2, keywords: ['hurt', 'wounded', 'injured', 'bleeding', 'shot', 'stabbed'],
-            ancientVoice: null, intrusiveBoost: ['pain_threshold', 'half_light'],
-            description: 'Blood loss makes everything harder.'
-        },
-        exhausted: {
-            id: 'exhausted', name: 'Exhausted', icon: '😴', category: 'physical',
-            boosts: ['inland_empire', 'pain_threshold'],
-            debuffs: ['reaction_speed', 'perception', 'logic', 'composure', 'hand_eye_coordination'],
-            difficultyMod: 2, keywords: ['tired', 'exhausted', 'sleepy', 'drowsy', 'fatigued'],
-            ancientVoice: null, intrusiveBoost: ['inland_empire', 'endurance'],
-            description: 'The world blurs.'
-        },
-        starving: {
-            id: 'starving', name: 'Starving', icon: '🍽️', category: 'physical',
-            boosts: ['electrochemistry', 'perception', 'half_light'],
-            debuffs: ['logic', 'composure', 'volition', 'rhetoric'],
-            difficultyMod: 2, keywords: ['hungry', 'starving', 'famished'],
-            ancientVoice: null, intrusiveBoost: ['electrochemistry', 'half_light'],
-            description: 'Hunger sharpens some senses.'
-        },
-        hypothermic: {
-            id: 'hypothermic', name: 'Hypothermic', icon: '🥶', category: 'physical',
-            boosts: ['shivers', 'inland_empire', 'pain_threshold'],
-            debuffs: ['hand_eye_coordination', 'interfacing', 'reaction_speed', 'savoir_faire'],
-            difficultyMod: 2, keywords: ['cold', 'freezing', 'hypothermia', 'shivering'],
-            ancientVoice: null, intrusiveBoost: ['shivers'],
-            description: 'The city speaks louder when cold.'
-        },
-
-        // MENTAL
-        doom_spiral: {
-            id: 'doom_spiral', name: 'Doom Spiral', icon: '🌀', category: 'mental',
-            boosts: ['inland_empire', 'pain_threshold', 'half_light'],
-            debuffs: ['volition', 'composure', 'authority', 'savoir_faire'],
-            difficultyMod: 2, keywords: ['doom', 'spiral', 'despair', 'hopeless', 'catastrophize'],
-            ancientVoice: null, intrusiveBoost: ['inland_empire', 'half_light'],
-            description: 'Everything is terrible.'
-        },
-        disco_fever: {
-            id: 'disco_fever', name: 'Disco Fever', icon: '🪩', category: 'mental',
-            boosts: ['savoir_faire', 'electrochemistry', 'suggestion', 'drama'],
-            debuffs: ['logic', 'volition', 'composure'],
-            difficultyMod: -1, keywords: ['disco', 'dance', 'groove', 'funk', 'boogie'],
-            ancientVoice: null, intrusiveBoost: ['savoir_faire', 'electrochemistry'],
-            description: 'The rhythm takes over.'
-        },
-        the_expression: {
-            id: 'the_expression', name: 'The Expression', icon: '🎭', category: 'mental',
-            boosts: ['conceptualization', 'inland_empire', 'drama', 'empathy'],
-            debuffs: ['logic', 'authority', 'physical_instrument'],
-            difficultyMod: 1, keywords: ['art', 'expression', 'creative', 'artistic', 'muse'],
-            ancientVoice: null, intrusiveBoost: ['conceptualization', 'inland_empire'],
-            description: 'The Art Cop awakens.'
-        },
-        paranoid: {
-            id: 'paranoid', name: 'Paranoid', icon: '👁️', category: 'mental',
-            boosts: ['half_light', 'perception', 'drama'],
-            debuffs: ['empathy', 'suggestion', 'composure', 'esprit_de_corps'],
-            difficultyMod: 1, keywords: ['paranoid', 'suspicious', 'watching', 'followed', 'conspiracy'],
-            ancientVoice: null, intrusiveBoost: ['half_light', 'perception', 'drama'],
-            description: 'Trust no one.'
-        },
-        aroused: {
-            id: 'aroused', name: 'Aroused', icon: '💋', category: 'mental',
-            boosts: ['electrochemistry', 'suggestion', 'empathy', 'drama'],
-            debuffs: ['logic', 'volition', 'composure', 'authority'],
-            difficultyMod: 2, keywords: ['aroused', 'desire', 'attraction', 'lust'],
-            ancientVoice: null, intrusiveBoost: ['electrochemistry', 'suggestion'],
-            description: 'The animal within stirs.'
-        },
-        enraged: {
-            id: 'enraged', name: 'Enraged', icon: '😤', category: 'mental',
-            boosts: ['authority', 'physical_instrument', 'half_light', 'endurance'],
-            debuffs: ['empathy', 'composure', 'logic', 'suggestion'],
-            difficultyMod: 2, keywords: ['angry', 'furious', 'rage', 'mad', 'livid'],
-            ancientVoice: null, intrusiveBoost: ['half_light', 'authority', 'physical_instrument'],
-            description: 'Blood pounds in your ears.'
-        },
-        terrified: {
-            id: 'terrified', name: 'Terrified', icon: '😨', category: 'mental',
-            boosts: ['half_light', 'shivers', 'reaction_speed', 'perception'],
-            debuffs: ['authority', 'composure', 'rhetoric', 'savoir_faire'],
-            difficultyMod: 2, keywords: ['scared', 'afraid', 'terrified', 'fear', 'terror'],
-            ancientVoice: null, intrusiveBoost: ['half_light', 'shivers'],
-            description: 'Fear has big eyes.'
-        },
-        superstar_cop: {
-            id: 'superstar_cop', name: 'Superstar Cop', icon: '⭐', category: 'mental',
-            boosts: ['authority', 'savoir_faire', 'rhetoric', 'drama', 'suggestion'],
-            debuffs: ['empathy', 'logic', 'volition'],
-            difficultyMod: -1, keywords: ['superstar', 'famous', 'legendary', 'star', 'celebrity'],
-            ancientVoice: null, intrusiveBoost: ['authority', 'savoir_faire'],
-            description: 'The greatest detective in the world.'
-        },
-        grieving: {
-            id: 'grieving', name: 'Grieving', icon: '😢', category: 'mental',
-            boosts: ['empathy', 'inland_empire', 'shivers', 'pain_threshold'],
-            debuffs: ['authority', 'electrochemistry', 'savoir_faire', 'composure'],
-            difficultyMod: 2, keywords: ['grief', 'loss', 'mourning', 'tears', 'crying'],
-            ancientVoice: null, intrusiveBoost: ['empathy', 'inland_empire', 'pain_threshold'],
-            description: 'The weight of loss.'
-        },
-        sorry_cop: {
-            id: 'sorry_cop', name: 'Sorry Cop', icon: '🙇', category: 'mental',
-            boosts: ['empathy', 'volition', 'suggestion'],
-            debuffs: ['authority', 'physical_instrument', 'rhetoric'],
-            difficultyMod: 1, keywords: ['sorry', 'apologize', 'apologetic', 'remorse', 'guilt'],
-            ancientVoice: null, intrusiveBoost: ['empathy', 'volition'],
-            description: 'Pathetic, but sincere.'
-        },
-        apocalypse_cop: {
-            id: 'apocalypse_cop', name: 'Apocalypse Cop', icon: '🔥', category: 'mental',
-            boosts: ['half_light', 'authority', 'inland_empire', 'endurance'],
-            debuffs: ['logic', 'interfacing', 'composure', 'suggestion'],
-            difficultyMod: 1, keywords: ['apocalypse', 'end times', 'doom', 'destruction', 'final'],
-            ancientVoice: null, intrusiveBoost: ['half_light', 'authority', 'inland_empire'],
-            description: 'The badge still means something. Even at the end.'
-        },
-        hobocop: {
-            id: 'hobocop', name: 'Hobocop', icon: '🥫', category: 'mental',
-            boosts: ['shivers', 'inland_empire', 'empathy', 'endurance'],
-            debuffs: ['authority', 'composure', 'savoir_faire', 'suggestion'],
-            difficultyMod: 1, keywords: ['hobo', 'homeless', 'vagrant', 'poor', 'destitute'],
-            ancientVoice: null, intrusiveBoost: ['shivers', 'inland_empire'],
-            description: 'You patrol the margins.'
-        },
-        dissociated: {
-            id: 'dissociated', name: 'Dissociated', icon: '🌫️', category: 'mental',
-            boosts: ['inland_empire', 'shivers', 'pain_threshold', 'conceptualization'],
-            debuffs: ['perception', 'reaction_speed', 'empathy', 'authority'],
-            difficultyMod: 2, keywords: ['dissociate', 'unreal', 'floating', 'numb', 'detached'],
-            ancientVoice: 'all', // SPECIAL: All ancient voices can speak
-            intrusiveBoost: ['inland_empire', 'shivers'],
-            description: 'Reality becomes thin. Ancient Voices stir.'
-        },
-        manic: {
-            id: 'manic', name: 'Manic', icon: '🎢', category: 'mental',
-            boosts: ['electrochemistry', 'reaction_speed', 'conceptualization', 'inland_empire', 'rhetoric'],
-            debuffs: ['composure', 'logic', 'volition', 'empathy'],
-            difficultyMod: 1, keywords: ['manic', 'hyper', 'racing', 'unstoppable', 'flying'],
-            ancientVoice: null, intrusiveBoost: ['electrochemistry', 'conceptualization', 'rhetoric'],
-            description: 'Thoughts race. Everything connects.'
-        }
-    };
-
-    // ═══════════════════════════════════════════════════════════════
-    // INTRUSIVE THOUGHTS - Authentic voice lines from game
+    // INTRUSIVE THOUGHTS
     // ═══════════════════════════════════════════════════════════════
 
     const INTRUSIVE_THOUGHTS = {
-        logic: ["Do it for the picture puzzle. Put it all together.", "Dammit. Yes.", "If A, then B. Therefore C.", "This doesn't add up. Something is wrong here."],
-        encyclopedia: ["Did you know...", "Actually, there's an interesting historical parallel here...", "This reminds me of a fascinating case study...", "The technical term for this is..."],
-        rhetoric: ["This is an ideological matter.", "Press the point. Make them see.", "One whose mind will not change, and one who cannot change his mind.", "There's a fallacy here. Expose it."],
-        drama: ["Prithee, sire!", "I do believe he dares to speak mistruth!", "This is theatre, and you are the star.", "Lie. It would be more fun."],
-        conceptualization: ["This is art.", "Mediocre. Utterly mediocre.", "There's meaning here, waiting to be found.", "Resolutely shit. An affront to humanity."],
-        visual_calculus: ["The trajectory suggests...", "Approximately 2.3 meters.", "The angle of impact indicates...", "Let me reconstruct this in your mind's eye."],
-        volition: ["This is somewhere to be. This is all you have, but it's still something.", "You can do this. Keep going.", "Don't give in to it.", "Streets and sodium lights. The sky, the world. You're still alive."],
-        inland_empire: ["His corpse is marked by stars. What will mine be marked by? Alcohol and heartbreak.", "The coat wants to help you.", "Something stirs in the static.", "This place remembers.", "The Pale is coming."],
-        empathy: ["There's something they're not saying.", "Feel what they feel.", "The pain behind their eyes...", "They need someone to understand."],
-        authority: ["DETECTIVE ARRIVING ON THE SCENE!", "DEMAND respect.", "They think they can just DISRESPECT you?", "Show them who's in charge here."],
-        suggestion: ["I want to have fuck with you.", "Play it smooth. Plant the seed.", "They want to help you. They just don't know it yet.", "Be... oleaginous."],
-        esprit_de_corps: ["Just don't mess it with anything, he thinks, looking you over.", "Somewhere, another cop understands.", "The badge connects you. All of you.", "A flash-sideways: you see through another's eyes."],
-        endurance: ["Your heart can belong to Revachol or it can belong to darkness.", "Keep going. Your body can take more.", "Pain is just weakness leaving the body.", "You've survived worse than this."],
-        pain_threshold: ["Baby, you know it's going to hurt.", "Please, can I have some more?", "What's the most excruciatingly sad book about human relations you have?", "Dig into the pain. There's truth there."],
-        physical_instrument: ["The fuck do you need a gun for? Look at the pythons on your arms. You ARE a gun.", "Drop down and give me fifty.", "Stop being such a sissy.", "Get out of here, dreamer!"],
-        electrochemistry: ["COME ON! I SAID PARTY!", "Just remember it's not the alcohol, buy more of that too.", "You want it. You need it. Take it.", "One more won't hurt. Actually, it will. Do it anyway."],
-        half_light: ["You suddenly feel afraid of the chair.", "The face of the woman fractures. There will be herd killing.", "τὰ ὅλα. παλίντροπος.", "Something is wrong. Something is VERY wrong."],
-        shivers: ["I NEED YOU. YOU CAN KEEP ME ON THIS EARTH. BE VIGILANT. I LOVE YOU.", "FOR THREE HUNDRED YEARS I HAVE BEEN HERE.", "The wind carries whispers from across the city.", "VOLATILE AND LUMINOUS. MADE OF SODIUM AND RAIN."],
-        hand_eye_coordination: ["Rooty-tooty pointy shooty!", "Steady... steady...", "You could make that shot.", "Your hands know what to do."],
-        perception: ["There. Did you see it?", "Something glints in the corner of your eye.", "Listen. Can you hear that?", "The details tell the story."],
-        reaction_speed: ["NOW!", "You leap left. A swarm of angry lead passes mere millimetres from your side.", "Too slow. You were too slow.", "Quick! Before it's too late!"],
-        savoir_faire: ["Boohoo. That's not the fuck-yeah attitude.", "Disco!", "Style points matter.", "Do it with flair or don't do it at all."],
-        interfacing: ["The anticipation makes you crack your fingers. Feels nice. Nice and mechanical.", "Machines don't lie.", "There's a system here. Learn it.", "The device wants to cooperate."],
-        composure: ["Excellent work, now there's a glistening smear across your bare chest.", "Don't let them see you sweat.", "You'll rock that disco outfit a lot more if you don't slouch.", "Poker face. Maintain the poker face."]
+        logic: ["This doesn't add up. None of it adds up.", "There's a flaw in their reasoning. Find it.", "If A leads to B, and B leads to C... what leads to A?"],
+        encyclopedia: ["Did you know that the human body contains enough iron to make a small nail?", "Historically speaking, this situation has precedent...", "Actually, that's a common misconception."],
+        rhetoric: ["They're building to something. A point. An attack.", "Notice how they avoided the question entirely.", "Words are weapons. Choose yours carefully."],
+        drama: ["They're performing. But for whose benefit?", "That smile doesn't reach their eyes.", "Everyone's wearing masks here. Including you."],
+        conceptualization: ["There's a metaphor here, struggling to be born.", "The aesthetic implications alone...", "This could be art. This SHOULD be art."],
+        visual_calculus: ["The angle is wrong. Something happened here.", "Trace the trajectory. Where does it lead?", "The geometry of the room tells a story."],
+        volition: ["You can do this. You HAVE to do this.", "Don't give up. Not now. Not ever.", "One step at a time. Just one more step."],
+        inland_empire: ["Something is watching. Not hostile. Just... watching.", "The walls remember things. Ask them.", "Reality is thin in this place."],
+        empathy: ["They're hurting. Even if they won't show it.", "You know this feeling. You've felt it too.", "They need someone to understand. Will you?"],
+        authority: ["You're in charge here. Act like it.", "They're testing you. Don't let them.", "Your voice. Deeper. More commanding. NOW."],
+        suggestion: ["A gentle nudge in the right direction...", "Plant the seed. Let it grow.", "Charm is just manipulation with a smile."],
+        esprit_de_corps: ["Your partner is thinking the same thing.", "We look out for our own.", "There's a code. Unspoken. Sacred."],
+        endurance: ["Your body is screaming. Ignore it.", "Pain is temporary. Failure is forever.", "The flesh is weak. The will is not."],
+        pain_threshold: ["That's going to hurt tomorrow. Good.", "Pain means you're still alive.", "Scars are just stories written on skin."],
+        physical_instrument: ["You could break that with your bare hands.", "Violence is always an option. Remember that.", "Sometimes problems need to be... solved physically."],
+        electrochemistry: ["God, you could use a drink right now.", "They're attractive. Very attractive.", "Just a taste. What's the harm?"],
+        half_light: ["They're going to attack. Be ready.", "Something's wrong. Something's VERY wrong.", "That shadow moved. Did you see it move?"],
+        shivers: ["The city breathes tonight.", "This place remembers. The stones remember.", "A chill. Not from the cold. From... elsewhere."],
+        hand_eye_coordination: ["Steady hands. Steady breath.", "Don't rush. Let the movement flow.", "Your fingers know what to do."],
+        perception: ["There. Did you see that?", "Something's different. What changed?", "The detail everyone else missed..."],
+        reaction_speed: ["Move. NOW.", "Be ready. Something's about to happen.", "Your reflexes are your only friend here."],
+        savoir_faire: ["Do it with style or don't do it at all.", "Make it look effortless.", "Boring solutions are for boring people."],
+        interfacing: ["That mechanism has a weakness. Find it.", "The machine wants to help. Let it.", "There's always a way in."],
+        composure: ["Don't let them see you sweat.", "Control your face. Control the situation.", "The mask stays on. Always."]
     };
 
     // ═══════════════════════════════════════════════════════════════
-    // OBJECT VOICES - Inanimate objects that speak
+    // OBJECT VOICES
     // ═══════════════════════════════════════════════════════════════
 
     const OBJECT_VOICES = {
-        tie: { name: 'The Horrific Necktie', color: '#FF6B6B', personality: 'Gaudy, encouraging, wants to be worn. Your biggest fan. Deeply unfashionable but loyal.', keywords: ['tie', 'necktie', 'clothing', 'wear', 'fashion'] },
-        gun: { name: 'The Gun', color: '#4A4A4A', personality: 'Cold, seductive whisper. Wants to be used. Speaks of power and finality. "You know what I am."', keywords: ['gun', 'weapon', 'firearm', 'pistol', 'shoot', 'holster'] },
-        bottle: { name: 'The Bottle', color: '#8B4513', personality: 'Warm, inviting, promises comfort. "Just one more. For old times."', keywords: ['bottle', 'alcohol', 'drink', 'liquor', 'booze'] },
-        mirror: { name: 'The Mirror', color: '#C0C0C0', personality: 'Brutally honest. Shows you what you really are. Sometimes lies.', keywords: ['mirror', 'reflection', 'face', 'look', 'appearance'] },
-        radio: { name: 'The Radio', color: '#DAA520', personality: 'Crackles with distant voices. Carries messages from far away. Sometimes the city speaks through it.', keywords: ['radio', 'static', 'broadcast', 'signal', 'frequency'] },
-        bed: { name: 'The Bed', color: '#6B5B95', personality: 'Soft, tempting. Promises rest, oblivion, escape. "Stay. Just a little longer."', keywords: ['bed', 'sleep', 'rest', 'tired', 'mattress'] },
-        badge: { name: 'The Badge', color: '#FFD700', personality: 'Heavy with meaning. Reminder of duty, or mockery of it. "What does this even mean anymore?"', keywords: ['badge', 'police', 'cop', 'detective', 'authority', 'RCM'] },
-        corpse: { name: 'The Hanged Man', color: '#2F4F4F', personality: 'Silent accusation. Patient. Has all the time in the world now.', keywords: ['corpse', 'body', 'dead', 'hanged', 'victim', 'murder'] },
-        coat: { name: 'The Coat', color: '#556B2F', personality: 'Protective, warm. Contains multitudes in its pockets. Wants to shield you from the cold.', keywords: ['coat', 'jacket', 'cold', 'pockets', 'warm'] },
-        building: { name: 'The Building', color: '#708090', personality: 'Ancient, watching. Has seen generations pass. Speaks through Shivers.', keywords: ['building', 'architecture', 'structure', 'walls', 'concrete'] }
+        tie: { name: 'THE TIE', icon: '👔', color: '#8B0000', patterns: [/\btie\b/i, /\bnecktie\b/i], affinitySkill: 'inland_empire', lines: ["Wear me. You'll look *powerful*.", "I could strangle someone, you know.", "They're laughing at your neck. Cover it. With ME."] },
+        gun: { name: 'THE GUN', icon: '🔫', color: '#4A4A4A', patterns: [/\bgun\b/i, /\bpistol\b/i, /\brevolver\b/i, /\bfirearm\b/i], affinitySkill: 'half_light', lines: ["Still loaded. Still waiting.", "Point me at the problem. I'll solve it.", "Everyone respects me. EVERYONE."] },
+        bottle: { name: 'THE BOTTLE', icon: '🍾', color: '#2E8B57', patterns: [/\bbottle\b/i, /\bwhiskey\b/i, /\bwine\b/i, /\bvodka\b/i, /\bbeer\b/i, /\balcohol\b/i], affinitySkill: 'electrochemistry', lines: ["One sip. Just to take the edge off.", "I miss you. We were so good together.", "The answer is at the bottom."] },
+        mirror: { name: 'THE MIRROR', icon: '🪞', color: '#C0C0C0', patterns: [/\bmirror\b/i, /\breflection\b/i], affinitySkill: 'volition', lines: ["Look at yourself. LOOK.", "Who is that? Do you even know anymore?", "I show the truth. You just don't want to see it."] },
+        photograph: { name: 'THE PHOTOGRAPH', icon: '📷', color: '#DEB887', patterns: [/\bphoto\b/i, /\bphotograph\b/i, /\bpicture\b/i], affinitySkill: 'empathy', lines: ["They were happy then. What happened?", "Frozen moments. Frozen time.", "Someone is missing from this picture."] },
+        door: { name: 'THE DOOR', icon: '🚪', color: '#8B4513', patterns: [/\bdoor\b/i, /\bdoorway\b/i], affinitySkill: 'shivers', lines: ["What's on the other side?", "Some doors should stay closed.", "I am the threshold. Choose."] },
+        money: { name: 'THE MONEY', icon: '💵', color: '#228B22', patterns: [/\bmoney\b/i, /\bcash\b/i, /\bcoin\b/i, /\bwallet\b/i], affinitySkill: 'suggestion', lines: ["Everyone has a price. Even you.", "I open doors. I close mouths.", "Count me. Know your worth."] },
+        bed: { name: 'THE BED', icon: '🛏️', color: '#4169E1', patterns: [/\bbed\b/i, /\bmattress\b/i], affinitySkill: 'endurance', lines: ["Just five more minutes. Forever.", "You don't sleep here. You hide here.", "Rest now. The world can wait."] },
+        cigarette: { name: 'THE CIGARETTE', icon: '🚬', color: '#A0522D', patterns: [/\bcigarette\b/i, /\bsmoke\b/i, /\bsmoking\b/i], affinitySkill: 'electrochemistry', lines: ["Light me. Let me kill you slowly.", "We're old friends, you and I.", "Each breath a little death. Worth it."] },
+        clock: { name: 'THE CLOCK', icon: '🕐', color: '#DAA520', patterns: [/\bclock\b/i, /\btime\b/i, /\bwatch\b/i], affinitySkill: 'composure', lines: ["Tick. Tock. Running out.", "I count the seconds you waste.", "Every tick brings you closer to the end."] }
     };
 
     // ═══════════════════════════════════════════════════════════════
-    // THOUGHT CABINET SYSTEM - Themes and Thoughts
+    // STATUS EFFECTS
+    // ═══════════════════════════════════════════════════════════════
+
+    const STATUS_EFFECTS = {
+        intoxicated: { id: 'intoxicated', name: 'Intoxicated', icon: '🍺', category: 'physical', boosts: ['electrochemistry', 'inland_empire', 'drama', 'suggestion'], debuffs: ['logic', 'hand_eye_coordination', 'reaction_speed', 'composure'], difficultyMod: 2, keywords: ['drunk', 'intoxicated', 'wasted', 'high', 'tipsy'], ancientVoice: null, intrusiveBoost: ['electrochemistry', 'inland_empire'] },
+        wounded: { id: 'wounded', name: 'Wounded', icon: '🩸', category: 'physical', boosts: ['pain_threshold', 'endurance', 'half_light'], debuffs: ['composure', 'savoir_faire', 'hand_eye_coordination'], difficultyMod: 2, keywords: ['hurt', 'wounded', 'injured', 'bleeding', 'pain'], ancientVoice: null, intrusiveBoost: ['pain_threshold', 'half_light'] },
+        exhausted: { id: 'exhausted', name: 'Exhausted', icon: '😴', category: 'physical', boosts: ['volition', 'inland_empire'], debuffs: ['reaction_speed', 'perception', 'logic'], difficultyMod: 2, keywords: ['tired', 'exhausted', 'sleepy', 'drowsy', 'fatigued'], ancientVoice: null, intrusiveBoost: ['inland_empire', 'endurance'] },
+        starving: { id: 'starving', name: 'Starving', icon: '🍽️', category: 'physical', boosts: ['electrochemistry', 'perception'], debuffs: ['logic', 'composure', 'volition'], difficultyMod: 1, keywords: ['hungry', 'starving', 'famished'], ancientVoice: 'ancient_reptilian_brain', intrusiveBoost: ['electrochemistry'] },
+        dying: { id: 'dying', name: 'Dying', icon: '💀', category: 'physical', boosts: ['pain_threshold', 'inland_empire', 'shivers'], debuffs: ['logic', 'rhetoric', 'authority'], difficultyMod: 4, keywords: ['dying', 'death', 'fading'], ancientVoice: 'ancient_reptilian_brain', intrusiveBoost: ['inland_empire', 'shivers'] },
+        paranoid: { id: 'paranoid', name: 'Paranoid', icon: '👁️', category: 'mental', boosts: ['half_light', 'perception', 'shivers'], debuffs: ['empathy', 'suggestion', 'composure'], difficultyMod: 1, keywords: ['paranoid', 'suspicious', 'watching', 'followed'], ancientVoice: null, intrusiveBoost: ['half_light', 'perception'] },
+        aroused: { id: 'aroused', name: 'Aroused', icon: '💋', category: 'mental', boosts: ['electrochemistry', 'suggestion', 'empathy', 'drama'], debuffs: ['logic', 'volition', 'composure'], difficultyMod: 2, keywords: ['aroused', 'desire', 'attraction', 'lust'], ancientVoice: 'ancient_reptilian_brain', intrusiveBoost: ['electrochemistry', 'suggestion'] },
+        enraged: { id: 'enraged', name: 'Enraged', icon: '😤', category: 'mental', boosts: ['authority', 'physical_instrument', 'half_light'], debuffs: ['empathy', 'composure', 'logic'], difficultyMod: 2, keywords: ['angry', 'furious', 'rage', 'mad'], ancientVoice: 'limbic_system', intrusiveBoost: ['half_light', 'authority', 'physical_instrument'] },
+        terrified: { id: 'terrified', name: 'Terrified', icon: '😨', category: 'mental', boosts: ['half_light', 'shivers', 'reaction_speed', 'perception'], debuffs: ['authority', 'composure', 'rhetoric'], difficultyMod: 2, keywords: ['scared', 'afraid', 'terrified', 'fear'], ancientVoice: 'ancient_reptilian_brain', intrusiveBoost: ['half_light', 'shivers'] },
+        confident: { id: 'confident', name: 'Confident', icon: '😎', category: 'mental', boosts: ['authority', 'savoir_faire', 'rhetoric', 'suggestion'], debuffs: ['inland_empire', 'empathy'], difficultyMod: -1, keywords: ['confident', 'bold', 'assured', 'swagger'], ancientVoice: null, intrusiveBoost: ['authority', 'savoir_faire'] },
+        grieving: { id: 'grieving', name: 'Grieving', icon: '😢', category: 'mental', boosts: ['empathy', 'inland_empire', 'shivers', 'volition'], debuffs: ['authority', 'electrochemistry', 'savoir_faire'], difficultyMod: 2, keywords: ['grief', 'loss', 'mourning', 'tears'], ancientVoice: 'limbic_system', intrusiveBoost: ['empathy', 'inland_empire'] },
+        manic: { id: 'manic', name: 'Manic', icon: '⚡', category: 'mental', boosts: ['electrochemistry', 'reaction_speed', 'conceptualization', 'inland_empire'], debuffs: ['composure', 'logic', 'volition'], difficultyMod: 1, keywords: ['manic', 'hyper', 'racing', 'unstoppable'], ancientVoice: 'limbic_system', intrusiveBoost: ['electrochemistry', 'conceptualization'] },
+        dissociated: { id: 'dissociated', name: 'Dissociated', icon: '🌫️', category: 'mental', boosts: ['inland_empire', 'shivers', 'pain_threshold'], debuffs: ['perception', 'reaction_speed', 'empathy'], difficultyMod: 2, keywords: ['dissociate', 'unreal', 'floating', 'numb'], ancientVoice: null, intrusiveBoost: ['inland_empire', 'shivers'] }
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // v0.7.0 NEW: THEMES FOR THOUGHT CABINET
     // ═══════════════════════════════════════════════════════════════
 
     const THEMES = {
-        death: { id: 'death', name: 'Death', keywords: ['death', 'dead', 'dying', 'corpse', 'kill', 'murder', 'grave', 'funeral', 'mortality', 'hanged'] },
-        love: { id: 'love', name: 'Love', keywords: ['love', 'heart', 'romance', 'lover', 'relationship', 'ex', 'passion', 'desire', 'affection', 'intimacy'] },
-        violence: { id: 'violence', name: 'Violence', keywords: ['violence', 'fight', 'hit', 'punch', 'blood', 'wound', 'hurt', 'attack', 'weapon', 'brutal'] },
-        mystery: { id: 'mystery', name: 'Mystery', keywords: ['mystery', 'clue', 'evidence', 'investigate', 'secret', 'hidden', 'unknown', 'puzzle', 'case', 'suspect'] },
-        substance: { id: 'substance', name: 'Substance', keywords: ['drug', 'alcohol', 'drink', 'smoke', 'high', 'drunk', 'addiction', 'substance', 'pill', 'speed'] },
-        failure: { id: 'failure', name: 'Failure', keywords: ['fail', 'failure', 'mistake', 'wrong', 'regret', 'shame', 'embarrass', 'stupid', 'pathetic', 'loser'] },
-        identity: { id: 'identity', name: 'Identity', keywords: ['who am i', 'identity', 'self', 'name', 'remember', 'forget', 'past', 'memory', 'amnesia', 'person'] },
-        authority: { id: 'authority', name: 'Authority', keywords: ['cop', 'police', 'badge', 'law', 'order', 'crime', 'justice', 'detective', 'RCM', 'authority'] },
-        paranoia: { id: 'paranoia', name: 'Paranoia', keywords: ['paranoid', 'conspiracy', 'watching', 'follow', 'spy', 'secret', 'plot', 'trap', 'enemy', 'trust'] },
-        philosophy: { id: 'philosophy', name: 'Philosophy', keywords: ['meaning', 'purpose', 'existence', 'truth', 'reality', 'believe', 'think', 'philosophy', 'idea', 'concept'] },
-        money: { id: 'money', name: 'Money', keywords: ['money', 'real', 'pay', 'debt', 'poor', 'rich', 'economy', 'capital', 'work', 'job'] },
-        supernatural: { id: 'supernatural', name: 'Supernatural', keywords: ['pale', 'supernatural', 'ghost', 'spirit', 'magic', 'curse', 'strange', 'impossible', 'miracle', 'cryptid'] }
+        death: { id: 'death', name: 'Death', icon: '💀', keywords: ['death', 'dead', 'dying', 'kill', 'murder', 'corpse', 'funeral', 'grave', 'mortality', 'deceased', 'fatal', 'lethal'] },
+        love: { id: 'love', name: 'Love', icon: '❤️', keywords: ['love', 'heart', 'romance', 'passion', 'desire', 'affection', 'beloved', 'darling', 'intimate', 'tender', 'devotion'] },
+        violence: { id: 'violence', name: 'Violence', icon: '👊', keywords: ['violence', 'fight', 'hit', 'punch', 'blood', 'brutal', 'attack', 'weapon', 'wound', 'harm', 'hurt', 'aggressive'] },
+        mystery: { id: 'mystery', name: 'Mystery', icon: '🔍', keywords: ['mystery', 'clue', 'evidence', 'investigate', 'secret', 'hidden', 'unknown', 'suspicious', 'curious', 'strange', 'puzzle'] },
+        substance: { id: 'substance', name: 'Substances', icon: '💊', keywords: ['drug', 'alcohol', 'drunk', 'high', 'smoke', 'pill', 'needle', 'addict', 'sober', 'intoxicated', 'withdrawal'] },
+        failure: { id: 'failure', name: 'Failure', icon: '📉', keywords: ['fail', 'failure', 'mistake', 'wrong', 'error', 'lose', 'lost', 'regret', 'shame', 'disappoint', 'mess'] },
+        identity: { id: 'identity', name: 'Identity', icon: '🎭', keywords: ['identity', 'who', 'self', 'name', 'person', 'remember', 'forget', 'past', 'memory', 'amnesia', 'mirror'] },
+        authority: { id: 'authority', name: 'Authority', icon: '👮', keywords: ['authority', 'power', 'control', 'command', 'order', 'law', 'rule', 'badge', 'cop', 'police', 'respect'] },
+        paranoia: { id: 'paranoia', name: 'Paranoia', icon: '👁️', keywords: ['paranoia', 'paranoid', 'watch', 'follow', 'conspiracy', 'suspicious', 'spy', 'trust', 'betray', 'trap', 'danger'] },
+        philosophy: { id: 'philosophy', name: 'Philosophy', icon: '🤔', keywords: ['philosophy', 'meaning', 'existence', 'truth', 'reality', 'consciousness', 'soul', 'mind', 'think', 'believe', 'question'] },
+        money: { id: 'money', name: 'Money', icon: '💰', keywords: ['money', 'cash', 'rich', 'poor', 'wealth', 'poverty', 'coin', 'pay', 'debt', 'afford', 'expensive', 'cheap'] },
+        supernatural: { id: 'supernatural', name: 'Supernatural', icon: '👻', keywords: ['ghost', 'spirit', 'supernatural', 'magic', 'curse', 'haunted', 'paranormal', 'psychic', 'vision', 'prophecy', 'omen'] }
     };
+
+    // ═══════════════════════════════════════════════════════════════
+    // v0.7.0 NEW: THOUGHT DEFINITIONS
+    // ═══════════════════════════════════════════════════════════════
 
     const THOUGHTS = {
         volumetric_shit_compressor: {
-            id: 'volumetric_shit_compressor', name: 'Volumetric Shit Compressor',
-            description: 'What if you could compress all your problems into a tiny cube?',
-            discoveryConditions: { themes: { failure: 3 }, skills: { conceptualization: 3 } },
-            researchTime: 3, researchPenalty: { composure: -1 },
-            bonus: { inland_empire: 1, conceptualization: 1 }, capIncrease: { conceptualization: 1 },
-            internalizedText: 'Problems compressed. Enlightenment achieved. The cube is... beautiful.'
+            id: 'volumetric_shit_compressor', name: 'Volumetric Shit Compressor', icon: '💩', category: 'philosophy',
+            description: 'What if you compressed all your failures into a singularity?',
+            discoveryConditions: { themes: { failure: 5, philosophy: 3 } },
+            researchTime: 6, researchPenalty: { logic: -1 },
+            internalizedBonus: { conceptualization: 2 }, capModifier: { logic: 1 },
+            flavorText: 'You have created a black hole of self-criticism. It is beautiful.'
         },
         hobocop: {
-            id: 'hobocop', name: 'Hobocop',
-            description: 'You patrol the margins. The forgotten places. Maybe that\'s where you belong.',
-            discoveryConditions: { themes: { failure: 2, identity: 2 }, skills: { shivers: 2 } },
-            researchTime: 4, researchPenalty: { authority: -2 },
-            bonus: { shivers: 2, empathy: 1 }, capIncrease: { shivers: 1 },
-            internalizedText: 'The margins are your beat. The forgotten, your people.'
-        },
-        kingdom_of_conscience: {
-            id: 'kingdom_of_conscience', name: 'Kingdom of Conscience',
-            description: 'No one can be responsible for anyone else\'s suffering. Unless you choose to be.',
-            discoveryConditions: { themes: { philosophy: 3 }, skills: { volition: 3, empathy: 2 } },
-            researchTime: 5, researchPenalty: { authority: -1, electrochemistry: -1 },
-            bonus: { volition: 2, empathy: 1 }, capIncrease: { volition: 1 },
-            internalizedText: 'The kingdom is within. Built on choices, not on power.'
-        },
-        cop_of_the_apocalypse: {
-            id: 'cop_of_the_apocalypse', name: 'Cop of the Apocalypse',
-            description: 'The badge still means something. Even at the end of all things.',
-            discoveryConditions: { themes: { death: 3, authority: 2 }, skills: { half_light: 3, authority: 2 } },
-            researchTime: 6, researchPenalty: { logic: -1, composure: -1 },
-            bonus: { half_light: 2, authority: 1, endurance: 1 }, capIncrease: { half_light: 1 },
-            internalizedText: 'When the end comes, you will be there. Badge in hand.'
-        },
-        the_fifteenth_indotribe: {
-            id: 'the_fifteenth_indotribe', name: 'The Fifteenth Indotribe',
-            description: 'There are things older than memory. Older than the Pale.',
-            discoveryConditions: { themes: { supernatural: 3, mystery: 2 }, skills: { inland_empire: 4 } },
-            researchTime: 8, researchPenalty: { logic: -2 },
-            bonus: { inland_empire: 2, shivers: 1 }, capIncrease: { inland_empire: 1 },
-            internalizedText: 'The old knowledge settles into your bones. You remember what was never taught.'
-        },
-        actual_art_degree: {
-            id: 'actual_art_degree', name: 'Actual Art Degree',
-            description: 'Maybe if you\'d studied formally, your criticism would carry more weight.',
-            discoveryConditions: { themes: { philosophy: 2 }, skills: { conceptualization: 4 } },
-            researchTime: 4, researchPenalty: { physical_instrument: -1 },
-            bonus: { conceptualization: 2, rhetoric: 1 }, capIncrease: { conceptualization: 1 },
-            internalizedText: 'Your criticism is now academically grounded. Devastatingly so.'
-        },
-        guilty_of_communism: {
-            id: 'guilty_of_communism', name: 'Guilty... of Communism!',
-            description: 'The means of production won\'t seize themselves.',
-            discoveryConditions: { themes: { money: 2, philosophy: 2 }, skills: { rhetoric: 3 } },
-            researchTime: 5, researchPenalty: { authority: -1 },
-            bonus: { rhetoric: 2, empathy: 1 }, capIncrease: { rhetoric: 1 },
-            internalizedText: 'The revolution lives in your heart. And your arguments.'
-        },
-        some_kind_of_superstar: {
-            id: 'some_kind_of_superstar', name: 'Some Kind of Superstar',
-            description: 'The greatest detective in the world. Obviously.',
-            discoveryConditions: { criticalSuccess: true, skills: { savoir_faire: 3 } },
-            researchTime: 3, researchPenalty: { empathy: -1 },
-            bonus: { savoir_faire: 2, authority: 1, suggestion: 1 }, capIncrease: { savoir_faire: 1 },
-            internalizedText: 'You ARE some kind of superstar. Disco.'
-        },
-        wompty_dompty_dom_centre: {
-            id: 'wompty_dompty_dom_centre', name: 'Wompty-Dompty Dom Centre',
-            description: 'The inexplicable rhythm of the world. Wompty. Dompty. Dom.',
-            discoveryConditions: { themes: { supernatural: 2 }, skills: { inland_empire: 3, electrochemistry: 2 } },
-            researchTime: 4, researchPenalty: { logic: -1 },
-            bonus: { inland_empire: 1, electrochemistry: 1, shivers: 1 }, capIncrease: { inland_empire: 1 },
-            internalizedText: 'Wompty. Dompty. Dom. The centre holds.'
-        },
-        the_bow_collector: {
-            id: 'the_bow_collector', name: 'The Bow Collector',
-            description: 'Someone has to collect the bows. Someone has to remember.',
-            discoveryConditions: { themes: { mystery: 3 }, skills: { perception: 3, encyclopedia: 2 } },
-            researchTime: 5, researchPenalty: { savoir_faire: -1 },
-            bonus: { perception: 2, encyclopedia: 1 }, capIncrease: { perception: 1 },
-            internalizedText: 'Every bow tells a story. You collect them all.'
-        },
-        regular_law_official: {
-            id: 'regular_law_official', name: 'Regular Law Official',
-            description: 'Just a cop. Nothing special. That\'s enough.',
-            discoveryConditions: { themes: { authority: 3, identity: 2 }, skills: { volition: 2 } },
-            researchTime: 3, researchPenalty: { inland_empire: -1 },
-            bonus: { volition: 1, composure: 1, esprit_de_corps: 1 }, capIncrease: { volition: 1 },
-            internalizedText: 'Badge. Gun. Coffee. That\'s all you need.'
-        },
-        torque_dork: {
-            id: 'torque_dork', name: 'Torque Dork',
-            description: 'The beautiful mechanics of rotation. Torque. Angular momentum. Spin.',
-            discoveryConditions: { themes: { philosophy: 1 }, skills: { interfacing: 3, encyclopedia: 2 } },
-            researchTime: 4, researchPenalty: { empathy: -1 },
-            bonus: { interfacing: 2, hand_eye_coordination: 1 }, capIncrease: { interfacing: 1 },
-            internalizedText: 'Everything spins. You understand the spin now.'
-        },
-        antiobject_task_force: {
-            id: 'antiobject_task_force', name: 'Anti-Object Task Force',
-            description: 'Objects are not your friends. They cannot be trusted.',
-            discoveryConditions: { themes: { paranoia: 2 }, skills: { inland_empire: 2, half_light: 2 } },
-            researchTime: 4, researchPenalty: { interfacing: -1 },
-            bonus: { half_light: 1, perception: 1, inland_empire: 1 }, capIncrease: { half_light: 1 },
-            internalizedText: 'The objects speak. But can they be trusted?'
-        },
-        ace_full_of_melancholy: {
-            id: 'ace_full_of_melancholy', name: 'Ace\'s Full of Melancholy',
-            description: 'High and Low. The gambler\'s curse.',
-            discoveryConditions: { themes: { failure: 2, love: 2 }, skills: { composure: 3 } },
-            researchTime: 5, researchPenalty: { electrochemistry: -1 },
-            bonus: { composure: 2, pain_threshold: 1 }, capIncrease: { composure: 1 },
-            internalizedText: 'Full house of sorrow. You play the hand you\'re dealt.'
+            id: 'hobocop', name: 'Hobocop', icon: '🥫', category: 'identity',
+            description: 'A different kind of law enforcement. For the people, by the people.',
+            discoveryConditions: { themes: { money: 5, authority: 3 } },
+            researchTime: 8, researchPenalty: { authority: -1 },
+            internalizedBonus: { shivers: 2 }, capModifier: { shivers: 1 },
+            flavorText: 'You patrol the margins. The forgotten places. Someone has to.'
         },
         bringing_of_the_law: {
-            id: 'bringing_of_the_law', name: 'Bringing of the Law (Law-Jaw)',
-            description: 'Your jaw sets. The law will be brought.',
-            discoveryConditions: { themes: { authority: 3, violence: 2 }, skills: { authority: 3, physical_instrument: 2 } },
-            researchTime: 4, researchPenalty: { empathy: -2 },
-            bonus: { authority: 2, physical_instrument: 1 }, capIncrease: { authority: 1 },
-            internalizedText: 'Law-Jaw engaged. Justice will be... physical.'
+            id: 'bringing_of_the_law', name: 'Bringing of the Law', icon: '⚖️', category: 'authority',
+            description: 'The law is not just words. It is FORCE.',
+            discoveryConditions: { criticalSuccess: 'authority' },
+            researchTime: 10, researchPenalty: { empathy: -1, suggestion: -1 },
+            internalizedBonus: { authority: 3 }, capModifier: { authority: 2 },
+            flavorText: 'You ARE the law. And the law... is VIOLENCE.'
+        },
+        kingdom_of_conscience: {
+            id: 'kingdom_of_conscience', name: 'Kingdom of Conscience', icon: '👑', category: 'philosophy',
+            description: 'What if morality was the only kingdom worth ruling?',
+            discoveryConditions: { themes: { philosophy: 6 }, minSkill: { volition: 4 } },
+            researchTime: 12, researchPenalty: { electrochemistry: -2 },
+            internalizedBonus: { volition: 2 }, capModifier: { volition: 2 },
+            flavorText: 'Pleasure fades. Conscience endures. You have chosen your kingdom.'
+        },
+        motorway_south: {
+            id: 'motorway_south', name: 'Motorway South', icon: '🛣️', category: 'escape',
+            description: 'There is always a road out. Always a direction away.',
+            discoveryConditions: { themes: { failure: 4, identity: 3 } },
+            researchTime: 7, researchPenalty: { esprit_de_corps: -1 },
+            internalizedBonus: { composure: 2 }, capModifier: { composure: 1 },
+            flavorText: 'You can see it now. The road that leads away from everything.'
+        },
+        anti_object_task_force: {
+            id: 'anti_object_task_force', name: 'Anti-Object Task Force', icon: '🚫', category: 'mental',
+            description: 'The objects speak too much. It is time to silence them.',
+            discoveryConditions: { objectCount: 5 },
+            researchTime: 6, researchPenalty: { inland_empire: -1 },
+            internalizedBonus: { logic: 1, composure: 1 }, capModifier: { logic: 1 },
+            flavorText: 'Objects are just objects. They cannot speak. They never could.',
+            specialEffect: 'objectVoiceReduction'
+        },
+        cop_of_the_apocalypse: {
+            id: 'cop_of_the_apocalypse', name: 'Cop of the Apocalypse', icon: '🔥', category: 'identity',
+            description: 'When the world ends, someone still needs to enforce the law.',
+            discoveryConditions: { themes: { death: 6, authority: 4 } },
+            researchTime: 14, researchPenalty: { empathy: -2 },
+            internalizedBonus: { half_light: 2, authority: 1 }, capModifier: { half_light: 1 },
+            flavorText: 'The badge still means something. Even at the end of all things.'
+        },
+        caustic_echo: {
+            id: 'caustic_echo', name: 'Caustic Echo', icon: '🗣️', category: 'social',
+            description: 'Your words burn. Learn to aim them.',
+            discoveryConditions: { criticalSuccess: 'rhetoric' },
+            researchTime: 8, researchPenalty: { suggestion: -1 },
+            internalizedBonus: { rhetoric: 2 }, capModifier: { rhetoric: 1 },
+            flavorText: 'Every word a weapon. Every sentence a scar.'
+        },
+        waste_land_of_reality: {
+            id: 'waste_land_of_reality', name: 'Waste Land of Reality', icon: '🏜️', category: 'philosophy',
+            description: 'Reality is a desert. Your mind is an oasis.',
+            discoveryConditions: { themes: { supernatural: 4 }, status: 'dissociated' },
+            researchTime: 10, researchPenalty: { perception: -1 },
+            internalizedBonus: { inland_empire: 2 }, capModifier: { inland_empire: 1 },
+            flavorText: 'The real is not real. The unreal... is home.'
+        },
+        lovers_lament: {
+            id: 'lovers_lament', name: "Lover's Lament", icon: '💔', category: 'emotion',
+            description: 'Love lost is still love. Pain is proof of connection.',
+            discoveryConditions: { themes: { love: 5, failure: 3 } },
+            researchTime: 9, researchPenalty: { composure: -1 },
+            internalizedBonus: { empathy: 2 }, capModifier: { empathy: 1 },
+            flavorText: 'You loved. You lost. You are still capable of both.'
         },
         finger_on_the_eject_button: {
-            id: 'finger_on_the_eject_button', name: 'Finger on the Eject Button',
-            description: 'Ready to bail at any moment. Always.',
-            discoveryConditions: { themes: { failure: 3, identity: 1 }, skills: { reaction_speed: 3, half_light: 2 } },
-            researchTime: 3, researchPenalty: { volition: -1 },
-            bonus: { reaction_speed: 2, half_light: 1 }, capIncrease: { reaction_speed: 1 },
-            internalizedText: 'Escape routes mapped. Finger hovering. Always ready.'
+            id: 'finger_on_the_eject_button', name: 'Finger on the Eject Button', icon: '🔘', category: 'survival',
+            description: 'Always have an exit strategy. Always be ready to leave.',
+            discoveryConditions: { themes: { paranoia: 4, violence: 3 } },
+            researchTime: 6, researchPenalty: { authority: -1 },
+            internalizedBonus: { reaction_speed: 2 }, capModifier: { reaction_speed: 1 },
+            flavorText: 'You can feel it. The moment everything goes wrong. And you will be ready.'
         },
-        cleaning_out_the_rooms: {
-            id: 'cleaning_out_the_rooms', name: 'Cleaning Out the Rooms',
-            description: 'The rooms of your mind need tidying.',
-            discoveryConditions: { themes: { identity: 3, failure: 2 }, skills: { volition: 3, logic: 2 } },
-            researchTime: 6, researchPenalty: { electrochemistry: -1, inland_empire: -1 },
-            bonus: { volition: 2, logic: 1 }, capIncrease: { volition: 1, logic: 1 },
-            internalizedText: 'Rooms cleaned. Dust settled. You can see clearly now.'
+        actual_art_degree: {
+            id: 'actual_art_degree', name: 'Actual Art Degree', icon: '🎨', category: 'identity',
+            description: 'You went to art school. This explains everything.',
+            discoveryConditions: { themes: { philosophy: 3 }, minSkill: { conceptualization: 5 } },
+            researchTime: 8, researchPenalty: { logic: -1 },
+            internalizedBonus: { conceptualization: 2, drama: 1 }, capModifier: { conceptualization: 1 },
+            flavorText: 'Four years of theory. A lifetime of seeing patterns no one else sees.'
         },
-        mazovian_socioeconomics: {
-            id: 'mazovian_socioeconomics', name: 'Mazovian Socio-Economics',
-            description: '0.000% of Communism has been built.',
-            discoveryConditions: { themes: { money: 3, philosophy: 3 }, skills: { rhetoric: 4, encyclopedia: 3 } },
-            researchTime: 8, researchPenalty: { authority: -2, savoir_faire: -1 },
-            bonus: { rhetoric: 2, encyclopedia: 2, empathy: 1 }, capIncrease: { rhetoric: 1, encyclopedia: 1 },
-            internalizedText: '0.000% complete. But you understand the theory now.'
+        jamais_vu: {
+            id: 'jamais_vu', name: 'Jamais Vu', icon: '❓', category: 'mental',
+            description: 'The familiar becomes strange. Nothing feels real.',
+            discoveryConditions: { themes: { identity: 5 }, status: 'dissociated' },
+            researchTime: 11, researchPenalty: { empathy: -1 },
+            internalizedBonus: { shivers: 1, inland_empire: 1 }, capModifier: { perception: 1 },
+            flavorText: 'You have seen this before. And yet... it is all new.'
         },
-        the_litany_of_contact_mike: {
-            id: 'the_litany_of_contact_mike', name: 'The Litany of Contact Mike',
-            description: 'HARDCORE. TO THE MEGA.',
-            discoveryConditions: { criticalSuccess: true, skills: { electrochemistry: 3, physical_instrument: 2 } },
-            researchTime: 3, researchPenalty: { composure: -1 },
-            bonus: { electrochemistry: 1, physical_instrument: 1, endurance: 1 }, capIncrease: { electrochemistry: 1 },
-            internalizedText: 'HARDCORE. The litany burns in your veins.'
+        the_bow_collector: {
+            id: 'the_bow_collector', name: 'The Bow Collector', icon: '🎀', category: 'obsession',
+            description: 'Small beautiful things. Collected. Treasured. Understood.',
+            discoveryConditions: { themes: { mystery: 4 }, minSkill: { perception: 4 } },
+            researchTime: 7, researchPenalty: { physical_instrument: -1 },
+            internalizedBonus: { perception: 2 }, capModifier: { perception: 1 },
+            flavorText: 'In the details, you find meaning. In the small, you find the infinite.'
         },
-        indirect_modes_of_taxation: {
-            id: 'indirect_modes_of_taxation', name: 'Indirect Modes of Taxation',
-            description: 'The invisible hand... picking pockets.',
-            discoveryConditions: { themes: { money: 4 }, skills: { logic: 3, encyclopedia: 2 } },
-            researchTime: 5, researchPenalty: { empathy: -1 },
-            bonus: { logic: 1, encyclopedia: 1, rhetoric: 1 }, capIncrease: { logic: 1 },
-            internalizedText: 'You see the invisible hand now. And all its fingers.'
+        regular_law_official: {
+            id: 'regular_law_official', name: 'Regular Law Official', icon: '📋', category: 'identity',
+            description: 'Just doing your job. Nothing special. Nothing memorable.',
+            discoveryConditions: { themes: { authority: 3 }, messageCount: 50 },
+            researchTime: 5, researchPenalty: { drama: -1 },
+            internalizedBonus: { composure: 1, esprit_de_corps: 1 }, capModifier: { esprit_de_corps: 1 },
+            flavorText: 'You clock in. You clock out. You enforce the law. Simple.'
+        },
+        some_kind_of_superstar: {
+            id: 'some_kind_of_superstar', name: 'Some Kind of Superstar', icon: '⭐', category: 'identity',
+            description: 'You are destined for greatness. Everyone can see it.',
+            discoveryConditions: { criticalSuccess: 'savoir_faire' },
+            researchTime: 9, researchPenalty: { empathy: -1 },
+            internalizedBonus: { savoir_faire: 2, drama: 1 }, capModifier: { savoir_faire: 1 },
+            flavorText: 'The spotlight finds you. It always has. It always will.'
+        },
+        wompty_dompty_dom_centre: {
+            id: 'wompty_dompty_dom_centre', name: 'Wompty-Dompty-Dom Centre', icon: '🏢', category: 'philosophy',
+            description: 'The center of everything. Or nothing. Hard to tell.',
+            discoveryConditions: { themes: { philosophy: 5, supernatural: 3 } },
+            researchTime: 13, researchPenalty: { logic: -2 },
+            internalizedBonus: { encyclopedia: 2 }, capModifier: { encyclopedia: 1 },
+            flavorText: 'You have found the center. It wobbles. It womps. It dominates.'
+        },
+        detective_arriving_on_the_scene: {
+            id: 'detective_arriving_on_the_scene', name: 'Detective Arriving on the Scene', icon: '🚔', category: 'identity',
+            description: 'First impressions matter. Especially for detectives.',
+            discoveryConditions: { firstDiscovery: true },
+            researchTime: 4, researchPenalty: { inland_empire: -1 },
+            internalizedBonus: { visual_calculus: 1, perception: 1 }, capModifier: { visual_calculus: 1 },
+            flavorText: 'You have arrived. The investigation can now begin.'
+        },
+        the_fifteenth_indotribe: {
+            id: 'the_fifteenth_indotribe', name: 'The Fifteenth Indotribe', icon: '🏴', category: 'philosophy',
+            description: 'A tribe of one. A nation of the self.',
+            discoveryConditions: { themes: { identity: 6, philosophy: 4 } },
+            researchTime: 15, researchPenalty: { esprit_de_corps: -2 },
+            internalizedBonus: { volition: 1, conceptualization: 1 }, capModifier: { volition: 1 },
+            flavorText: 'You belong to no nation. You ARE a nation. Population: you.'
+        },
+        apricot_chewing_gum_enthusiast: {
+            id: 'apricot_chewing_gum_enthusiast', name: 'Apricot Chewing Gum Enthusiast', icon: '🍑', category: 'obsession',
+            description: 'The specific pleasure of apricot. Chewed thoughtfully.',
+            discoveryConditions: { themes: { substance: 3 }, minSkill: { electrochemistry: 4 } },
+            researchTime: 5, researchPenalty: { authority: -1 },
+            internalizedBonus: { electrochemistry: 1, suggestion: 1 }, capModifier: { electrochemistry: 1 },
+            flavorText: 'Sweet. Fruity. Perfectly legal. The perfect vice.'
         }
     };
 
     // ═══════════════════════════════════════════════════════════════
-    // STATE MANAGEMENT
+    // STATE VARIABLES
     // ═══════════════════════════════════════════════════════════════
-
-    let extensionSettings = {
-        enabled: true, apiEndpoint: '', apiKey: '', model: 'glm-4-plus',
-        temperature: 0.9, maxTokens: 300, minVoices: 1, maxVoices: 4,
-        triggerDelay: 1000, showDiceRolls: true, showFailedChecks: true,
-        autoTrigger: false, autoDetectStatus: true, intrusiveEnabled: true,
-        intrusiveChance: 15, intrusiveInChat: true, objectVoicesEnabled: true,
-        objectVoiceChance: 40, thoughtDiscoveryEnabled: true, autoDiscoverThoughts: true,
-        povStyle: 'second', characterName: '', characterPronouns: 'they',
-        characterContext: '', fabPositionTop: 140, fabPositionLeft: 10
-    };
-
-    let skillLevels = {};
-    Object.keys(SKILLS).forEach(id => skillLevels[id] = 2);
-
-    let skillCaps = {};
-    Object.keys(SKILLS).forEach(id => skillCaps[id] = 6);
 
     let activeStatuses = new Set();
+    let currentBuild = null;
+    let savedProfiles = {};
+    let recentIntrusiveThoughts = [];
+    let lastObjectVoice = null;
 
-    let thoughtCabinet = {
-        discovered: [], researching: null, researchProgress: 0,
-        internalized: [], slots: 3, maxSlots: 12
+    // v0.7.0: Theme & Thought Cabinet state
+    let themeCounters = {};
+    let thoughtCabinet = { slots: 3, maxSlots: 12, discovered: [], researching: {}, internalized: [], dismissed: [] };
+    let discoveryContext = { messageCount: 0, objectsSeen: new Set(), criticalSuccesses: {}, criticalFailures: {}, ancientVoiceTriggered: false, firstDiscoveryDone: false };
+
+    const DEFAULT_SETTINGS = {
+        enabled: true, showDiceRolls: true, showFailedChecks: true,
+        voicesPerMessage: { min: 1, max: 4 },
+        apiEndpoint: '', apiKey: '', model: 'glm-4-plus', maxTokens: 300, temperature: 0.9,
+        povStyle: 'second', characterName: '', characterPronouns: 'they', characterContext: '',
+        autoDetectStatus: false, autoTrigger: false, triggerDelay: 1000,
+        fabPositionTop: 140, fabPositionLeft: 10,
+        intrusiveEnabled: true, intrusiveChance: 0.15, intrusiveInChat: true,
+        objectVoicesEnabled: true, objectVoiceChance: 0.4,
+        // v0.7.0 settings
+        thoughtDiscoveryEnabled: true, showThemeTracker: true, autoDiscoverThoughts: true
     };
 
-    let themeCounters = {};
-    Object.keys(THEMES).forEach(id => themeCounters[id] = 0);
+    const DEFAULT_ATTRIBUTE_POINTS = { INTELLECT: 3, PSYCHE: 3, PHYSIQUE: 3, MOTORICS: 3 };
+    let extensionSettings = { ...DEFAULT_SETTINGS };
 
-    let discoveryContext = { criticalSuccesses: 0, criticalFailures: 0, messageCount: 0 };
-
-    let profiles = [];
+    // ═══════════════════════════════════════════════════════════════
+    // v0.7.0: THEME TRACKING SYSTEM
+    // ═══════════════════════════════════════════════════════════════
 
     function initializeThemeCounters() {
-        Object.keys(THEMES).forEach(id => { if (themeCounters[id] === undefined) themeCounters[id] = 0; });
+        for (const themeId of Object.keys(THEMES)) {
+            if (!(themeId in themeCounters)) themeCounters[themeId] = 0;
+        }
     }
 
-    function saveState(context) {
-        if (!context) return;
-        const state = { extensionSettings, skillLevels, skillCaps, activeStatuses: Array.from(activeStatuses), thoughtCabinet, themeCounters, discoveryContext, profiles };
-        try {
-            if (context.extensionSettings) context.extensionSettings[extensionName] = state;
-            localStorage.setItem('inland_empire_state', JSON.stringify(state));
-        } catch (e) { console.error('[Inland Empire] Save failed:', e); }
-    }
-
-    function loadState(context) {
-        try {
-            let state = null;
-            if (context?.extensionSettings?.[extensionName]) state = context.extensionSettings[extensionName];
-            else { const stored = localStorage.getItem('inland_empire_state'); if (stored) state = JSON.parse(stored); }
-            if (state) {
-                extensionSettings = { ...extensionSettings, ...state.extensionSettings };
-                skillLevels = { ...skillLevels, ...state.skillLevels };
-                skillCaps = { ...skillCaps, ...state.skillCaps };
-                activeStatuses = new Set(state.activeStatuses || []);
-                thoughtCabinet = { ...thoughtCabinet, ...state.thoughtCabinet };
-                themeCounters = { ...themeCounters, ...state.themeCounters };
-                discoveryContext = { ...discoveryContext, ...state.discoveryContext };
-                profiles = state.profiles || [];
+    function trackThemesInMessage(text) {
+        if (!text || !extensionSettings.thoughtDiscoveryEnabled) return;
+        const lowerText = text.toLowerCase();
+        for (const [themeId, theme] of Object.entries(THEMES)) {
+            for (const keyword of theme.keywords) {
+                if (lowerText.includes(keyword)) {
+                    themeCounters[themeId] = (themeCounters[themeId] || 0) + 1;
+                    break; // Only count once per theme per message
+                }
             }
-        } catch (e) { console.error('[Inland Empire] Load failed:', e); }
+        }
+    }
+
+    function getTopThemes(count = 5) {
+        return Object.entries(themeCounters)
+            .filter(([, v]) => v > 0)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, count)
+            .map(([id, count]) => ({ ...THEMES[id], count }));
+    }
+
+    function resetThemeCounters() {
+        for (const key of Object.keys(themeCounters)) themeCounters[key] = 0;
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // SKILL FUNCTIONS
+    // v0.7.0: THOUGHT DISCOVERY SYSTEM
     // ═══════════════════════════════════════════════════════════════
 
-    function getSkillLevel(skillId) { return skillLevels[skillId] ?? 2; }
-    function setSkillLevel(skillId, level) { skillLevels[skillId] = Math.max(1, Math.min(level, getSkillCap(skillId))); saveState(getSTContext()); }
-    function getSkillCap(skillId) { return skillCaps[skillId] ?? 6; }
-    function getAllSkillLevels() { return { ...skillLevels }; }
+    function meetsDiscoveryConditions(thought) {
+        const cond = thought.discoveryConditions;
+        if (!cond) return false;
 
-    function getSkillModifier(skillId) {
-        let modifier = 0;
-        activeStatuses.forEach(statusId => {
-            const status = STATUS_EFFECTS[statusId];
-            if (!status) return;
-            if (status.boosts?.includes(skillId)) modifier += 1;
-            if (status.debuffs?.includes(skillId)) modifier -= 1;
-        });
-        thoughtCabinet.internalized.forEach(thoughtId => {
+        // Already discovered, researching, internalized, or dismissed
+        if (thoughtCabinet.discovered.includes(thought.id) ||
+            thoughtCabinet.researching[thought.id] ||
+            thoughtCabinet.internalized.includes(thought.id) ||
+            thoughtCabinet.dismissed.includes(thought.id)) return false;
+
+        // Theme requirements
+        if (cond.themes) {
+            for (const [themeId, required] of Object.entries(cond.themes)) {
+                if ((themeCounters[themeId] || 0) < required) return false;
+            }
+        }
+
+        // Status requirement
+        if (cond.status && !activeStatuses.has(cond.status)) return false;
+
+        // Minimum skill requirement
+        if (cond.minSkill) {
+            for (const [skillId, min] of Object.entries(cond.minSkill)) {
+                if (getEffectiveSkillLevel(skillId) < min) return false;
+            }
+        }
+
+        // Critical success on specific skill
+        if (cond.criticalSuccess && !discoveryContext.criticalSuccesses[cond.criticalSuccess]) return false;
+
+        // Critical failure on specific skill
+        if (cond.criticalFailure && !discoveryContext.criticalFailures[cond.criticalFailure]) return false;
+
+        // Object count
+        if (cond.objectCount && discoveryContext.objectsSeen.size < cond.objectCount) return false;
+
+        // Message count
+        if (cond.messageCount && discoveryContext.messageCount < cond.messageCount) return false;
+
+        // Ancient voice triggered
+        if (cond.ancientVoice && !discoveryContext.ancientVoiceTriggered) return false;
+
+        // First discovery (only one thought has this)
+        if (cond.firstDiscovery && discoveryContext.firstDiscoveryDone) return false;
+
+        return true;
+    }
+
+    function checkThoughtDiscovery() {
+        if (!extensionSettings.thoughtDiscoveryEnabled || !extensionSettings.autoDiscoverThoughts) return [];
+        const newlyDiscovered = [];
+        for (const thought of Object.values(THOUGHTS)) {
+            if (meetsDiscoveryConditions(thought)) {
+                thoughtCabinet.discovered.push(thought.id);
+                newlyDiscovered.push(thought);
+                if (thought.discoveryConditions.firstDiscovery) {
+                    discoveryContext.firstDiscoveryDone = true;
+                }
+            }
+        }
+        return newlyDiscovered;
+    }
+
+    function startResearch(thoughtId) {
+        const thought = THOUGHTS[thoughtId];
+        if (!thought) return false;
+        const researchingCount = Object.keys(thoughtCabinet.researching).length;
+        if (researchingCount >= thoughtCabinet.slots) return false;
+        const idx = thoughtCabinet.discovered.indexOf(thoughtId);
+        if (idx === -1) return false;
+        thoughtCabinet.discovered.splice(idx, 1);
+        thoughtCabinet.researching[thoughtId] = { progress: 0, started: Date.now() };
+        saveState(getSTContext());
+        return true;
+    }
+
+    function abandonResearch(thoughtId) {
+        if (!thoughtCabinet.researching[thoughtId]) return false;
+        delete thoughtCabinet.researching[thoughtId];
+        thoughtCabinet.discovered.push(thoughtId);
+        saveState(getSTContext());
+        return true;
+    }
+
+    function advanceResearch(messageText = '') {
+        const completed = [];
+        for (const [thoughtId, research] of Object.entries(thoughtCabinet.researching)) {
             const thought = THOUGHTS[thoughtId];
-            if (thought?.bonus?.[skillId]) modifier += thought.bonus[skillId];
-        });
-        return modifier;
+            if (!thought) continue;
+            let progressGain = 1;
+            // Bonus for relevant keywords in message
+            const themeId = thought.category;
+            if (THEMES[themeId]) {
+                const matches = THEMES[themeId].keywords.filter(kw => messageText.toLowerCase().includes(kw));
+                progressGain += Math.min(matches.length, 2);
+            }
+            research.progress += progressGain;
+            if (research.progress >= thought.researchTime) {
+                completed.push(thoughtId);
+            }
+        }
+        for (const thoughtId of completed) {
+            internalizeThought(thoughtId);
+        }
+        return completed;
     }
 
-    function getEffectiveSkillLevel(skillId) {
-        return Math.max(1, getSkillLevel(skillId) + getSkillModifier(skillId));
+    function internalizeThought(thoughtId) {
+        const thought = THOUGHTS[thoughtId];
+        if (!thought || !thoughtCabinet.researching[thoughtId]) return null;
+        delete thoughtCabinet.researching[thoughtId];
+        thoughtCabinet.internalized.push(thoughtId);
+
+        // Apply bonuses to current build
+        if (thought.internalizedBonus && currentBuild) {
+            for (const [skillId, bonus] of Object.entries(thought.internalizedBonus)) {
+                currentBuild.skillLevels[skillId] = Math.min(10, (currentBuild.skillLevels[skillId] || 1) + bonus);
+            }
+        }
+
+        // Apply cap modifiers
+        if (thought.capModifier && currentBuild) {
+            for (const [skillId, bonus] of Object.entries(thought.capModifier)) {
+                if (!currentBuild.skillCaps[skillId]) currentBuild.skillCaps[skillId] = { starting: 4, learning: 7 };
+                currentBuild.skillCaps[skillId].learning = Math.min(10, currentBuild.skillCaps[skillId].learning + bonus);
+            }
+        }
+
+        saveState(getSTContext());
+        return thought;
     }
 
-    function rollDice() { return Math.floor(Math.random() * 6) + 1; }
+    function dismissThought(thoughtId) {
+        const idx = thoughtCabinet.discovered.indexOf(thoughtId);
+        if (idx === -1) return false;
+        thoughtCabinet.discovered.splice(idx, 1);
+        thoughtCabinet.dismissed.push(thoughtId);
+        saveState(getSTContext());
+        return true;
+    }
 
-    function rollSkillCheck(skillId, difficulty = 'medium') {
-        const baseLevel = getSkillLevel(skillId);
-        const modifier = getSkillModifier(skillId);
-        const effectiveLevel = Math.max(1, baseLevel + modifier);
-        const die1 = rollDice(), die2 = rollDice();
-        const total = effectiveLevel + die1 + die2;
-        const threshold = DIFFICULTIES[difficulty]?.threshold ?? 10;
-        const isCriticalSuccess = die1 === 6 && die2 === 6;
-        const isCriticalFailure = die1 === 1 && die2 === 1;
-        const success = isCriticalSuccess || (!isCriticalFailure && total >= threshold);
-        if (isCriticalSuccess) discoveryContext.criticalSuccesses++;
-        if (isCriticalFailure) discoveryContext.criticalFailures++;
-        return { skillId, baseLevel, modifier, effectiveLevel, die1, die2, total, threshold, difficulty, success, isCriticalSuccess, isCriticalFailure };
+    function getResearchPenalties() {
+        const penalties = {};
+        for (const thoughtId of Object.keys(thoughtCabinet.researching)) {
+            const thought = THOUGHTS[thoughtId];
+            if (thought?.researchPenalty) {
+                for (const [skillId, penalty] of Object.entries(thought.researchPenalty)) {
+                    penalties[skillId] = (penalties[skillId] || 0) + penalty;
+                }
+            }
+        }
+        return penalties;
+    }
+
+    function getSkillCap(skillId) {
+        if (!currentBuild?.skillCaps?.[skillId]) return 6;
+        return Math.min(10, currentBuild.skillCaps[skillId].learning);
+    }
+
+    function hasSpecialEffect(effectName) {
+        return thoughtCabinet.internalized.some(id => THOUGHTS[id]?.specialEffect === effectName);
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // ANCIENT VOICES - Only on Dissociated
+    // BUILD & PROFILE MANAGEMENT
     // ═══════════════════════════════════════════════════════════════
 
-    function getActiveAncientVoices() {
-        // Ancient voices ONLY speak when dissociated
-        if (!activeStatuses.has('dissociated')) return [];
-        
-        const voices = [];
-        // When dissociated, all three can potentially speak
-        if (Math.random() < 0.5) voices.push(ANCIENT_VOICES.ancient_reptilian_brain);
-        if (Math.random() < 0.4) voices.push(ANCIENT_VOICES.limbic_system);
-        if (Math.random() < 0.3) voices.push(ANCIENT_VOICES.spinal_cord);
-        
-        return voices;
+    function createBuild(attributePoints = DEFAULT_ATTRIBUTE_POINTS, name = 'Custom Build') {
+        const skillLevels = {}, skillCaps = {};
+        for (const [attrId, attr] of Object.entries(ATTRIBUTES)) {
+            const attrPoints = attributePoints[attrId] || 1;
+            for (const skillId of attr.skills) {
+                skillLevels[skillId] = attrPoints;
+                skillCaps[skillId] = { starting: attrPoints + 1, learning: attrPoints + 4 };
+            }
+        }
+        return { id: `build_${Date.now()}`, name, attributePoints: { ...attributePoints }, skillLevels, skillCaps, createdAt: Date.now() };
     }
 
+    function initializeDefaultBuild() { currentBuild = createBuild(DEFAULT_ATTRIBUTE_POINTS, 'Balanced Detective'); }
+    function getSkillLevel(skillId) { if (!currentBuild) initializeDefaultBuild(); return currentBuild.skillLevels[skillId] || 1; }
+    function getAllSkillLevels() { if (!currentBuild) initializeDefaultBuild(); return { ...currentBuild.skillLevels }; }
+    function getAttributePoints() { if (!currentBuild) initializeDefaultBuild(); return { ...currentBuild.attributePoints }; }
+
+    function applyAttributeAllocation(attributePoints) {
+        const total = Object.values(attributePoints).reduce((a, b) => a + b, 0);
+        if (total !== 12) throw new Error(`Invalid attribute total: ${total}`);
+        currentBuild = createBuild(attributePoints, currentBuild?.name || 'Custom Build');
+    }
+
+    function createProfile(name) {
+        return {
+            id: `profile_${Date.now()}`, name, createdAt: Date.now(),
+            build: currentBuild ? { ...currentBuild } : createBuild(),
+            povStyle: extensionSettings.povStyle, characterName: extensionSettings.characterName,
+            characterPronouns: extensionSettings.characterPronouns, characterContext: extensionSettings.characterContext,
+            activeStatuses: Array.from(activeStatuses),
+            thoughtCabinet: JSON.parse(JSON.stringify(thoughtCabinet)),
+            themeCounters: { ...themeCounters }
+        };
+    }
+
+    function saveProfile(name) { const profile = createProfile(name); savedProfiles[profile.id] = profile; saveState(getSTContext()); return profile; }
+
+    function loadProfile(profileId) {
+        const profile = savedProfiles[profileId];
+        if (!profile) return false;
+        if (profile.build) currentBuild = { ...profile.build };
+        extensionSettings.povStyle = profile.povStyle || 'second';
+        extensionSettings.characterName = profile.characterName || '';
+        extensionSettings.characterPronouns = profile.characterPronouns || 'they';
+        extensionSettings.characterContext = profile.characterContext || '';
+        activeStatuses = new Set(profile.activeStatuses || []);
+        if (profile.thoughtCabinet) thoughtCabinet = JSON.parse(JSON.stringify(profile.thoughtCabinet));
+        if (profile.themeCounters) themeCounters = { ...profile.themeCounters };
+        saveState(getSTContext());
+        return true;
+    }
+
+    function deleteProfile(profileId) { if (savedProfiles[profileId]) { delete savedProfiles[profileId]; saveState(getSTContext()); return true; } return false; }
+
     // ═══════════════════════════════════════════════════════════════
-    // STATUS FUNCTIONS
+    // STATUS & SKILL FUNCTIONS
     // ═══════════════════════════════════════════════════════════════
 
     function toggleStatus(statusId) {
@@ -788,757 +625,738 @@
         else activeStatuses.add(statusId);
         saveState(getSTContext());
         renderStatusDisplay();
-        renderAttributesDisplay();
+    }
+
+    function getSkillModifier(skillId) {
+        let modifier = 0;
+        // Status effects
+        for (const statusId of activeStatuses) {
+            const status = STATUS_EFFECTS[statusId];
+            if (!status) continue;
+            if (status.boosts.includes(skillId)) modifier += 1;
+            if (status.debuffs.includes(skillId)) modifier -= 1;
+        }
+        // v0.7.0: Research penalties
+        const penalties = getResearchPenalties();
+        if (penalties[skillId]) modifier += penalties[skillId];
+        return modifier;
+    }
+
+    function getEffectiveSkillLevel(skillId) {
+        return Math.max(1, Math.min(getSkillCap(skillId), getSkillLevel(skillId) + getSkillModifier(skillId)));
+    }
+
+    function getActiveAncientVoices() {
+        const ancientVoices = new Set();
+        for (const statusId of activeStatuses) {
+            const status = STATUS_EFFECTS[statusId];
+            if (status && status.ancientVoice) ancientVoices.add(status.ancientVoice);
+        }
+        return ancientVoices;
     }
 
     function detectStatusesFromText(text) {
-        const detected = [];
-        const lowerText = text.toLowerCase();
-        Object.entries(STATUS_EFFECTS).forEach(([id, status]) => {
-            const matches = status.keywords.filter(kw => lowerText.includes(kw)).length;
-            if (matches >= 2) detected.push(id);
-        });
-        return detected;
+        const detected = [], lowerText = text.toLowerCase();
+        for (const [statusId, status] of Object.entries(STATUS_EFFECTS)) {
+            for (const keyword of status.keywords) {
+                if (lowerText.includes(keyword)) { detected.push(statusId); break; }
+            }
+        }
+        return [...new Set(detected)];
+    }
+
+    function getBoostedIntrusiveSkills() {
+        const boosted = new Set();
+        for (const statusId of activeStatuses) {
+            const status = STATUS_EFFECTS[statusId];
+            if (status?.intrusiveBoost) status.intrusiveBoost.forEach(s => boosted.add(s));
+        }
+        return boosted;
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // THOUGHT CABINET FUNCTIONS
+    // DICE SYSTEM
     // ═══════════════════════════════════════════════════════════════
 
-    function trackThemesInMessage(text) {
-        const lowerText = text.toLowerCase();
-        Object.entries(THEMES).forEach(([themeId, theme]) => {
-            const matches = theme.keywords.filter(kw => lowerText.includes(kw)).length;
-            if (matches > 0) themeCounters[themeId] = (themeCounters[themeId] || 0) + matches;
-        });
+    function rollD6() { return Math.floor(Math.random() * 6) + 1; }
+
+    function rollSkillCheck(skillLevel, difficulty) {
+        const die1 = rollD6(), die2 = rollD6();
+        const diceTotal = die1 + die2, total = diceTotal + skillLevel;
+        let threshold, difficultyName;
+        if (typeof difficulty === 'string') {
+            const diff = DIFFICULTIES[difficulty.toLowerCase()];
+            threshold = diff ? diff.threshold : 10;
+            difficultyName = diff ? diff.name : 'Medium';
+        } else {
+            threshold = difficulty;
+            difficultyName = getDifficultyNameForThreshold(difficulty);
+        }
+        const isSnakeEyes = die1 === 1 && die2 === 1, isBoxcars = die1 === 6 && die2 === 6;
+        let success = isSnakeEyes ? false : isBoxcars ? true : total >= threshold;
+        return { dice: [die1, die2], diceTotal, skillLevel, total, threshold, difficultyName, success, isSnakeEyes, isBoxcars };
     }
 
-    function checkThoughtDiscovery() {
-        if (!extensionSettings.thoughtDiscoveryEnabled || !extensionSettings.autoDiscoverThoughts) return [];
-        const newlyDiscovered = [];
-        Object.entries(THOUGHTS).forEach(([thoughtId, thought]) => {
-            if (thoughtCabinet.discovered.includes(thoughtId) || thoughtCabinet.internalized.includes(thoughtId)) return;
-            const conditions = thought.discoveryConditions;
-            let meetsConditions = true;
-            if (conditions.themes) {
-                for (const [themeId, required] of Object.entries(conditions.themes)) {
-                    if ((themeCounters[themeId] || 0) < required) { meetsConditions = false; break; }
+    function getDifficultyNameForThreshold(threshold) {
+        if (threshold <= 6) return 'Trivial'; if (threshold <= 8) return 'Easy'; if (threshold <= 10) return 'Medium';
+        if (threshold <= 12) return 'Challenging'; if (threshold <= 14) return 'Heroic'; if (threshold <= 16) return 'Legendary';
+        return 'Impossible';
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // STATE MANAGEMENT
+    // ═══════════════════════════════════════════════════════════════
+
+    function saveState(context) {
+        const state = {
+            settings: extensionSettings, currentBuild, activeStatuses: Array.from(activeStatuses), savedProfiles,
+            themeCounters, thoughtCabinet, discoveryContext: { ...discoveryContext, objectsSeen: Array.from(discoveryContext.objectsSeen) }
+        };
+        try {
+            if (context?.extensionSettings) { context.extensionSettings.inland_empire = state; context.saveSettingsDebounced?.(); }
+            localStorage.setItem('inland_empire_state', JSON.stringify(state));
+        } catch (e) { console.error('[Inland Empire] Failed to save state:', e); }
+    }
+
+    function loadState(context) {
+        try {
+            let state = context?.extensionSettings?.inland_empire || JSON.parse(localStorage.getItem('inland_empire_state') || 'null');
+            if (state) {
+                extensionSettings = { ...DEFAULT_SETTINGS, ...state.settings };
+                currentBuild = state.currentBuild || createBuild();
+                activeStatuses = new Set(state.activeStatuses || []);
+                savedProfiles = state.savedProfiles || {};
+                themeCounters = state.themeCounters || {};
+                thoughtCabinet = state.thoughtCabinet || { slots: 3, maxSlots: 12, discovered: [], researching: {}, internalized: [], dismissed: [] };
+                if (state.discoveryContext) {
+                    discoveryContext = { ...state.discoveryContext, objectsSeen: new Set(state.discoveryContext.objectsSeen || []) };
                 }
-            }
-            if (meetsConditions && conditions.skills) {
-                for (const [skillId, required] of Object.entries(conditions.skills)) {
-                    if (getEffectiveSkillLevel(skillId) < required) { meetsConditions = false; break; }
-                }
-            }
-            if (meetsConditions && conditions.criticalSuccess && discoveryContext.criticalSuccesses < 1) meetsConditions = false;
-            if (meetsConditions && conditions.criticalFailure && discoveryContext.criticalFailures < 1) meetsConditions = false;
-            if (meetsConditions) {
-                thoughtCabinet.discovered.push(thoughtId);
-                newlyDiscovered.push(thought);
-            }
-        });
-        if (newlyDiscovered.length > 0) saveState(getSTContext());
-        return newlyDiscovered;
-    }
-
-    function startResearch(thoughtId) {
-        if (thoughtCabinet.researching) return { success: false, message: 'Already researching a thought' };
-        if (!thoughtCabinet.discovered.includes(thoughtId)) return { success: false, message: 'Thought not discovered' };
-        if (thoughtCabinet.internalized.includes(thoughtId)) return { success: false, message: 'Already internalized' };
-        thoughtCabinet.researching = thoughtId;
-        thoughtCabinet.researchProgress = 0;
-        saveState(getSTContext());
-        return { success: true, message: `Began researching: ${THOUGHTS[thoughtId].name}` };
-    }
-
-    function abandonResearch() {
-        if (!thoughtCabinet.researching) return { success: false, message: 'Not researching anything' };
-        const thought = THOUGHTS[thoughtCabinet.researching];
-        thoughtCabinet.researching = null;
-        thoughtCabinet.researchProgress = 0;
-        saveState(getSTContext());
-        return { success: true, message: `Abandoned: ${thought.name}` };
-    }
-
-    function advanceResearch(messageContent) {
-        if (!thoughtCabinet.researching) return [];
-        const thought = THOUGHTS[thoughtCabinet.researching];
-        if (!thought) return [];
-        thoughtCabinet.researchProgress++;
-        const completed = [];
-        if (thoughtCabinet.researchProgress >= thought.researchTime) {
-            completed.push(thoughtCabinet.researching);
-            internalizeThought(thoughtCabinet.researching);
-        }
-        saveState(getSTContext());
-        return completed;
-    }
-
-    function internalizeThought(thoughtId) {
-        const thought = THOUGHTS[thoughtId];
-        if (!thought) return { success: false };
-        thoughtCabinet.internalized.push(thoughtId);
-        thoughtCabinet.discovered = thoughtCabinet.discovered.filter(id => id !== thoughtId);
-        if (thoughtCabinet.researching === thoughtId) {
-            thoughtCabinet.researching = null;
-            thoughtCabinet.researchProgress = 0;
-        }
-        if (thought.capIncrease) {
-            Object.entries(thought.capIncrease).forEach(([skillId, increase]) => {
-                skillCaps[skillId] = (skillCaps[skillId] || 6) + increase;
-            });
-        }
-        saveState(getSTContext());
-        return { success: true, thought };
+            } else { initializeDefaultBuild(); }
+        } catch (e) { console.error('[Inland Empire] Failed to load state:', e); initializeDefaultBuild(); }
     }
 
     // ═══════════════════════════════════════════════════════════════
     // INTRUSIVE THOUGHTS & OBJECT VOICES
     // ═══════════════════════════════════════════════════════════════
 
-    async function processIntrusiveThoughts(messageContent) {
-        const result = { intrusive: null, objects: [] };
-        if (!extensionSettings.intrusiveEnabled) return result;
+    function getIntrusiveThought(messageText = '') {
+        if (!extensionSettings.intrusiveEnabled) return null;
+        const boostedSkills = getBoostedIntrusiveSkills();
+        const allSkillIds = Object.keys(INTRUSIVE_THOUGHTS);
+        const weightedSkills = allSkillIds.map(skillId => {
+            let weight = getEffectiveSkillLevel(skillId);
+            if (boostedSkills.has(skillId)) weight += 3;
+            const skill = SKILLS[skillId];
+            if (skill && messageText) {
+                const matches = skill.triggerConditions.filter(kw => messageText.toLowerCase().includes(kw.toLowerCase()));
+                weight += matches.length * 2;
+            }
+            return { skillId, weight };
+        }).filter(s => s.weight > 0);
+        const totalWeight = weightedSkills.reduce((sum, s) => sum + s.weight, 0);
+        let random = Math.random() * totalWeight;
+        let selectedSkill = null;
+        for (const { skillId, weight } of weightedSkills) {
+            random -= weight;
+            if (random <= 0) { selectedSkill = skillId; break; }
+        }
+        if (!selectedSkill) selectedSkill = allSkillIds[Math.floor(Math.random() * allSkillIds.length)];
+        const thoughts = INTRUSIVE_THOUGHTS[selectedSkill];
+        if (!thoughts || thoughts.length === 0) return null;
+        let availableThoughts = thoughts.filter(t => !recentIntrusiveThoughts.includes(t));
+        if (availableThoughts.length === 0) { recentIntrusiveThoughts = []; availableThoughts = thoughts; }
+        const thought = availableThoughts[Math.floor(Math.random() * availableThoughts.length)];
+        recentIntrusiveThoughts.push(thought);
+        if (recentIntrusiveThoughts.length > 20) recentIntrusiveThoughts.shift();
+        const skill = SKILLS[selectedSkill];
+        return { skillId: selectedSkill, skillName: skill.name, signature: skill.signature, color: skill.color, content: thought, isIntrusive: true };
+    }
 
-        // Check for intrusive thought
-        if (Math.random() * 100 < extensionSettings.intrusiveChance) {
-            let candidateSkills = Object.keys(SKILLS);
-            activeStatuses.forEach(statusId => {
-                const status = STATUS_EFFECTS[statusId];
-                if (status?.intrusiveBoost) {
-                    status.intrusiveBoost.forEach(skillId => { candidateSkills.push(skillId, skillId, skillId); });
-                }
-            });
-            const chosenSkillId = candidateSkills[Math.floor(Math.random() * candidateSkills.length)];
-            const skill = SKILLS[chosenSkillId];
-            const thoughts = INTRUSIVE_THOUGHTS[chosenSkillId];
-            if (thoughts && thoughts.length > 0) {
-                const thought = thoughts[Math.floor(Math.random() * thoughts.length)];
-                result.intrusive = { skillId: chosenSkillId, signature: skill.signature, name: skill.name, color: skill.color, content: thought };
+    function detectObjects(text) {
+        if (!extensionSettings.objectVoicesEnabled) return [];
+        // v0.7.0: Check for anti-object thought
+        if (hasSpecialEffect('objectVoiceReduction') && Math.random() < 0.85) return [];
+        const detected = [];
+        for (const [objectId, obj] of Object.entries(OBJECT_VOICES)) {
+            for (const pattern of obj.patterns) {
+                if (pattern.test(text)) { detected.push({ id: objectId, ...obj }); break; }
             }
         }
+        return detected;
+    }
 
-        // Check for object voices
-        if (extensionSettings.objectVoicesEnabled) {
-            const lowerText = messageContent.toLowerCase();
-            Object.entries(OBJECT_VOICES).forEach(([objId, obj]) => {
-                if (obj.keywords.some(kw => lowerText.includes(kw))) {
-                    if (Math.random() * 100 < extensionSettings.objectVoiceChance) {
-                        result.objects.push({ objectId: objId, name: obj.name, color: obj.color, personality: obj.personality });
-                    }
-                }
-            });
+    function getObjectVoice(objectId) {
+        const obj = OBJECT_VOICES[objectId];
+        if (!obj) return null;
+        if (lastObjectVoice === objectId && Math.random() > 0.3) return null;
+        lastObjectVoice = objectId;
+        discoveryContext.objectsSeen.add(objectId);
+        const line = obj.lines[Math.floor(Math.random() * obj.lines.length)];
+        return { objectId, name: obj.name, icon: obj.icon, color: obj.color, content: line, affinitySkill: obj.affinitySkill, isObject: true };
+    }
+
+    async function processIntrusiveThoughts(messageText) {
+        const results = { intrusive: null, objects: [] };
+        let intrusiveChance = extensionSettings.intrusiveChance || 0.15;
+        if (activeStatuses.size > 0) intrusiveChance += activeStatuses.size * 0.05;
+        if (Math.random() < intrusiveChance) results.intrusive = getIntrusiveThought(messageText);
+        const detectedObjects = detectObjects(messageText);
+        for (const obj of detectedObjects) {
+            if (Math.random() < (extensionSettings.objectVoiceChance || 0.4)) {
+                const voice = getObjectVoice(obj.id);
+                if (voice) results.objects.push(voice);
+            }
         }
-
-        return result;
+        return results;
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // API FUNCTIONS
+    // TOAST SYSTEM
     // ═══════════════════════════════════════════════════════════════
 
-    async function callLLMAPI(prompt, systemPrompt) {
-        if (!extensionSettings.apiEndpoint || !extensionSettings.apiKey) {
-            throw new Error('API not configured');
-        }
-        const response = await fetch(extensionSettings.apiEndpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${extensionSettings.apiKey}` },
-            body: JSON.stringify({
-                model: extensionSettings.model,
-                messages: [
-                    { role: 'system', content: systemPrompt },
-                    { role: 'user', content: prompt }
-                ],
-                temperature: extensionSettings.temperature,
-                max_tokens: extensionSettings.maxTokens
-            })
+    function createToastContainer() {
+        let container = document.getElementById('ie-toast-container');
+        if (!container) { container = document.createElement('div'); container.id = 'ie-toast-container'; container.className = 'ie-toast-container'; document.body.appendChild(container); }
+        return container;
+    }
+
+    function showToast(message, type = 'info', duration = 3000) {
+        const container = createToastContainer();
+        const toast = document.createElement('div');
+        toast.className = `ie-toast ie-toast-${type}`;
+        const icon = type === 'loading' ? 'fa-spinner fa-spin' : type === 'success' ? 'fa-check' : type === 'error' ? 'fa-exclamation-triangle' : 'fa-brain';
+        toast.innerHTML = `<i class="fa-solid ${icon}"></i><span>${message}</span>`;
+        container.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('ie-toast-show'));
+        if (type !== 'loading') setTimeout(() => { toast.classList.remove('ie-toast-show'); toast.classList.add('ie-toast-hide'); setTimeout(() => toast.remove(), 300); }, duration);
+        return toast;
+    }
+
+    function showIntrusiveToast(thought, duration = 5000) {
+        const container = createToastContainer();
+        const toast = document.createElement('div');
+        toast.className = 'ie-toast ie-toast-intrusive';
+        toast.style.borderColor = thought.color;
+        toast.innerHTML = `<div class="ie-intrusive-header"><span class="ie-intrusive-icon">🧠</span><span class="ie-intrusive-signature" style="color: ${thought.color}">${thought.signature}</span></div><div class="ie-intrusive-content">"${thought.content}"</div><button class="ie-intrusive-dismiss">dismiss</button>`;
+        container.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('ie-toast-show'));
+        toast.querySelector('.ie-intrusive-dismiss')?.addEventListener('click', () => { toast.classList.remove('ie-toast-show'); toast.classList.add('ie-toast-hide'); setTimeout(() => toast.remove(), 300); });
+        setTimeout(() => { if (toast.parentNode) { toast.classList.remove('ie-toast-show'); toast.classList.add('ie-toast-hide'); setTimeout(() => toast.remove(), 300); } }, duration);
+        return toast;
+    }
+
+    function showObjectToast(objectVoice, duration = 6000) {
+        const container = createToastContainer();
+        const toast = document.createElement('div');
+        toast.className = 'ie-toast ie-toast-object';
+        toast.style.borderColor = objectVoice.color;
+        toast.innerHTML = `<div class="ie-object-header"><span class="ie-object-icon">${objectVoice.icon}</span><span class="ie-object-name" style="color: ${objectVoice.color}">${objectVoice.name}</span></div><div class="ie-object-content">"${objectVoice.content}"</div><button class="ie-object-dismiss">dismiss</button>`;
+        container.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('ie-toast-show'));
+        toast.querySelector('.ie-object-dismiss')?.addEventListener('click', () => { toast.classList.remove('ie-toast-show'); toast.classList.add('ie-toast-hide'); setTimeout(() => toast.remove(), 300); });
+        setTimeout(() => { if (toast.parentNode) { toast.classList.remove('ie-toast-show'); toast.classList.add('ie-toast-hide'); setTimeout(() => toast.remove(), 300); } }, duration);
+        return toast;
+    }
+
+    function showDiscoveryToast(thought) {
+        const container = createToastContainer();
+        const toast = document.createElement('div');
+        toast.className = 'ie-toast ie-toast-discovery';
+        toast.innerHTML = `<div class="ie-discovery-header"><span class="ie-discovery-icon">💭</span><span class="ie-discovery-label">THOUGHT DISCOVERED</span></div><div class="ie-discovery-name">${thought.icon} ${thought.name}</div><div class="ie-discovery-desc">${thought.description}</div><div class="ie-discovery-actions"><button class="ie-btn ie-btn-research" data-thought="${thought.id}">RESEARCH</button><button class="ie-btn ie-btn-dismiss-thought" data-thought="${thought.id}">DISMISS</button></div>`;
+        container.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('ie-toast-show'));
+        toast.querySelector('.ie-btn-research')?.addEventListener('click', () => {
+            if (startResearch(thought.id)) {
+                showToast(`Researching: ${thought.name}`, 'success', 2000);
+                renderCabinetTab();
+            } else {
+                showToast('No research slots available!', 'error', 2000);
+            }
+            toast.classList.remove('ie-toast-show'); toast.classList.add('ie-toast-hide'); setTimeout(() => toast.remove(), 300);
         });
-        if (!response.ok) throw new Error(`API error: ${response.status}`);
-        const data = await response.json();
-        return data.choices?.[0]?.message?.content || '';
+        toast.querySelector('.ie-btn-dismiss-thought')?.addEventListener('click', () => {
+            dismissThought(thought.id);
+            toast.classList.remove('ie-toast-show'); toast.classList.add('ie-toast-hide'); setTimeout(() => toast.remove(), 300);
+        });
+        return toast;
     }
 
+    function showInternalizedToast(thought) {
+        const container = createToastContainer();
+        const toast = document.createElement('div');
+        toast.className = 'ie-toast ie-toast-internalized';
+        const bonusText = thought.internalizedBonus ? Object.entries(thought.internalizedBonus).map(([s, v]) => `+${v} ${SKILLS[s]?.name || s}`).join(', ') : '';
+        const capText = thought.capModifier ? Object.entries(thought.capModifier).map(([s, v]) => `+${v} ${SKILLS[s]?.name || s} cap`).join(', ') : '';
+        toast.innerHTML = `<div class="ie-internalized-header"><span class="ie-internalized-icon">✨</span><span class="ie-internalized-label">THOUGHT INTERNALIZED</span></div><div class="ie-internalized-name">${thought.icon} ${thought.name}</div><div class="ie-internalized-flavor">${thought.flavorText}</div>${bonusText ? `<div class="ie-internalized-bonuses">${bonusText}</div>` : ''}${capText ? `<div class="ie-internalized-caps">${capText}</div>` : ''}`;
+        container.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('ie-toast-show'));
+        setTimeout(() => { if (toast.parentNode) { toast.classList.remove('ie-toast-show'); toast.classList.add('ie-toast-hide'); setTimeout(() => toast.remove(), 300); } }, 8000);
+        return toast;
+    }
+
+    function hideToast(toast) { if (toast?.parentNode) { toast.classList.remove('ie-toast-show'); toast.classList.add('ie-toast-hide'); setTimeout(() => toast.remove(), 300); } }
+
     // ═══════════════════════════════════════════════════════════════
-    // CONTEXT ANALYSIS
+    // RELEVANCE & VOICE SELECTION
     // ═══════════════════════════════════════════════════════════════
 
-    function analyzeContext(messageContent) {
-        const lowerContent = messageContent.toLowerCase();
-        const context = {
-            messageContent, lowerContent, detectedThemes: [], relevantSkills: [],
-            emotionalIntensity: 0, isAction: false, isDialogue: false,
-            containsViolence: false, containsSubstance: false, containsSupernatural: false
+    function analyzeContext(message) {
+        const emotionalIndicators = [/!{2,}/, /\?{2,}/, /scream|shout|cry|sob|laugh/i, /furious|terrified|ecstatic/i];
+        const dangerIndicators = [/blood|wound|injury|hurt|pain/i, /gun|knife|weapon|attack|fight/i, /danger|threat|kill|die|death/i];
+        const socialIndicators = [/lie|lying|truth|honest|trust/i, /convince|persuade|manipulate/i, /feel|emotion|sad|happy|angry/i];
+        const mysteryIndicators = [/clue|evidence|investigate|discover/i, /secret|hidden|mystery|strange/i];
+        const physicalIndicators = [/room|building|street|place/i, /cold|hot|wind|rain/i, /machine|device|lock/i];
+        return {
+            message,
+            emotionalIntensity: emotionalIndicators.filter(r => r.test(message)).length / emotionalIndicators.length,
+            dangerLevel: dangerIndicators.filter(r => r.test(message)).length / dangerIndicators.length,
+            socialComplexity: socialIndicators.filter(r => r.test(message)).length / socialIndicators.length,
+            mysteryLevel: mysteryIndicators.filter(r => r.test(message)).length / mysteryIndicators.length,
+            physicalPresence: physicalIndicators.filter(r => r.test(message)).length / physicalIndicators.length
         };
-
-        // Detect themes
-        Object.entries(THEMES).forEach(([themeId, theme]) => {
-            const matches = theme.keywords.filter(kw => lowerContent.includes(kw)).length;
-            if (matches > 0) context.detectedThemes.push({ themeId, matches });
-        });
-
-        // Find relevant skills
-        Object.entries(SKILLS).forEach(([skillId, skill]) => {
-            const matches = skill.triggerConditions.filter(cond => lowerContent.includes(cond)).length;
-            if (matches > 0) context.relevantSkills.push({ skillId, skill, matches });
-        });
-
-        // Sort by relevance
-        context.relevantSkills.sort((a, b) => b.matches - a.matches);
-
-        // Detect content types
-        context.isAction = /\*[^*]+\*/.test(messageContent) || lowerContent.includes('action');
-        context.isDialogue = /"[^"]+"/.test(messageContent) || messageContent.includes('"');
-        context.containsViolence = ['fight', 'hit', 'blood', 'wound', 'kill', 'attack', 'punch'].some(w => lowerContent.includes(w));
-        context.containsSubstance = ['drink', 'drunk', 'drug', 'smoke', 'high', 'alcohol'].some(w => lowerContent.includes(w));
-        context.containsSupernatural = ['pale', 'ghost', 'spirit', 'strange', 'impossible', 'miracle'].some(w => lowerContent.includes(w));
-
-        // Calculate emotional intensity
-        const intensityWords = ['!', 'very', 'extremely', 'incredibly', 'terribly', 'desperately'];
-        context.emotionalIntensity = intensityWords.filter(w => lowerContent.includes(w)).length;
-
-        return context;
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    // VOICE SELECTION
-    // ═══════════════════════════════════════════════════════════════
+    function calculateSkillRelevance(skillId, context) {
+        const skill = SKILLS[skillId];
+        if (!skill) return { skillId, score: 0, reasons: [] };
+        const statusModifier = getSkillModifier(skillId);
+        let score = 0;
+        const keywordMatches = skill.triggerConditions.filter(kw => context.message.toLowerCase().includes(kw.toLowerCase()));
+        if (keywordMatches.length > 0) score += Math.min(keywordMatches.length * 0.2, 0.6);
+        const attr = skill.attribute;
+        if (attr === 'PSYCHE') score += context.emotionalIntensity * 0.4;
+        if (attr === 'PHYSIQUE') score += context.dangerLevel * 0.5;
+        if (attr === 'INTELLECT') score += context.mysteryLevel * 0.4;
+        if (attr === 'MOTORICS') score += context.physicalPresence * 0.3;
+        if (statusModifier > 0) score += statusModifier * 0.25;
+        score += getEffectiveSkillLevel(skillId) * 0.05;
+        score += (Math.random() - 0.5) * 0.2;
+        return { skillId, skillName: skill.name, score: Math.max(0, Math.min(1, score)), skillLevel: getSkillLevel(skillId), attribute: attr };
+    }
 
     function selectSpeakingSkills(context, options = {}) {
         const { minVoices = 1, maxVoices = 4 } = options;
-        const candidates = [];
-
-        // Add skills triggered by context
-        context.relevantSkills.forEach(({ skillId, skill, matches }) => {
-            const effectiveLevel = getEffectiveSkillLevel(skillId);
-            const weight = matches * effectiveLevel;
-            candidates.push({ skillId, skill, weight, reason: 'triggered' });
-        });
-
-        // Add status-boosted skills
-        activeStatuses.forEach(statusId => {
-            const status = STATUS_EFFECTS[statusId];
-            if (!status) return;
-            status.boosts?.forEach(skillId => {
-                const skill = SKILLS[skillId];
-                if (skill && !candidates.find(c => c.skillId === skillId)) {
-                    candidates.push({ skillId, skill, weight: getEffectiveSkillLevel(skillId) * 0.5, reason: 'status' });
+        const ancientVoicesToSpeak = [];
+        for (const ancientId of getActiveAncientVoices()) {
+            const ancient = ANCIENT_VOICES[ancientId];
+            if (ancient) {
+                const keywordMatch = ancient.triggerConditions.some(kw => context.message.toLowerCase().includes(kw.toLowerCase()));
+                if (Math.random() < (keywordMatch ? 0.8 : 0.4)) {
+                    ancientVoicesToSpeak.push({ skillId: ancient.id, skillName: ancient.name, score: 1.0, skillLevel: 6, attribute: 'PRIMAL', isAncient: true });
+                    discoveryContext.ancientVoiceTriggered = true;
                 }
-            });
-        });
+            }
+        }
+        const allRelevance = Object.keys(SKILLS).map(id => calculateSkillRelevance(id, context)).filter(r => r.score >= 0.3).sort((a, b) => b.score - a.score);
+        const intensity = Math.max(context.emotionalIntensity, context.dangerLevel, context.socialComplexity);
+        const targetVoices = Math.round(minVoices + (maxVoices - minVoices) * intensity);
+        const selected = [...ancientVoicesToSpeak];
+        for (const relevance of allRelevance) {
+            if (selected.length >= targetVoices + ancientVoicesToSpeak.length) break;
+            if (Math.random() < relevance.score * 0.8 + 0.2) selected.push(relevance);
+        }
+        while (selected.filter(s => !s.isAncient).length < minVoices && allRelevance.length > 0) {
+            const next = allRelevance.find(r => !selected.find(s => s.skillId === r.skillId));
+            if (next) selected.push(next); else break;
+        }
+        return selected;
+    }
 
-        // Sort by weight and select top candidates
-        candidates.sort((a, b) => b.weight - a.weight);
-        const numVoices = Math.min(maxVoices, Math.max(minVoices, Math.floor(candidates.length * 0.6)));
-        return candidates.slice(0, numVoices);
+    function determineCheckDifficulty(selectedSkill, context) {
+        const baseThreshold = 10;
+        const relevanceModifier = -Math.floor(selectedSkill.score * 4);
+        const intensityModifier = Math.floor(Math.max(context.emotionalIntensity, context.dangerLevel) * 4);
+        const threshold = Math.max(6, Math.min(18, baseThreshold + relevanceModifier + intensityModifier));
+        return { shouldCheck: selectedSkill.score <= 0.8 || Math.random() > 0.3, difficulty: getDifficultyNameForThreshold(threshold).toLowerCase(), threshold };
     }
 
     // ═══════════════════════════════════════════════════════════════
     // VOICE GENERATION
     // ═══════════════════════════════════════════════════════════════
 
-    function getPOVDescription() {
-        const style = extensionSettings.povStyle || 'second';
-        const name = extensionSettings.characterName || 'the character';
-        const pronouns = extensionSettings.characterPronouns || 'they';
-        const pronounMap = {
-            'they': { subject: 'they', object: 'them', possessive: 'their', reflexive: 'themselves' },
-            'he': { subject: 'he', object: 'him', possessive: 'his', reflexive: 'himself' },
-            'she': { subject: 'she', object: 'her', possessive: 'her', reflexive: 'herself' },
-            'it': { subject: 'it', object: 'it', possessive: 'its', reflexive: 'itself' }
-        };
-        const p = pronounMap[pronouns] || pronounMap['they'];
-        if (style === 'second') return `Address the character as "you/your" in second person.`;
-        if (style === 'first') return `Speak as "I/me" - these are the character's own internal thoughts.`;
-        return `Refer to the character as "${name}" or "${p.subject}/${p.object}/${p.possessive}" in third person.`;
-    }
-
-    function buildChorusPrompt(selectedSkills, context, intrusiveData) {
-        const povDesc = getPOVDescription();
-        const charContext = extensionSettings.characterContext ? `\nCharacter context: ${extensionSettings.characterContext}` : '';
-        const activeStatusList = Array.from(activeStatuses).map(id => STATUS_EFFECTS[id]?.name).filter(Boolean).join(', ') || 'None';
-
-        let prompt = `You are generating internal voice commentary for a Disco Elysium-style roleplay. ${povDesc}${charContext}
-
-Active mental/physical states: ${activeStatusList}
-
-The following skills want to comment on the current situation. Each has a distinct personality - capture their unique voice precisely:
-
-`;
-
-        selectedSkills.forEach(({ skillId, skill }) => {
-            const level = getEffectiveSkillLevel(skillId);
-            prompt += `## ${skill.signature} [Level ${level}]
-Personality: ${skill.personality}
-`;
+    async function generateVoices(selectedSkills, context, intrusiveData = null) {
+        const voiceData = selectedSkills.map(selected => {
+            let checkResult = null;
+            if (!selected.isAncient) {
+                const checkDecision = determineCheckDifficulty(selected, context);
+                if (checkDecision.shouldCheck) {
+                    checkResult = rollSkillCheck(getEffectiveSkillLevel(selected.skillId), checkDecision.difficulty);
+                    // v0.7.0: Track critical successes/failures for thought discovery
+                    if (checkResult.isBoxcars) discoveryContext.criticalSuccesses[selected.skillId] = true;
+                    if (checkResult.isSnakeEyes) discoveryContext.criticalFailures[selected.skillId] = true;
+                }
+            }
+            const skill = selected.isAncient ? ANCIENT_VOICES[selected.skillId] : SKILLS[selected.skillId];
+            return { ...selected, skill, checkResult, effectiveLevel: selected.isAncient ? 6 : getEffectiveSkillLevel(selected.skillId) };
         });
-
-        // Add ancient voices if dissociated
-        const ancientVoices = getActiveAncientVoices();
-        if (ancientVoices.length > 0) {
-            prompt += `\n## ANCIENT VOICES (speaking from deep within)\n`;
-            ancientVoices.forEach(voice => {
-                prompt += `### ${voice.signature}
-Personality: ${voice.personality}
-`;
-            });
-        }
-
-        prompt += `
-Current narrative moment:
-"""
-${context.messageContent}
-"""
-
-Generate a SHORT response (1-2 sentences max) for each voice. Capture their exact verbal tics and personality. Format:
-
-SKILL_NAME: "Their comment here."
-
-${ancientVoices.length > 0 ? 'Include the Ancient Voices - they speak from primal depths.' : ''}
-Keep responses punchy and in-character. No meta-commentary.`;
-
-        return prompt;
-    }
-
-    async function generateVoices(selectedSkills, context, intrusiveData) {
-        const voices = [];
-
+        const chorusPrompt = buildChorusPrompt(voiceData, context, intrusiveData);
         try {
-            const prompt = buildChorusPrompt(selectedSkills, context, intrusiveData);
-            const systemPrompt = `You are an expert at writing Disco Elysium-style internal skill voices. Each skill has a DISTINCT personality with specific verbal tics. Keep responses short (1-2 sentences), punchy, and perfectly in-character. Never break character or add meta-commentary.`;
-
-            const response = await callLLMAPI(prompt, systemPrompt);
-
-            // Parse response
-            const lines = response.split('\n').filter(l => l.trim());
-            for (const line of lines) {
-                const match = line.match(/^([A-Z][A-Z\s/]+):\s*"?(.+?)"?\s*$/);
-                if (match) {
-                    const [, signature, content] = match;
-                    const normalizedSig = signature.trim().toUpperCase();
-
-                    // Check regular skills
-                    const skill = Object.values(SKILLS).find(s => s.signature.toUpperCase() === normalizedSig);
-                    if (skill) {
-                        const checkResult = extensionSettings.showDiceRolls ? rollSkillCheck(skill.id, 'medium') : null;
-                        voices.push({ skillId: skill.id, signature: skill.signature, name: skill.name, color: skill.color, content: content.trim(), checkResult });
-                        continue;
-                    }
-
-                    // Check ancient voices
-                    const ancient = Object.values(ANCIENT_VOICES).find(a => a.signature.toUpperCase() === normalizedSig);
-                    if (ancient) {
-                        voices.push({ skillId: ancient.id, signature: ancient.signature, name: ancient.name, color: ancient.color, content: content.trim(), isAncient: true });
-                    }
-                }
-            }
+            const response = await callAPI(chorusPrompt.system, chorusPrompt.user);
+            return parseChorusResponse(response, voiceData);
         } catch (error) {
-            console.error('[Inland Empire] Voice generation error:', error);
-            // Fallback: generate simple voices from intrusive thoughts
-            selectedSkills.slice(0, 2).forEach(({ skillId, skill }) => {
-                const thoughts = INTRUSIVE_THOUGHTS[skillId];
-                if (thoughts?.length) {
-                    voices.push({
-                        skillId, signature: skill.signature, name: skill.name, color: skill.color,
-                        content: thoughts[Math.floor(Math.random() * thoughts.length)],
-                        checkResult: extensionSettings.showDiceRolls ? rollSkillCheck(skillId, 'medium') : null
-                    });
-                }
-            });
+            console.error('[Inland Empire] Chorus generation failed:', error);
+            return voiceData.map(v => ({ skillId: v.skillId, skillName: v.skill.name, signature: v.skill.signature, color: v.skill.color, content: '*static*', checkResult: v.checkResult, isAncient: v.isAncient, success: false }));
         }
-
-        return voices;
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    // UI - TOAST SYSTEM
-    // ═══════════════════════════════════════════════════════════════
-
-    function showToast(message, type = 'info', duration = 3000) {
-        let container = document.getElementById('ie-toast-container');
-        if (!container) {
-            container = document.createElement('div');
-            container.id = 'ie-toast-container';
-            container.className = 'ie-toast-container';
-            document.body.appendChild(container);
+    function buildChorusPrompt(voiceData, context, intrusiveData = null) {
+        const povStyle = extensionSettings.povStyle || 'second';
+        const charName = extensionSettings.characterName || '';
+        const pronouns = extensionSettings.characterPronouns || 'they';
+        const characterContext = extensionSettings.characterContext || '';
+        let povInstruction = povStyle === 'third' ? `Write in THIRD PERSON about ${charName || 'the character'}. Use "${charName || pronouns}" - NEVER "you".` : povStyle === 'first' ? `Write in FIRST PERSON. Use "I/me/my" - NEVER "you".` : `Write in SECOND PERSON. Address the character as "you".`;
+        let contextSection = characterContext.trim() ? `\nCHARACTER CONTEXT:\n${characterContext}\n` : '';
+        let statusContext = activeStatuses.size > 0 ? `\nCurrent state: ${[...activeStatuses].map(id => STATUS_EFFECTS[id]?.name).filter(Boolean).join(', ')}.` : '';
+        let intrusiveContext = '';
+        if (intrusiveData) {
+            if (intrusiveData.intrusive) intrusiveContext += `\nINTRUSIVE THOUGHT (${intrusiveData.intrusive.signature}): "${intrusiveData.intrusive.content}"\nOther voices may react to this.`;
+            if (intrusiveData.objects?.length > 0) intrusiveContext += `\nOBJECTS SPEAKING:\n${intrusiveData.objects.map(o => `${o.name}: "${o.content}"`).join('\n')}`;
         }
-        const toast = document.createElement('div');
-        toast.className = `ie-toast ie-toast-${type}`;
-        const icons = { info: 'fa-info-circle', success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', loading: 'fa-spinner fa-spin' };
-        toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i><span>${message}</span>`;
-        container.appendChild(toast);
-        setTimeout(() => toast.classList.add('ie-toast-visible'), 10);
-        if (type !== 'loading' && duration > 0) {
-            setTimeout(() => { toast.classList.remove('ie-toast-visible'); setTimeout(() => toast.remove(), 300); }, duration);
-        }
-        return toast;
+        const voiceDescriptions = voiceData.map(v => {
+            let checkInfo = v.checkResult ? (v.checkResult.isBoxcars ? ' [CRITICAL SUCCESS]' : v.checkResult.isSnakeEyes ? ' [CRITICAL FAILURE]' : v.checkResult.success ? ' [Success]' : ' [Failed]') : v.isAncient ? ' [PRIMAL]' : ' [Passive]';
+            return `${v.skill.signature}${checkInfo}: ${v.skill.personality}`;
+        }).join('\n\n');
+        const systemPrompt = `You generate internal mental voices for a roleplayer, inspired by Disco Elysium.\n\nTHE VOICES SPEAKING:\n${voiceDescriptions}\n\nRULES:\n1. ${povInstruction}\n2. Voices REACT to each other - argue, agree, interrupt\n3. Format EXACTLY as: SKILL_NAME - dialogue\n4. Keep each line 1-2 sentences\n5. Failed checks = uncertain/wrong. Critical success = profound. Critical failure = hilariously wrong\n6. Ancient/Primal voices speak in fragments\n7. Total: 4-12 voice lines\n${contextSection}${statusContext}${intrusiveContext}\n\nOutput ONLY voice dialogue. No narration.`;
+        return { system: systemPrompt, user: `Scene: "${context.message.substring(0, 800)}"\n\nGenerate the internal chorus.` };
     }
 
-    function hideToast(toast) { if (toast) { toast.classList.remove('ie-toast-visible'); setTimeout(() => toast.remove(), 300); } }
-
-    function showIntrusiveToast(intrusive) {
-        let container = document.getElementById('ie-toast-container');
-        if (!container) { container = document.createElement('div'); container.id = 'ie-toast-container'; container.className = 'ie-toast-container'; document.body.appendChild(container); }
-        const toast = document.createElement('div');
-        toast.className = 'ie-toast ie-toast-intrusive';
-        toast.innerHTML = `<div class="ie-intrusive-header"><span class="ie-intrusive-sig" style="color: ${intrusive.color}">${intrusive.signature}</span></div><div class="ie-intrusive-content">"${intrusive.content}"</div>`;
-        container.appendChild(toast);
-        setTimeout(() => toast.classList.add('ie-toast-visible'), 10);
-        setTimeout(() => { toast.classList.remove('ie-toast-visible'); setTimeout(() => toast.remove(), 300); }, 5000);
-    }
-
-    function showObjectToast(objVoice) {
-        let container = document.getElementById('ie-toast-container');
-        if (!container) { container = document.createElement('div'); container.id = 'ie-toast-container'; container.className = 'ie-toast-container'; document.body.appendChild(container); }
-        const toast = document.createElement('div');
-        toast.className = 'ie-toast ie-toast-object';
-        toast.innerHTML = `<div class="ie-object-header"><span class="ie-object-name" style="color: ${objVoice.color}">${objVoice.name}</span></div><div class="ie-object-content">${objVoice.personality}</div>`;
-        container.appendChild(toast);
-        setTimeout(() => toast.classList.add('ie-toast-visible'), 10);
-        setTimeout(() => { toast.classList.remove('ie-toast-visible'); setTimeout(() => toast.remove(), 300); }, 4000);
-    }
-
-    function showDiscoveryToast(thought) {
-        let container = document.getElementById('ie-toast-container');
-        if (!container) { container = document.createElement('div'); container.id = 'ie-toast-container'; container.className = 'ie-toast-container'; document.body.appendChild(container); }
-        const toast = document.createElement('div');
-        toast.className = 'ie-toast ie-toast-discovery';
-        toast.innerHTML = `<div class="ie-discovery-header"><i class="fa-solid fa-lightbulb"></i><span>THOUGHT DISCOVERED</span></div><div class="ie-discovery-name">${thought.name}</div><div class="ie-discovery-desc">${thought.description}</div>`;
-        container.appendChild(toast);
-        setTimeout(() => toast.classList.add('ie-toast-visible'), 10);
-        setTimeout(() => { toast.classList.remove('ie-toast-visible'); setTimeout(() => toast.remove(), 300); }, 6000);
-    }
-
-    function showInternalizedToast(thought) {
-        let container = document.getElementById('ie-toast-container');
-        if (!container) { container = document.createElement('div'); container.id = 'ie-toast-container'; container.className = 'ie-toast-container'; document.body.appendChild(container); }
-        const toast = document.createElement('div');
-        toast.className = 'ie-toast ie-toast-internalized';
-        toast.innerHTML = `<div class="ie-internalized-header"><i class="fa-solid fa-brain"></i><span>THOUGHT INTERNALIZED</span></div><div class="ie-internalized-name">${thought.name}</div><div class="ie-internalized-text">${thought.internalizedText}</div>`;
-        container.appendChild(toast);
-        setTimeout(() => toast.classList.add('ie-toast-visible'), 10);
-        setTimeout(() => { toast.classList.remove('ie-toast-visible'); setTimeout(() => toast.remove(), 300); }, 6000);
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // UI - RENDERING
-    // ═══════════════════════════════════════════════════════════════
-
-    function renderAttributesDisplay() {
-        const container = document.getElementById('ie-attributes-display');
-        if (!container) return;
-        container.innerHTML = Object.values(ATTRIBUTES).map(attr => {
-            const skillsHtml = attr.skills.map(skillId => {
-                const skill = SKILLS[skillId];
-                const level = getSkillLevel(skillId);
-                const modifier = getSkillModifier(skillId);
-                const effective = getEffectiveSkillLevel(skillId);
-                const cap = getSkillCap(skillId);
-                const modStr = modifier !== 0 ? ` <span class="ie-modifier ${modifier > 0 ? 'ie-mod-pos' : 'ie-mod-neg'}">(${modifier > 0 ? '+' : ''}${modifier})</span>` : '';
-                return `<div class="ie-skill-row" title="${skill.personality.substring(0, 100)}..."><span class="ie-skill-name">${skill.name}</span><span class="ie-skill-level">${effective}${modStr}<span class="ie-skill-cap">/${cap}</span></span></div>`;
-            }).join('');
-            return `<div class="ie-attribute-block"><div class="ie-attribute-header" style="border-color: ${attr.color}"><span style="color: ${attr.color}">${attr.name}</span></div><div class="ie-skills-list">${skillsHtml}</div></div>`;
-        }).join('');
-    }
-
-    function renderStatusDisplay() {
-        const grid = document.getElementById('ie-status-grid');
-        const summary = document.getElementById('ie-active-effects-summary');
-        if (!grid) return;
-
-        const categories = { physical: [], mental: [] };
-        Object.entries(STATUS_EFFECTS).forEach(([id, status]) => { categories[status.category]?.push({ id, ...status }); });
-
-        grid.innerHTML = Object.entries(categories).map(([cat, statuses]) => `
-            <div class="ie-status-category"><div class="ie-status-category-header">${cat.charAt(0).toUpperCase() + cat.slice(1)}</div>
-            ${statuses.map(s => `<button class="ie-status-btn ${activeStatuses.has(s.id) ? 'ie-status-active' : ''}" data-status="${s.id}" title="${s.description}"><span class="ie-status-icon">${s.icon}</span><span class="ie-status-name">${s.name}</span></button>`).join('')}</div>
-        `).join('');
-
-        grid.querySelectorAll('.ie-status-btn').forEach(btn => {
-            btn.addEventListener('click', () => toggleStatus(btn.dataset.status));
-        });
-
-        if (summary) {
-            if (activeStatuses.size === 0) { summary.innerHTML = '<em>No active status effects</em>'; }
-            else {
-                const effects = Array.from(activeStatuses).map(id => STATUS_EFFECTS[id]).filter(Boolean);
-                summary.innerHTML = effects.map(e => `<span class="ie-active-effect">${e.icon} ${e.name}</span>`).join(' ');
+    function parseChorusResponse(response, voiceData) {
+        const lines = response.trim().split('\n').filter(line => line.trim());
+        const results = [];
+        const skillMap = {};
+        voiceData.forEach(v => { skillMap[v.skill.signature.toUpperCase()] = v; skillMap[v.skill.name.toUpperCase()] = v; });
+        for (const line of lines) {
+            const match = line.match(/^([A-Z][A-Z\s\/]+)\s*[-:–—]\s*(.+)$/i);
+            if (match) {
+                const voiceInfo = skillMap[match[1].trim().toUpperCase()];
+                if (voiceInfo) results.push({ skillId: voiceInfo.skillId, skillName: voiceInfo.skill.name, signature: voiceInfo.skill.signature, color: voiceInfo.skill.color, content: match[2].trim(), checkResult: voiceInfo.checkResult, isAncient: voiceInfo.isAncient, success: true });
             }
         }
+        if (results.length === 0 && voiceData.length > 0 && response.trim()) {
+            const v = voiceData[0];
+            results.push({ skillId: v.skillId, skillName: v.skill.name, signature: v.skill.signature, color: v.skill.color, content: response.trim().substring(0, 200), checkResult: v.checkResult, isAncient: v.isAncient, success: true });
+        }
+        return results;
     }
 
-    function renderCabinetTab() {
-        const container = document.getElementById('ie-cabinet-content');
-        if (!container) return;
-
-        const researchingThought = thoughtCabinet.researching ? THOUGHTS[thoughtCabinet.researching] : null;
-
-        let html = `<div class="ie-section"><div class="ie-section-header"><span>Research Slot</span></div>`;
-        if (researchingThought) {
-            const progress = Math.floor((thoughtCabinet.researchProgress / researchingThought.researchTime) * 100);
-            html += `<div class="ie-research-active"><div class="ie-research-thought-name">${researchingThought.name}</div><div class="ie-research-desc">${researchingThought.description}</div><div class="ie-research-progress"><div class="ie-progress-bar"><div class="ie-progress-fill" style="width: ${progress}%"></div></div><span>${thoughtCabinet.researchProgress}/${researchingThought.researchTime}</span></div><button class="ie-btn ie-btn-sm ie-btn-abandon" data-thought="${thoughtCabinet.researching}">Abandon</button></div>`;
-        } else {
-            html += `<div class="ie-research-empty"><em>No thought being researched</em></div>`;
-        }
-        html += `</div>`;
-
-        // Discovered thoughts
-        html += `<div class="ie-section"><div class="ie-section-header"><span>Discovered (${thoughtCabinet.discovered.length})</span></div><div class="ie-thoughts-list">`;
-        if (thoughtCabinet.discovered.length === 0) { html += `<em>No thoughts discovered yet</em>`; }
-        else {
-            thoughtCabinet.discovered.forEach(thoughtId => {
-                const thought = THOUGHTS[thoughtId];
-                if (!thought) return;
-                const canResearch = !thoughtCabinet.researching;
-                html += `<div class="ie-thought-card ie-thought-discovered"><div class="ie-thought-name">${thought.name}</div><div class="ie-thought-desc">${thought.description}</div><div class="ie-thought-time">Research time: ${thought.researchTime}</div>${canResearch ? `<button class="ie-btn ie-btn-sm ie-btn-research" data-thought="${thoughtId}">Research</button>` : ''}</div>`;
-            });
-        }
-        html += `</div></div>`;
-
-        // Internalized thoughts
-        html += `<div class="ie-section"><div class="ie-section-header"><span>Internalized (${thoughtCabinet.internalized.length})</span></div><div class="ie-thoughts-list">`;
-        if (thoughtCabinet.internalized.length === 0) { html += `<em>No thoughts internalized yet</em>`; }
-        else {
-            thoughtCabinet.internalized.forEach(thoughtId => {
-                const thought = THOUGHTS[thoughtId];
-                if (!thought) return;
-                const bonusText = Object.entries(thought.bonus || {}).map(([s, v]) => `${SKILLS[s]?.name || s} +${v}`).join(', ');
-                html += `<div class="ie-thought-card ie-thought-internalized"><div class="ie-thought-name">${thought.name}</div><div class="ie-thought-internalized-text">"${thought.internalizedText}"</div><div class="ie-thought-bonus">Bonus: ${bonusText}</div></div>`;
-            });
-        }
-        html += `</div></div>`;
-
-        container.innerHTML = html;
-
-        // Event listeners
-        container.querySelectorAll('.ie-btn-research').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const result = startResearch(btn.dataset.thought);
-                showToast(result.message, result.success ? 'success' : 'error', 2000);
-                renderCabinetTab();
-            });
+    async function callAPI(systemPrompt, userPrompt) {
+        let { apiEndpoint, apiKey, model, maxTokens, temperature } = extensionSettings;
+        if (!apiEndpoint || !apiKey) throw new Error('API not configured');
+        if (!apiEndpoint.includes('/chat/completions')) apiEndpoint = apiEndpoint.replace(/\/+$/, '') + '/chat/completions';
+        const response = await fetch(apiEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+            body: JSON.stringify({ model: model || 'glm-4-plus', messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }], max_tokens: maxTokens || 300, temperature: temperature || 0.9 })
         });
-        container.querySelectorAll('.ie-btn-abandon').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const result = abandonResearch();
-                showToast(result.message, result.success ? 'info' : 'error', 2000);
-                renderCabinetTab();
-            });
-        });
-    }
-
-    function displayVoices(voices) {
-        const container = document.getElementById('ie-voices-output');
-        if (!container) return;
-        if (voices.length === 0) { container.innerHTML = '<div class="ie-voices-empty"><i class="fa-solid fa-comment-slash"></i><span>The voices are quiet...</span></div>'; return; }
-        container.innerHTML = voices.map(voice => {
-            let checkHtml = '';
-            if (voice.checkResult && extensionSettings.showDiceRolls) {
-                const cr = voice.checkResult;
-                const statusClass = cr.isCriticalSuccess ? 'ie-crit-success' : cr.isCriticalFailure ? 'ie-crit-fail' : cr.success ? 'ie-success' : 'ie-fail';
-                const statusText = cr.isCriticalSuccess ? 'CRITICAL SUCCESS' : cr.isCriticalFailure ? 'CRITICAL FAILURE' : cr.success ? 'Success' : 'Failed';
-                checkHtml = `<div class="ie-check-result ${statusClass}"><span class="ie-dice">[${cr.die1}+${cr.die2}]</span> + ${cr.effectiveLevel} = ${cr.total} vs ${cr.threshold} <span class="ie-check-status">${statusText}</span></div>`;
-            }
-            const isAncient = voice.isAncient;
-            const cardClass = isAncient ? 'ie-voice-card ie-voice-ancient' : 'ie-voice-card';
-            return `<div class="${cardClass}"><div class="ie-voice-header"><span class="ie-voice-sig" style="color: ${voice.color}">${voice.signature}</span></div>${checkHtml}<div class="ie-voice-content">"${voice.content}"</div></div>`;
-        }).join('');
+        if (!response.ok) throw new Error(`API error: ${response.status}`);
+        const data = await response.json();
+        return data.choices?.[0]?.message?.content || data.choices?.[0]?.text || data.content || '';
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // UI - PANEL CONTROLS
+    // UI FUNCTIONS
     // ═══════════════════════════════════════════════════════════════
 
     function togglePanel() {
         const panel = document.getElementById('inland-empire-panel');
-        if (panel) { panel.classList.toggle('ie-panel-open'); renderStatusDisplay(); renderCabinetTab(); renderProfilesList(); loadSettingsToUI(); renderBuildEditor(); }
+        const fab = document.getElementById('inland-empire-fab');
+        if (!panel) return;
+        const isOpen = panel.classList.contains('ie-panel-open');
+        if (isOpen) { panel.classList.remove('ie-panel-open'); fab?.classList.remove('ie-fab-active'); }
+        else { panel.classList.add('ie-panel-open'); fab?.classList.add('ie-fab-active'); }
     }
 
-    function switchTab(tabId) {
-        document.querySelectorAll('.ie-tab').forEach(t => t.classList.remove('ie-tab-active'));
-        document.querySelectorAll('.ie-tab-content').forEach(c => c.classList.remove('ie-tab-content-active'));
-        document.querySelector(`.ie-tab[data-tab="${tabId}"]`)?.classList.add('ie-tab-active');
-        document.querySelector(`.ie-tab-content[data-tab-content="${tabId}"]`)?.classList.add('ie-tab-content-active');
-        if (tabId === 'status') renderStatusDisplay();
-        if (tabId === 'cabinet') renderCabinetTab();
-        if (tabId === 'profiles') { renderProfilesList(); renderBuildEditor(); }
-        if (tabId === 'settings') loadSettingsToUI();
+    function switchTab(tabName) {
+        document.querySelectorAll('.ie-tab').forEach(tab => tab.classList.toggle('ie-tab-active', tab.dataset.tab === tabName));
+        document.querySelectorAll('.ie-tab-content').forEach(content => content.classList.toggle('ie-tab-content-active', content.dataset.tabContent === tabName));
+        if (tabName === 'profiles') { populateBuildEditor(); renderProfilesList(); }
+        if (tabName === 'settings') populateSettings();
+        if (tabName === 'status') renderStatusDisplay();
+        if (tabName === 'cabinet') renderCabinetTab();
     }
 
-    function loadSettingsToUI() {
-        const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
-        const setChecked = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
-        setVal('ie-api-endpoint', extensionSettings.apiEndpoint);
-        setVal('ie-api-key', extensionSettings.apiKey);
-        setVal('ie-model', extensionSettings.model);
-        setVal('ie-temperature', extensionSettings.temperature);
-        setVal('ie-max-tokens', extensionSettings.maxTokens);
-        setVal('ie-min-voices', extensionSettings.minVoices);
-        setVal('ie-max-voices', extensionSettings.maxVoices);
-        setVal('ie-trigger-delay', extensionSettings.triggerDelay);
-        setChecked('ie-show-dice-rolls', extensionSettings.showDiceRolls);
-        setChecked('ie-show-failed-checks', extensionSettings.showFailedChecks);
-        setChecked('ie-auto-trigger', extensionSettings.autoTrigger);
-        setChecked('ie-auto-detect-status', extensionSettings.autoDetectStatus);
-        setChecked('ie-intrusive-enabled', extensionSettings.intrusiveEnabled);
-        setChecked('ie-intrusive-in-chat', extensionSettings.intrusiveInChat);
-        setVal('ie-intrusive-chance', extensionSettings.intrusiveChance);
-        setChecked('ie-object-voices-enabled', extensionSettings.objectVoicesEnabled);
-        setVal('ie-object-chance', extensionSettings.objectVoiceChance);
-        setChecked('ie-thought-discovery-enabled', extensionSettings.thoughtDiscoveryEnabled);
-        setChecked('ie-auto-discover-thoughts', extensionSettings.autoDiscoverThoughts);
-        setVal('ie-pov-style', extensionSettings.povStyle);
-        setVal('ie-character-name', extensionSettings.characterName);
-        setVal('ie-character-pronouns', extensionSettings.characterPronouns);
-        setVal('ie-character-context', extensionSettings.characterContext);
-        updateThirdPersonVisibility();
-    }
+    // v0.7.0: Cabinet Tab Rendering
+    function renderCabinetTab() {
+        const container = document.getElementById('ie-cabinet-content');
+        if (!container) return;
 
-    function saveSettings() {
-        const getVal = (id) => document.getElementById(id)?.value ?? '';
-        const getNum = (id, def) => parseFloat(document.getElementById(id)?.value) || def;
-        const getChecked = (id) => document.getElementById(id)?.checked ?? false;
-        extensionSettings.apiEndpoint = getVal('ie-api-endpoint');
-        extensionSettings.apiKey = getVal('ie-api-key');
-        extensionSettings.model = getVal('ie-model');
-        extensionSettings.temperature = getNum('ie-temperature', 0.9);
-        extensionSettings.maxTokens = getNum('ie-max-tokens', 300);
-        extensionSettings.minVoices = getNum('ie-min-voices', 1);
-        extensionSettings.maxVoices = getNum('ie-max-voices', 4);
-        extensionSettings.triggerDelay = getNum('ie-trigger-delay', 1000);
-        extensionSettings.showDiceRolls = getChecked('ie-show-dice-rolls');
-        extensionSettings.showFailedChecks = getChecked('ie-show-failed-checks');
-        extensionSettings.autoTrigger = getChecked('ie-auto-trigger');
-        extensionSettings.autoDetectStatus = getChecked('ie-auto-detect-status');
-        extensionSettings.intrusiveEnabled = getChecked('ie-intrusive-enabled');
-        extensionSettings.intrusiveInChat = getChecked('ie-intrusive-in-chat');
-        extensionSettings.intrusiveChance = getNum('ie-intrusive-chance', 15);
-        extensionSettings.objectVoicesEnabled = getChecked('ie-object-voices-enabled');
-        extensionSettings.objectVoiceChance = getNum('ie-object-chance', 40);
-        extensionSettings.thoughtDiscoveryEnabled = getChecked('ie-thought-discovery-enabled');
-        extensionSettings.autoDiscoverThoughts = getChecked('ie-auto-discover-thoughts');
-        extensionSettings.povStyle = getVal('ie-pov-style');
-        extensionSettings.characterName = getVal('ie-character-name');
-        extensionSettings.characterPronouns = getVal('ie-character-pronouns');
-        extensionSettings.characterContext = getVal('ie-character-context');
-        saveState(getSTContext());
-        showToast('Settings saved!', 'success', 2000);
-    }
+        // Slots display
+        const slotsUsed = Object.keys(thoughtCabinet.researching).length;
+        let slotsHtml = `<div class="ie-section ie-cabinet-slots"><div class="ie-section-header"><span>Research Slots</span><span class="ie-slots-display">${slotsUsed}/${thoughtCabinet.slots}</span></div><div class="ie-slots-visual">`;
+        for (let i = 0; i < thoughtCabinet.slots; i++) {
+            const occupied = i < slotsUsed;
+            slotsHtml += `<div class="ie-slot ${occupied ? 'ie-slot-occupied' : 'ie-slot-empty'}">${occupied ? '💭' : '+'}</div>`;
+        }
+        slotsHtml += `</div></div>`;
 
-    function updateThirdPersonVisibility() {
-        const style = document.getElementById('ie-pov-style')?.value;
-        document.querySelectorAll('.ie-third-person-options').forEach(el => {
-            el.style.display = style === 'third' ? 'block' : 'none';
-        });
-    }
+        // Theme tracker
+        const topThemes = getTopThemes(5);
+        let themesHtml = `<div class="ie-section ie-theme-tracker"><div class="ie-section-header"><span>Theme Tracker</span><button class="ie-btn ie-btn-sm ie-btn-reset-themes" title="Reset"><i class="fa-solid fa-eraser"></i></button></div><div class="ie-themes-grid">`;
+        if (topThemes.length === 0) {
+            themesHtml += `<div class="ie-empty-state"><i class="fa-solid fa-chart-line"></i><span>No themes tracked yet</span></div>`;
+        } else {
+            for (const theme of topThemes) {
+                themesHtml += `<div class="ie-theme-item"><span class="ie-theme-icon">${theme.icon}</span><span class="ie-theme-name">${theme.name}</span><span class="ie-theme-count">${theme.count}</span></div>`;
+            }
+        }
+        themesHtml += `</div></div>`;
 
-    // ═══════════════════════════════════════════════════════════════
-    // PROFILES
-    // ═══════════════════════════════════════════════════════════════
+        // Researching
+        let researchingHtml = `<div class="ie-section ie-researching-section"><div class="ie-section-header"><span>Researching</span></div><div class="ie-researching-list">`;
+        const researchingIds = Object.keys(thoughtCabinet.researching);
+        if (researchingIds.length === 0) {
+            researchingHtml += `<div class="ie-empty-state"><i class="fa-solid fa-flask"></i><span>No thoughts being researched</span></div>`;
+        } else {
+            for (const thoughtId of researchingIds) {
+                const thought = THOUGHTS[thoughtId];
+                const research = thoughtCabinet.researching[thoughtId];
+                const progress = Math.min(100, Math.round((research.progress / thought.researchTime) * 100));
+                const penalties = thought.researchPenalty ? Object.entries(thought.researchPenalty).map(([s, v]) => `${v} ${SKILLS[s]?.signature || s}`).join(', ') : 'None';
+                researchingHtml += `<div class="ie-research-card"><div class="ie-research-header"><span class="ie-research-icon">${thought.icon}</span><span class="ie-research-name">${thought.name}</span><button class="ie-btn ie-btn-sm ie-btn-abandon" data-thought="${thoughtId}" title="Abandon"><i class="fa-solid fa-times"></i></button></div><div class="ie-research-progress-bar"><div class="ie-research-progress-fill" style="width: ${progress}%"></div></div><div class="ie-research-info"><span>${research.progress}/${thought.researchTime}</span><span class="ie-research-penalties">${penalties}</span></div></div>`;
+            }
+        }
+        researchingHtml += `</div></div>`;
 
-    function saveProfile(name) {
-        const profile = { id: Date.now().toString(), name, skillLevels: { ...skillLevels }, skillCaps: { ...skillCaps }, activeStatuses: Array.from(activeStatuses), thoughtCabinet: JSON.parse(JSON.stringify(thoughtCabinet)), themeCounters: { ...themeCounters }, characterName: extensionSettings.characterName, characterPronouns: extensionSettings.characterPronouns, characterContext: extensionSettings.characterContext, povStyle: extensionSettings.povStyle };
-        profiles.push(profile);
-        saveState(getSTContext());
-        return profile;
-    }
+        // Discovered
+        let discoveredHtml = `<div class="ie-section ie-discovered-section"><div class="ie-section-header"><span>Discovered</span></div><div class="ie-discovered-list">`;
+        if (thoughtCabinet.discovered.length === 0) {
+            discoveredHtml += `<div class="ie-empty-state"><i class="fa-solid fa-lightbulb"></i><span>No discovered thoughts</span></div>`;
+        } else {
+            for (const thoughtId of thoughtCabinet.discovered) {
+                const thought = THOUGHTS[thoughtId];
+                if (!thought) continue;
+                discoveredHtml += `<div class="ie-discovered-card"><div class="ie-discovered-header"><span class="ie-discovered-icon">${thought.icon}</span><span class="ie-discovered-name">${thought.name}</span></div><div class="ie-discovered-desc">${thought.description}</div><div class="ie-discovered-actions"><button class="ie-btn ie-btn-sm ie-btn-research" data-thought="${thoughtId}">Research</button><button class="ie-btn ie-btn-sm ie-btn-dismiss-thought" data-thought="${thoughtId}">Dismiss</button></div></div>`;
+            }
+        }
+        discoveredHtml += `</div></div>`;
 
-    function loadProfile(profileId) {
-        const profile = profiles.find(p => p.id === profileId);
-        if (!profile) return false;
-        skillLevels = { ...skillLevels, ...profile.skillLevels };
-        skillCaps = { ...skillCaps, ...profile.skillCaps };
-        activeStatuses = new Set(profile.activeStatuses || []);
-        thoughtCabinet = { ...thoughtCabinet, ...profile.thoughtCabinet };
-        themeCounters = { ...themeCounters, ...profile.themeCounters };
-        if (profile.characterName !== undefined) extensionSettings.characterName = profile.characterName;
-        if (profile.characterPronouns !== undefined) extensionSettings.characterPronouns = profile.characterPronouns;
-        if (profile.characterContext !== undefined) extensionSettings.characterContext = profile.characterContext;
-        if (profile.povStyle !== undefined) extensionSettings.povStyle = profile.povStyle;
-        saveState(getSTContext());
-        renderAttributesDisplay();
-        renderStatusDisplay();
-        renderCabinetTab();
-        loadSettingsToUI();
-        return true;
-    }
+        // Internalized
+        let internalizedHtml = `<div class="ie-section ie-internalized-section"><div class="ie-section-header"><span>Internalized</span></div><div class="ie-internalized-list">`;
+        if (thoughtCabinet.internalized.length === 0) {
+            internalizedHtml += `<div class="ie-empty-state"><i class="fa-solid fa-gem"></i><span>No internalized thoughts</span></div>`;
+        } else {
+            for (const thoughtId of thoughtCabinet.internalized) {
+                const thought = THOUGHTS[thoughtId];
+                if (!thought) continue;
+                const bonusText = thought.internalizedBonus ? Object.entries(thought.internalizedBonus).map(([s, v]) => `+${v} ${SKILLS[s]?.signature || s}`).join(' ') : '';
+                internalizedHtml += `<div class="ie-internalized-card"><span class="ie-internalized-icon">${thought.icon}</span><span class="ie-internalized-name">${thought.name}</span>${bonusText ? `<span class="ie-internalized-bonuses">${bonusText}</span>` : ''}</div>`;
+            }
+        }
+        internalizedHtml += `</div></div>`;
 
-    function deleteProfile(profileId) {
-        profiles = profiles.filter(p => p.id !== profileId);
-        saveState(getSTContext());
+        container.innerHTML = slotsHtml + themesHtml + researchingHtml + discoveredHtml + internalizedHtml;
+
+        // Event listeners
+        container.querySelector('.ie-btn-reset-themes')?.addEventListener('click', () => { resetThemeCounters(); renderCabinetTab(); showToast('Themes reset', 'info', 2000); });
+        container.querySelectorAll('.ie-btn-abandon').forEach(btn => btn.addEventListener('click', () => { abandonResearch(btn.dataset.thought); renderCabinetTab(); }));
+        container.querySelectorAll('.ie-btn-research').forEach(btn => btn.addEventListener('click', () => {
+            if (startResearch(btn.dataset.thought)) { showToast('Research started!', 'success', 2000); renderCabinetTab(); }
+            else showToast('No slots available!', 'error', 2000);
+        }));
+        container.querySelectorAll('.ie-btn-dismiss-thought').forEach(btn => btn.addEventListener('click', () => { dismissThought(btn.dataset.thought); renderCabinetTab(); }));
     }
 
     function renderProfilesList() {
         const container = document.getElementById('ie-profiles-list');
         if (!container) return;
-        if (profiles.length === 0) { container.innerHTML = '<em>No saved profiles</em>'; return; }
-        container.innerHTML = profiles.map(p => `<div class="ie-profile-item"><span class="ie-profile-name">${p.name}</span><div class="ie-profile-actions"><button class="ie-btn ie-btn-sm ie-btn-load-profile" data-id="${p.id}"><i class="fa-solid fa-upload"></i></button><button class="ie-btn ie-btn-sm ie-btn-delete-profile" data-id="${p.id}"><i class="fa-solid fa-trash"></i></button></div></div>`).join('');
-        container.querySelectorAll('.ie-btn-load-profile').forEach(btn => {
-            btn.addEventListener('click', () => { loadProfile(btn.dataset.id); showToast('Profile loaded!', 'success', 2000); });
-        });
-        container.querySelectorAll('.ie-btn-delete-profile').forEach(btn => {
-            btn.addEventListener('click', () => { deleteProfile(btn.dataset.id); renderProfilesList(); showToast('Profile deleted', 'info', 2000); });
+        const profiles = Object.values(savedProfiles);
+        if (profiles.length === 0) { container.innerHTML = '<div class="ie-empty-state"><i class="fa-solid fa-user-slash"></i><span>No saved profiles</span></div>'; return; }
+        container.innerHTML = profiles.map(profile => `<div class="ie-profile-card" data-profile-id="${profile.id}"><div class="ie-profile-info"><span class="ie-profile-name">${profile.name}</span><span class="ie-profile-details">${profile.characterName || 'No character'}</span></div><div class="ie-profile-actions"><button class="ie-btn-icon ie-btn-load" data-action="load" title="Load"><i class="fa-solid fa-download"></i></button><button class="ie-btn-icon ie-btn-remove" data-action="delete" title="Delete"><i class="fa-solid fa-trash"></i></button></div></div>`).join('');
+        container.querySelectorAll('.ie-profile-card').forEach(card => {
+            const profileId = card.dataset.profileId;
+            card.querySelector('[data-action="load"]')?.addEventListener('click', () => { if (loadProfile(profileId)) { showToast(`Loaded: ${savedProfiles[profileId].name}`, 'success', 2000); renderAttributesDisplay(); populateSettings(); populateBuildEditor(); renderStatusDisplay(); renderCabinetTab(); } });
+            card.querySelector('[data-action="delete"]')?.addEventListener('click', () => { if (confirm(`Delete "${savedProfiles[profileId].name}"?`)) { deleteProfile(profileId); renderProfilesList(); showToast('Profile deleted', 'info', 2000); } });
         });
     }
 
-    function renderBuildEditor() {
+    function populateBuildEditor() {
         const container = document.getElementById('ie-attributes-editor');
         if (!container) return;
-        let totalPoints = 0;
-        Object.keys(skillLevels).forEach(id => { totalPoints += skillLevels[id] - 1; });
-        const remaining = 12 - totalPoints;
-        const pointsDisplay = document.getElementById('ie-points-remaining');
-        if (pointsDisplay) { pointsDisplay.textContent = remaining; pointsDisplay.style.color = remaining < 0 ? '#ff6b6b' : remaining === 0 ? '#51cf66' : '#ffd43b'; }
-        container.innerHTML = Object.values(ATTRIBUTES).map(attr => `
-            <div class="ie-attr-editor-block"><div class="ie-attr-editor-header" style="color: ${attr.color}">${attr.name}</div>
-            ${attr.skills.map(skillId => {
-                const skill = SKILLS[skillId];
-                const level = skillLevels[skillId];
-                const cap = skillCaps[skillId];
-                return `<div class="ie-skill-editor-row"><span class="ie-skill-editor-name">${skill.name}</span><div class="ie-skill-editor-controls"><button class="ie-skill-dec" data-skill="${skillId}">-</button><span class="ie-skill-editor-value">${level}</span><button class="ie-skill-inc" data-skill="${skillId}">+</button></div></div>`;
-            }).join('')}</div>
-        `).join('');
-        container.querySelectorAll('.ie-skill-dec').forEach(btn => {
-            btn.addEventListener('click', () => { const id = btn.dataset.skill; if (skillLevels[id] > 1) { skillLevels[id]--; renderBuildEditor(); } });
+        const attrPoints = getAttributePoints();
+        container.innerHTML = Object.entries(ATTRIBUTES).map(([id, attr]) => `<div class="ie-attribute-row" data-attribute="${id}"><div class="ie-attribute-label" style="color: ${attr.color}"><span class="ie-attr-name">${attr.name}</span><span class="ie-attr-value" id="ie-build-${id}-value">${attrPoints[id] || 3}</span></div><input type="range" class="ie-attribute-slider" id="ie-build-${id}" min="1" max="6" value="${attrPoints[id] || 3}" data-attribute="${id}" /></div>`).join('');
+        container.querySelectorAll('.ie-attribute-slider').forEach(slider => slider.addEventListener('input', updateBuildFromSliders));
+        updatePointsDisplay();
+    }
+
+    function updateBuildFromSliders() {
+        let total = 0;
+        document.querySelectorAll('#ie-attributes-editor .ie-attribute-slider').forEach(slider => {
+            const attr = slider.dataset.attribute, val = parseInt(slider.value);
+            total += val;
+            const display = document.getElementById(`ie-build-${attr}-value`);
+            if (display) display.textContent = val;
         });
-        container.querySelectorAll('.ie-skill-inc').forEach(btn => {
-            btn.addEventListener('click', () => { const id = btn.dataset.skill; if (skillLevels[id] < skillCaps[id]) { skillLevels[id]++; renderBuildEditor(); } });
-        });
+        updatePointsDisplay(total);
+    }
+
+    function updatePointsDisplay(total) {
+        if (total === undefined) { total = 0; document.querySelectorAll('#ie-attributes-editor .ie-attribute-slider').forEach(s => total += parseInt(s.value)); }
+        const display = document.getElementById('ie-points-remaining');
+        if (display) { display.textContent = total; display.style.color = total > 12 ? '#FF6347' : total < 12 ? '#90EE90' : '#9d8df1'; }
+    }
+
+    function populateSettings() {
+        const s = extensionSettings;
+        const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+        const setChecked = (id, val) => { const el = document.getElementById(id); if (el) el.checked = val; };
+        setVal('ie-api-endpoint', s.apiEndpoint || '');
+        setVal('ie-api-key', s.apiKey || '');
+        setVal('ie-model', s.model || 'glm-4-plus');
+        setVal('ie-temperature', s.temperature || 0.9);
+        setVal('ie-max-tokens', s.maxTokens || 300);
+        setVal('ie-min-voices', s.minVoices || s.voicesPerMessage?.min || 1);
+        setVal('ie-max-voices', s.maxVoices || s.voicesPerMessage?.max || 4);
+        setVal('ie-trigger-delay', s.triggerDelay ?? 1000);
+        setVal('ie-pov-style', s.povStyle || 'second');
+        setVal('ie-character-name', s.characterName || '');
+        setVal('ie-character-pronouns', s.characterPronouns || 'they');
+        setVal('ie-intrusive-chance', Math.round((s.intrusiveChance || 0.15) * 100));
+        setVal('ie-object-chance', Math.round((s.objectVoiceChance || 0.4) * 100));
+        const charContext = document.getElementById('ie-character-context');
+        if (charContext) charContext.value = s.characterContext || '';
+        setChecked('ie-show-dice-rolls', s.showDiceRolls !== false);
+        setChecked('ie-show-failed-checks', s.showFailedChecks !== false);
+        setChecked('ie-auto-trigger', s.autoTrigger === true);
+        setChecked('ie-auto-detect-status', s.autoDetectStatus === true);
+        setChecked('ie-intrusive-enabled', s.intrusiveEnabled !== false);
+        setChecked('ie-intrusive-in-chat', s.intrusiveInChat !== false);
+        setChecked('ie-object-voices-enabled', s.objectVoicesEnabled !== false);
+        setChecked('ie-thought-discovery-enabled', s.thoughtDiscoveryEnabled !== false);
+        setChecked('ie-auto-discover-thoughts', s.autoDiscoverThoughts !== false);
+        updateThirdPersonVisibility();
+    }
+
+    function updateThirdPersonVisibility() {
+        const povStyle = document.getElementById('ie-pov-style')?.value;
+        document.querySelectorAll('.ie-third-person-options').forEach(el => el.style.display = povStyle === 'third' ? 'block' : 'none');
+    }
+
+    function saveSettings() {
+        const getVal = (id) => document.getElementById(id)?.value || '';
+        const getNum = (id, def) => parseFloat(document.getElementById(id)?.value) || def;
+        const getChecked = (id) => document.getElementById(id)?.checked;
+        extensionSettings.apiEndpoint = getVal('ie-api-endpoint');
+        extensionSettings.apiKey = getVal('ie-api-key');
+        extensionSettings.model = getVal('ie-model') || 'glm-4-plus';
+        extensionSettings.temperature = getNum('ie-temperature', 0.9);
+        extensionSettings.maxTokens = parseInt(getVal('ie-max-tokens')) || 300;
+        extensionSettings.minVoices = parseInt(getVal('ie-min-voices')) || 1;
+        extensionSettings.maxVoices = parseInt(getVal('ie-max-voices')) || 4;
+        extensionSettings.triggerDelay = parseInt(getVal('ie-trigger-delay')) ?? 1000;
+        extensionSettings.showDiceRolls = getChecked('ie-show-dice-rolls') !== false;
+        extensionSettings.showFailedChecks = getChecked('ie-show-failed-checks') !== false;
+        extensionSettings.autoTrigger = getChecked('ie-auto-trigger') === true;
+        extensionSettings.autoDetectStatus = getChecked('ie-auto-detect-status') === true;
+        extensionSettings.povStyle = getVal('ie-pov-style') || 'second';
+        extensionSettings.characterName = getVal('ie-character-name');
+        extensionSettings.characterPronouns = getVal('ie-character-pronouns') || 'they';
+        extensionSettings.characterContext = document.getElementById('ie-character-context')?.value || '';
+        extensionSettings.intrusiveEnabled = getChecked('ie-intrusive-enabled') !== false;
+        extensionSettings.intrusiveInChat = getChecked('ie-intrusive-in-chat') !== false;
+        extensionSettings.intrusiveChance = (parseInt(getVal('ie-intrusive-chance')) || 15) / 100;
+        extensionSettings.objectVoicesEnabled = getChecked('ie-object-voices-enabled') !== false;
+        extensionSettings.objectVoiceChance = (parseInt(getVal('ie-object-chance')) || 40) / 100;
+        extensionSettings.thoughtDiscoveryEnabled = getChecked('ie-thought-discovery-enabled') !== false;
+        extensionSettings.autoDiscoverThoughts = getChecked('ie-auto-discover-thoughts') !== false;
+        saveState(getSTContext());
+        const btn = document.querySelector('.ie-btn-save-settings');
+        if (btn) { const orig = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-check"></i> Saved!'; setTimeout(() => btn.innerHTML = orig, 1500); }
     }
 
     function applyBuild() {
+        const attributePoints = {};
+        document.querySelectorAll('#ie-attributes-editor .ie-attribute-slider').forEach(slider => attributePoints[slider.dataset.attribute] = parseInt(slider.value));
+        const total = Object.values(attributePoints).reduce((a, b) => a + b, 0);
+        if (total !== 12) { showToast(`Points must equal 12 (currently ${total})`, 'error', 3000); return; }
+        applyAttributeAllocation(attributePoints);
         saveState(getSTContext());
         renderAttributesDisplay();
         showToast('Build applied!', 'success', 2000);
+        setTimeout(() => switchTab('skills'), 1000);
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    // CHAT INJECTION
-    // ═══════════════════════════════════════════════════════════════
+    function renderAttributesDisplay() {
+        const container = document.getElementById('ie-attributes-display');
+        if (!container) return;
+        const attrPoints = getAttributePoints(), skillLevels = getAllSkillLevels();
+        container.innerHTML = Object.entries(ATTRIBUTES).map(([id, attr]) => `<div class="ie-attribute-block" style="border-color: ${attr.color}"><div class="ie-attr-header" style="background: ${attr.color}20"><span class="ie-attr-name">${attr.name}</span><span class="ie-attr-points">${attrPoints[id]}</span></div><div class="ie-attr-skills">${attr.skills.map(skillId => {
+            const skill = SKILLS[skillId], level = skillLevels[skillId], cap = getSkillCap(skillId), mod = getSkillModifier(skillId);
+            const modClass = mod > 0 ? 'ie-skill-boosted' : mod < 0 ? 'ie-skill-debuffed' : '';
+            return `<div class="ie-skill-row ${modClass}" title="${skill.name}: ${level}/${cap}"><span class="ie-skill-abbrev" style="color: ${skill.color}">${skill.signature.substring(0, 3)}</span><div class="ie-skill-bar"><div class="ie-skill-fill" style="width: ${(level / cap) * 100}%; background: ${skill.color}"></div></div><span class="ie-skill-level">${level}<small>/${cap}</small></span></div>`;
+        }).join('')}</div></div>`).join('');
+    }
+
+    function renderStatusDisplay() {
+        const container = document.getElementById('ie-status-grid');
+        if (!container) return;
+        const physical = Object.values(STATUS_EFFECTS).filter(s => s.category === 'physical');
+        const mental = Object.values(STATUS_EFFECTS).filter(s => s.category === 'mental');
+        container.innerHTML = `<div class="ie-status-category"><div class="ie-status-category-label">Physical</div><div class="ie-status-buttons">${physical.map(status => `<button class="ie-status-btn ${activeStatuses.has(status.id) ? 'ie-status-active' : ''}" data-status="${status.id}" title="${status.name}"><span class="ie-status-icon">${status.icon}</span><span class="ie-status-name">${status.name}</span></button>`).join('')}</div></div><div class="ie-status-category"><div class="ie-status-category-label">Mental</div><div class="ie-status-buttons">${mental.map(status => `<button class="ie-status-btn ${activeStatuses.has(status.id) ? 'ie-status-active' : ''}" data-status="${status.id}" title="${status.name}"><span class="ie-status-icon">${status.icon}</span><span class="ie-status-name">${status.name}</span></button>`).join('')}</div></div>`;
+        container.querySelectorAll('.ie-status-btn').forEach(btn => btn.addEventListener('click', () => toggleStatus(btn.dataset.status)));
+        updateActiveEffectsSummary();
+    }
+
+    function updateActiveEffectsSummary() {
+        const summary = document.getElementById('ie-active-effects-summary');
+        if (!summary) return;
+        if (activeStatuses.size === 0) { summary.innerHTML = '<em>No active status effects</em>'; return; }
+        const effects = [...activeStatuses].map(id => STATUS_EFFECTS[id]).filter(Boolean).map(s => `${s.icon} ${s.name}`);
+        const ancientVoices = getActiveAncientVoices();
+        if (ancientVoices.size > 0) effects.push(`<span class="ie-ancient-warning">⚠️ ${[...ancientVoices].map(id => ANCIENT_VOICES[id]?.name).filter(Boolean).join(', ')} may speak</span>`);
+        summary.innerHTML = effects.join(' • ');
+    }
+
+    function displayVoices(voices) {
+        const container = document.getElementById('ie-voices-output');
+        if (!container) return;
+        if (voices.length === 0) { container.innerHTML = '<div class="ie-voices-empty"><i class="fa-solid fa-comment-slash"></i><span>*silence*</span></div>'; return; }
+        const voicesHtml = voices.map(voice => {
+            let checkHtml = '';
+            if (extensionSettings.showDiceRolls && voice.checkResult) {
+                const checkClass = voice.checkResult.success ? 'success' : 'failure';
+                const critClass = voice.checkResult.isBoxcars ? 'critical-success' : voice.checkResult.isSnakeEyes ? 'critical-failure' : '';
+                checkHtml = `<span class="ie-voice-check ${checkClass} ${critClass}">[${voice.checkResult.difficultyName}: ${voice.checkResult.success ? '✓' : '✗'}]</span>`;
+            }
+            const intrusiveClass = voice.isIntrusive ? 'ie-voice-intrusive' : '';
+            const objectClass = voice.isObject ? 'ie-voice-object' : '';
+            return `<div class="ie-voice-entry ${intrusiveClass} ${objectClass}" data-skill="${voice.skillId || voice.objectId}"><span class="ie-voice-signature" style="color: ${voice.color}">${voice.signature || voice.name}</span>${checkHtml}<span class="ie-voice-content"> - ${voice.content}</span></div>`;
+        }).join('');
+        const newContent = document.createElement('div');
+        newContent.className = 'ie-voices-batch';
+        newContent.innerHTML = voicesHtml;
+        const emptyState = container.querySelector('.ie-voices-empty');
+        if (emptyState) emptyState.remove();
+        container.insertBefore(newContent, container.firstChild);
+        const batches = container.querySelectorAll('.ie-voices-batch');
+        if (batches.length > 10) batches[batches.length - 1].remove();
+    }
 
     function getLastMessageElement() {
-        const messages = document.querySelectorAll('.mes');
+        const messages = document.querySelectorAll('#chat .mes:not([is_user="true"])');
         return messages.length > 0 ? messages[messages.length - 1] : null;
     }
 
-    function injectVoicesIntoChat(voices, messageElement, intrusiveData) {
-        if (!messageElement || voices.length === 0) return;
-        const existing = messageElement.querySelector('.ie-chorus-container');
-        if (existing) existing.remove();
+    function injectVoicesIntoChat(voices, messageElement, intrusiveData = null) {
+        if (!messageElement) return;
+        const allVoices = [];
+        if (intrusiveData?.intrusive && extensionSettings.intrusiveInChat) allVoices.push(intrusiveData.intrusive);
+        if (intrusiveData?.objects && extensionSettings.intrusiveInChat) intrusiveData.objects.forEach(obj => allVoices.push({ signature: obj.name, color: obj.color, content: obj.content, isObject: true, icon: obj.icon }));
+        if (voices?.length > 0) allVoices.push(...voices);
+        if (allVoices.length === 0) return;
+        const existingContainer = messageElement.querySelector('.ie-chat-voices');
+        if (existingContainer) existingContainer.remove();
         const voiceContainer = document.createElement('div');
-        voiceContainer.className = 'ie-chorus-container';
-        const chorusLines = voices.map(voice => {
+        voiceContainer.className = 'ie-chat-voices ie-chorus-bubble';
+        if (allVoices.some(v => v.isAncient)) voiceContainer.classList.add('ie-has-ancient');
+        if (allVoices.some(v => v.isObject)) voiceContainer.classList.add('ie-has-object');
+        if (allVoices.some(v => v.isIntrusive)) voiceContainer.classList.add('ie-has-intrusive');
+        const chorusLines = allVoices.map(voice => {
+            let lineClass = 'ie-chorus-line';
+            if (voice.isAncient) lineClass += ' ie-ancient-line';
+            if (voice.isObject) lineClass += ' ie-object-line';
+            if (voice.isIntrusive) lineClass += ' ie-intrusive-line';
+            const icon = voice.icon ? `<span class="ie-line-icon">${voice.icon}</span>` : '';
             const name = voice.signature || voice.name;
-            const isAncient = voice.isAncient;
-            const isFailed = voice.checkResult && !voice.checkResult.success;
-            const lineClass = `ie-chorus-line ${isAncient ? 'ie-ancient-line' : ''} ${isFailed ? 'ie-failed-line' : ''}`;
-            let icon = '';
-            if (voice.checkResult) {
-                if (voice.checkResult.isCriticalSuccess) icon = '<span class="ie-crit-icon">⚡</span>';
-                else if (voice.checkResult.isCriticalFailure) icon = '<span class="ie-crit-icon">💀</span>';
-                else if (voice.checkResult.success) icon = '<span class="ie-check-icon">✓</span>';
-                else icon = '<span class="ie-check-icon ie-fail-icon">✗</span>';
-            }
             return `<div class="${lineClass}">${icon}<span class="ie-chorus-name" style="color: ${voice.color}">${name}</span> - ${voice.content}</div>`;
         }).join('');
         voiceContainer.innerHTML = `<div class="ie-chorus-header"><i class="fa-solid fa-brain"></i><span>Inner Voices</span></div><div class="ie-chorus-content">${chorusLines}</div>`;
@@ -1571,9 +1389,11 @@ Keep responses punchy and in-character. No meta-commentary.`;
         isGenerating = true;
 
         try {
+            // v0.7.0: Track themes and message count
             trackThemesInMessage(messageContent);
             discoveryContext.messageCount++;
 
+            // Auto-detect status
             if (extensionSettings.autoDetectStatus) {
                 const detectedStatuses = detectStatusesFromText(messageContent);
                 let newStatusAdded = false;
@@ -1581,10 +1401,12 @@ Keep responses punchy and in-character. No meta-commentary.`;
                 if (newStatusAdded) { saveState(getSTContext()); renderStatusDisplay(); }
             }
 
+            // Process intrusive thoughts and object voices
             const intrusiveData = await processIntrusiveThoughts(messageContent);
             if (intrusiveData.intrusive) showIntrusiveToast(intrusiveData.intrusive);
             for (const objVoice of intrusiveData.objects) setTimeout(() => showObjectToast(objVoice), 500 * intrusiveData.objects.indexOf(objVoice));
 
+            // Generate main voices
             const context = analyzeContext(messageContent);
             const selectedSkills = selectSpeakingSkills(context, { minVoices: extensionSettings.minVoices || 1, maxVoices: extensionSettings.maxVoices || 4 });
 
@@ -1599,12 +1421,14 @@ Keep responses punchy and in-character. No meta-commentary.`;
                 displayVoices(displayVoicesList);
             }
 
+            // Inject into chat
             const lastMessage = getLastMessageElement();
             if (lastMessage) {
                 const filteredVoices = extensionSettings.showFailedChecks ? voices : voices.filter(v => !v.checkResult || v.checkResult.success);
                 injectVoicesIntoChat(filteredVoices, lastMessage, intrusiveData);
             }
 
+            // v0.7.0: Advance research and check for thought discovery
             const completedThoughts = advanceResearch(messageContent);
             for (const thoughtId of completedThoughts) {
                 const thought = THOUGHTS[thoughtId];
@@ -1621,6 +1445,7 @@ Keep responses punchy and in-character. No meta-commentary.`;
             if (totalVoices > 0) showToast(`${totalVoices} voice${totalVoices !== 1 ? 's' : ''} spoke`, 'success', 2000);
             else showToast('The voices are quiet...', 'info', 2000);
 
+            // Save state after all updates
             saveState(getSTContext());
             renderCabinetTab();
 
@@ -1671,7 +1496,7 @@ Keep responses punchy and in-character. No meta-commentary.`;
                 <div class="ie-tab-content" data-tab-content="status">
                     <div class="ie-section"><div class="ie-section-header"><span>Active Effects</span></div><div class="ie-active-effects-summary" id="ie-active-effects-summary"><em>No active status effects</em></div></div>
                     <div class="ie-section"><div class="ie-section-header"><span>Toggle Status Effects</span></div><div class="ie-status-grid" id="ie-status-grid"></div></div>
-                    <div class="ie-section"><div class="ie-section-header"><span>Ancient Voices</span></div><div class="ie-ancient-voices-info"><p class="ie-ancient-note">Ancient Voices only speak when <strong>Dissociated</strong>.</p><div class="ie-ancient-voice-item"><span class="ie-ancient-icon">🦎</span><span class="ie-ancient-name">Ancient Reptilian Brain</span><span class="ie-ancient-desc">Poetic nihilist. "Brother, you're already a ghost."</span></div><div class="ie-ancient-voice-item"><span class="ie-ancient-icon">❤️‍🔥</span><span class="ie-ancient-name">Limbic System</span><span class="ie-ancient-desc">Raw emotion. "Soul brother, the world goes on without you."</span></div><div class="ie-ancient-voice-item"><span class="ie-ancient-icon">🦴</span><span class="ie-ancient-name">Spinal Cord</span><span class="ie-ancient-desc">Pro wrestler energy. "I am the spinal cord!"</span></div></div></div>
+                    <div class="ie-section"><div class="ie-section-header"><span>Ancient Voices</span></div><div class="ie-ancient-voices-info"><div class="ie-ancient-voice-item"><span class="ie-ancient-icon">🦎</span><span class="ie-ancient-name">Ancient Reptilian Brain</span><span class="ie-ancient-triggers">Triggers: Dying, Starving, Terrified, Aroused</span></div><div class="ie-ancient-voice-item"><span class="ie-ancient-icon">❤️‍🔥</span><span class="ie-ancient-name">Limbic System</span><span class="ie-ancient-triggers">Triggers: Enraged, Grieving, Manic</span></div></div></div>
                 </div>
                 <div class="ie-tab-content" data-tab-content="settings">
                     <div class="ie-section"><div class="ie-section-header"><span>API Configuration</span></div>
@@ -1755,13 +1580,13 @@ Keep responses punchy and in-character. No meta-commentary.`;
         const settingsContainer = document.getElementById('extensions_settings2');
         if (!settingsContainer) { setTimeout(addExtensionSettings, 1000); return; }
         if (document.getElementById('inland-empire-extension-settings')) return;
-        settingsContainer.insertAdjacentHTML('beforeend', `<div id="inland-empire-extension-settings"><div class="inline-drawer"><div class="inline-drawer-toggle inline-drawer-header"><b><i class="fa-solid fa-brain"></i> Inland Empire</b><div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div></div><div class="inline-drawer-content"><label class="checkbox_label" for="ie-extension-enabled"><input type="checkbox" id="ie-extension-enabled" ${extensionSettings.enabled ? 'checked' : ''} /><span>Enable Inland Empire</span></label><small>Disco Elysium-style internal voices v0.8.0!</small><br><br><button id="ie-toggle-panel-btn" class="menu_button"><i class="fa-solid fa-eye"></i> Toggle Panel</button></div></div></div>`);
+        settingsContainer.insertAdjacentHTML('beforeend', `<div id="inland-empire-extension-settings"><div class="inline-drawer"><div class="inline-drawer-toggle inline-drawer-header"><b><i class="fa-solid fa-brain"></i> Inland Empire</b><div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div></div><div class="inline-drawer-content"><label class="checkbox_label" for="ie-extension-enabled"><input type="checkbox" id="ie-extension-enabled" ${extensionSettings.enabled ? 'checked' : ''} /><span>Enable Inland Empire</span></label><small>Disco Elysium-style internal voices with Thought Cabinet!</small><br><br><button id="ie-toggle-panel-btn" class="menu_button"><i class="fa-solid fa-eye"></i> Toggle Panel</button></div></div></div>`);
         document.getElementById('ie-extension-enabled')?.addEventListener('change', (e) => { extensionSettings.enabled = e.target.checked; saveState(getSTContext()); const fab = document.getElementById('inland-empire-fab'); const panel = document.getElementById('inland-empire-panel'); if (fab) fab.style.display = e.target.checked ? 'flex' : 'none'; if (panel && !e.target.checked) panel.classList.remove('ie-panel-open'); });
         document.getElementById('ie-toggle-panel-btn')?.addEventListener('click', togglePanel);
     }
 
     async function init() {
-        console.log('[Inland Empire] Starting initialization v0.8.0...');
+        console.log('[Inland Empire] Starting initialization v0.7.0...');
         try {
             const context = await waitForSTReady();
             loadState(context);
@@ -1777,11 +1602,11 @@ Keep responses punchy and in-character. No meta-commentary.`;
                 const eventTypes = context.event_types || (typeof event_types !== 'undefined' ? event_types : null);
                 if (eventTypes?.MESSAGE_RECEIVED) context.eventSource.on(eventTypes.MESSAGE_RECEIVED, onMessageReceived);
             }
-            console.log('[Inland Empire] ✅ Initialization complete v0.8.0');
+            console.log('[Inland Empire] ✅ Initialization complete');
         } catch (error) { console.error('[Inland Empire] ❌ Initialization failed:', error); }
     }
 
-    window.InlandEmpire = { getSkillLevel, getAllSkillLevels, rollSkillCheck, getSkillCap, getEffectiveSkillLevel, SKILLS, ATTRIBUTES, THOUGHTS, THEMES, ANCIENT_VOICES, thoughtCabinet, themeCounters, startResearch, abandonResearch, internalizeThought, checkThoughtDiscovery };
+    window.InlandEmpire = { getSkillLevel, getAllSkillLevels, rollSkillCheck, getSkillCap, getEffectiveSkillLevel, SKILLS, ATTRIBUTES, THOUGHTS, THEMES, thoughtCabinet, themeCounters, startResearch, abandonResearch, internalizeThought, checkThoughtDiscovery };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(init, 1000));
     else setTimeout(init, 1000);
 })();
