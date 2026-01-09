@@ -6,7 +6,7 @@
     "js": "index.js",
     "css": "style.css",
     "author": "Judas",
-    "version": "0.8.0",
-    "description": "Disco Elysium-style internal voices with authentic personalities, Spinal Cord, and disco status effects!",
+    "version": "0.7.0",
+    "description": "Disco Elysium-style internal voices with Thought Cabinet, theme tracking, and skill caps!",
     "auto_update": false
 }
