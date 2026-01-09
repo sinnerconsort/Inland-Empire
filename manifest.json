@@ -6,7 +6,7 @@
     "js": "index.js",
     "css": "style.css",
     "author": "Judas",
-    "version": "0.7.0",
-    "description": "Disco Elysium-style internal voices with Thought Cabinet, theme tracking, and skill caps!",
+    "version": "0.7.2",
+    "description": "Disco Elysium-style internal voices with authentic skill personalities, fixed ancient voice triggers, and Thought Cabinet!",
     "auto_update": false
 }
