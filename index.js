@@ -221,7 +221,7 @@ async function triggerVoices(messageText = null) {
     } catch (error) {
         console.error('[Inland Empire] Voice generation failed:', error);
         hideToast(loadingToast);
-        showToast(`Error: ${error.message}`, 'error');
+        showToast(`Error: ${error.message}`, 'error', 8000); // 8 seconds to read error
     }
 }
 
