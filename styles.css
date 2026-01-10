@@ -25,10 +25,10 @@
     --ie-accent-orange-glow: rgba(212, 118, 59, 0.3);
     
     /* Attribute colors - true to DE */
-    --ie-accent-blue: #51a4b2;      /* INT - cool blue */
-    --ie-accent-purple: #6448b2;    /* PSY - deep purple */
-    --ie-accent-red: #b13b5b;       /* FYS - magenta red */
-    --ie-accent-yellow: #c29f2d;    /* MOT - gold */
+    --ie-accent-blue: #53a4b5;      /* INT - cool blue */
+    --ie-accent-purple: #6449af;    /* PSY - deep purple */
+    --ie-accent-red: #ad3d5b;       /* FYS - magenta red */
+    --ie-accent-yellow: #bfa127;    /* MOT - gold */
     
     /* Status colors */
     --ie-success: #6b9c5a;
@@ -753,6 +753,35 @@
     text-transform: uppercase;
     letter-spacing: 1px;
     background: rgba(0, 0, 0, 0.2);
+}
+
+/* Gradient attribute headers by type */
+.ie-attribute-card[style*="--ie-accent-blue"] .ie-attribute-header,
+.ie-attribute-block[style*="--ie-accent-blue"] .ie-attribute-header,
+.ie-attribute-card.ie-int .ie-attribute-header,
+.ie-attribute-block.ie-int .ie-attribute-header {
+    background: linear-gradient(90deg, rgba(83, 164, 181, 0.4) 0%, rgba(83, 164, 181, 0.1) 50%, transparent 100%);
+}
+
+.ie-attribute-card[style*="--ie-accent-purple"] .ie-attribute-header,
+.ie-attribute-block[style*="--ie-accent-purple"] .ie-attribute-header,
+.ie-attribute-card.ie-psy .ie-attribute-header,
+.ie-attribute-block.ie-psy .ie-attribute-header {
+    background: linear-gradient(90deg, rgba(100, 73, 175, 0.4) 0%, rgba(100, 73, 175, 0.1) 50%, transparent 100%);
+}
+
+.ie-attribute-card[style*="--ie-accent-red"] .ie-attribute-header,
+.ie-attribute-block[style*="--ie-accent-red"] .ie-attribute-header,
+.ie-attribute-card.ie-fys .ie-attribute-header,
+.ie-attribute-block.ie-fys .ie-attribute-header {
+    background: linear-gradient(90deg, rgba(173, 61, 91, 0.4) 0%, rgba(173, 61, 91, 0.1) 50%, transparent 100%);
+}
+
+.ie-attribute-card[style*="--ie-accent-yellow"] .ie-attribute-header,
+.ie-attribute-block[style*="--ie-accent-yellow"] .ie-attribute-header,
+.ie-attribute-card.ie-mot .ie-attribute-header,
+.ie-attribute-block.ie-mot .ie-attribute-header {
+    background: linear-gradient(90deg, rgba(191, 161, 39, 0.4) 0%, rgba(191, 161, 39, 0.1) 50%, transparent 100%);
 }
 
 .ie-attribute-value {
