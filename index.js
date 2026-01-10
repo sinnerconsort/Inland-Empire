@@ -88,7 +88,8 @@ import {
     renderStatusGrid,
     renderActiveEffectsSummary,
     renderProfilesList,
-    renderThoughtCabinet
+    renderThoughtCabinet,
+    renderThoughtModal
 } from './ui/render.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -283,7 +284,7 @@ function handleForgetThought(thoughtId) {
     }
 }
 
-async function handleGenerateThought(prompt, fromContext) {
+async function handleGenerateThought(prompt, fromContext, perspective = 'observer') {
     const context = getContext();
     
     // Get context from chat if requested
@@ -305,28 +306,54 @@ async function handleGenerateThought(prompt, fromContext) {
             .map(([id, s]) => `${id}: ${s.name}`)
             .join(', ');
 
+        // Perspective-specific instructions
+        const perspectiveInstructions = perspective === 'observer'
+            ? `CRITICAL PERSPECTIVE - OBSERVER MODE:
+- The thought is from a PLAYER CHARACTER who is OBSERVING or PROCESSING events
+- If the scene involves another character's worldview (a killer, ideologue, etc.), the thought is about WRESTLING WITH that worldview
+- Questions like "Why do you understand this? What does it say about you?"
+- The player is an outsider looking in, processing what they've witnessed
+- Like Harry Du Bois trying to make sense of a chaotic world
+- Second person "you" refers to the player character, not the NPCs`
+            : `CRITICAL PERSPECTIVE - PARTICIPANT MODE:
+- The thought emerges FROM the mindset shown in the scene
+- If the scene shows a particular worldview, the thought EMBODIES that perspective
+- The player IS the character having these thoughts naturally
+- No external judgment or wrestling - this is how they genuinely think
+- Second person "you" is someone fully inhabiting this headspace`;
+
         const systemPrompt = `You are a Disco Elysium thought generator. Create a single thought for the Thought Cabinet system.
 
 Available skills for bonuses: ${skillList}
+
+${perspectiveInstructions}
 
 Output ONLY valid JSON with this exact structure:
 {
   "name": "Evocative 2-4 word name",
   "icon": "single emoji",
-  "description": "1-2 sentence cryptic/philosophical description of the obsession",
+  "category": "philosophy|identity|obsession|survival|mental|social|emotion",
   "researchTime": 8,
-  "researchPenalty": {"skill_id": -1},
-  "internalizedBonus": {"skill_id": 2},
-  "flavorText": "1-2 sentence poetic completion text in second person"
+  "researchBonus": {
+    "skill_id": {"value": -1, "flavor": "Short reason for penalty"}
+  },
+  "internalizedBonus": {
+    "skill_id": {"value": 2, "flavor": "Short thematic label"}
+  },
+  "problemText": "3-4 paragraphs of stream-of-consciousness questioning. Rambling, uncertain, philosophical. Written in second person. This is wrestling with the concept.",
+  "solutionText": "2-3 paragraphs of resolution. The conclusion reached. More grounded but still poetic. What is realized after mulling it over."
 }
 
-Rules:
+TONE REQUIREMENTS:
+- Problem text should be LONG and RAMBLING - stream of consciousness, full of questions, philosophical tangents
+- Use paragraph breaks (\\n\\n) between thoughts
 - Names should be evocative and slightly absurd like "Volumetric Shit Compressor" or "Finger on the Eject Button"
-- Research penalties should be small (-1 to -2) to 1-2 skills
-- Internalized bonuses should be +1 to +3 to 1-2 skills that thematically fit
-- Research time 6-15 (higher = more profound thoughts)
-- Flavor text is what the player sees when research completes - make it meaningful
-- Match the darkly humorous, philosophical tone of Disco Elysium`;
+- Solution text is the ANSWER - more conclusive, sometimes bittersweet, often with dark humor
+- Match Disco Elysium's darkly humorous, deeply philosophical, self-aware tone
+- Second person throughout ("You", "Your")
+- Research bonuses are penalties while researching (-1 to -2)
+- Internalized bonuses are rewards (+1 to +3) with short flavor text explaining the bonus
+- Research time 6-15 (higher = more profound/complex thoughts)`;
 
         const userPrompt = prompt 
             ? `Create a thought about: ${prompt}${contextText ? `\n\nRecent scene context:\n${contextText}` : ''}`
@@ -344,7 +371,7 @@ Rules:
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: userPrompt }
                 ],
-                max_tokens: 500,
+                max_tokens: 1500,
                 temperature: 0.9
             })
         });
@@ -366,8 +393,13 @@ Rules:
         const thought = JSON.parse(jsonStr.trim());
         
         // Validate required fields
-        if (!thought.name || !thought.icon || !thought.description) {
-            throw new Error('Invalid thought format');
+        if (!thought.name || !thought.icon || !thought.problemText) {
+            throw new Error('Invalid thought format - missing required fields');
+        }
+
+        // Ensure category exists
+        if (!thought.category) {
+            thought.category = 'philosophy';
         }
 
         // Add the custom thought
@@ -387,6 +419,36 @@ Rules:
     }
 }
 
+function handleExpandThought(thoughtId) {
+    // Create modal overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'ie-thought-modal-overlay';
+    document.body.appendChild(overlay);
+
+    // Render the modal
+    const closeBtn = renderThoughtModal(thoughtId, overlay);
+
+    // Close handlers
+    const closeModal = () => {
+        overlay.classList.add('ie-modal-closing');
+        setTimeout(() => overlay.remove(), 200);
+    };
+
+    closeBtn?.addEventListener('click', closeModal);
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeModal();
+    });
+
+    // ESC key to close
+    const escHandler = (e) => {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', escHandler);
+        }
+    };
+    document.addEventListener('keydown', escHandler);
+}
+
 function refreshCabinetTab() {
     const container = document.getElementById('ie-cabinet-content');
     if (container) {
@@ -395,7 +457,8 @@ function refreshCabinetTab() {
             onDismiss: handleDismissThought,
             onAbandon: handleAbandonResearch,
             onForget: handleForgetThought,
-            onGenerate: handleGenerateThought
+            onGenerate: handleGenerateThought,
+            onExpand: handleExpandThought
         });
     }
 }

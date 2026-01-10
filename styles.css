@@ -750,6 +750,239 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   THOUGHT CABINET - ENHANCED STYLING
+   ═══════════════════════════════════════════════════════════════ */
+
+.ie-thought-card {
+    position: relative;
+}
+
+.ie-thought-tab-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--ie-accent-red);
+    margin: 8px 0 4px 0;
+    padding: 2px 6px;
+    background: rgba(240, 128, 128, 0.1);
+    display: inline-block;
+    border-radius: 2px;
+}
+
+.ie-thought-tab-label.ie-tab-solution {
+    color: var(--ie-accent-blue);
+    background: rgba(137, 207, 240, 0.1);
+}
+
+.ie-thought-problem-preview,
+.ie-thought-solution-preview {
+    font-size: 12px;
+    color: var(--ie-text-secondary);
+    line-height: 1.5;
+    margin-bottom: 8px;
+    font-style: italic;
+}
+
+.ie-thought-bonuses {
+    font-size: 11px;
+    line-height: 1.6;
+    margin: 8px 0;
+}
+
+.ie-bonus-positive {
+    color: var(--ie-success);
+}
+
+.ie-bonus-negative {
+    color: var(--ie-error);
+}
+
+.ie-bonus-skill {
+    color: var(--ie-accent-purple);
+}
+
+.ie-research-penalties {
+    padding: 6px 8px;
+    background: rgba(244, 67, 54, 0.1);
+    border-radius: 4px;
+    border-left: 2px solid var(--ie-error);
+}
+
+.ie-btn-expand-thought {
+    margin-left: auto;
+    opacity: 0.6;
+}
+
+.ie-btn-expand-thought:hover {
+    opacity: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   THOUGHT MODAL (Full expanded view)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ie-thought-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.ie-thought-modal {
+    background: var(--ie-bg-primary);
+    border: 1px solid var(--ie-border);
+    border-radius: 8px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.ie-thought-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: var(--ie-bg-secondary);
+    border-bottom: 1px solid var(--ie-border);
+}
+
+.ie-thought-icon-large {
+    font-size: 32px;
+}
+
+.ie-thought-modal-name {
+    flex: 1;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ie-accent-purple);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.ie-btn-close-modal {
+    background: transparent;
+    border: none;
+    color: var(--ie-text-secondary);
+    cursor: pointer;
+    padding: 8px;
+}
+
+.ie-btn-close-modal:hover {
+    color: var(--ie-text-primary);
+}
+
+.ie-thought-modal-bonuses {
+    padding: 12px 16px;
+    background: var(--ie-bg-tertiary);
+    border-bottom: 1px solid var(--ie-border);
+}
+
+.ie-thought-modal-bonus-section {
+    margin-bottom: 8px;
+}
+
+.ie-thought-modal-bonus-section:last-child {
+    margin-bottom: 0;
+}
+
+.ie-bonus-label {
+    display: block;
+    font-size: 11px;
+    color: var(--ie-text-muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ie-research-section {
+    padding-top: 8px;
+    border-top: 1px solid var(--ie-border);
+    margin-top: 8px;
+}
+
+.ie-thought-modal-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--ie-border);
+}
+
+.ie-thought-tab {
+    flex: 1;
+    padding: 12px;
+    background: transparent;
+    border: none;
+    color: var(--ie-text-secondary);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ie-thought-tab:hover {
+    background: var(--ie-bg-secondary);
+    color: var(--ie-text-primary);
+}
+
+.ie-thought-tab-active {
+    color: var(--ie-accent-purple);
+    border-bottom: 2px solid var(--ie-accent-purple);
+}
+
+.ie-thought-tab[data-tab="problem"].ie-thought-tab-active {
+    color: var(--ie-accent-red);
+    border-bottom-color: var(--ie-accent-red);
+}
+
+.ie-thought-tab[data-tab="solution"].ie-thought-tab-active {
+    color: var(--ie-accent-blue);
+    border-bottom-color: var(--ie-accent-blue);
+}
+
+.ie-thought-modal-content {
+    padding: 16px;
+}
+
+.ie-thought-tab-content {
+    display: none;
+}
+
+.ie-thought-tab-content-active {
+    display: block;
+}
+
+.ie-thought-tab-content p {
+    margin: 0 0 12px 0;
+    line-height: 1.7;
+    color: var(--ie-text-primary);
+    font-size: 13px;
+}
+
+.ie-thought-tab-content p:last-child {
+    margin-bottom: 0;
+}
+
+.ie-solution-locked {
+    color: var(--ie-text-muted);
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}
+
+.ie-solution-locked i {
+    margin-right: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
    THOUGHT CABINET EXTRAS
    ═══════════════════════════════════════════════════════════════ */
 
@@ -768,7 +1001,6 @@
 }
 
 .ie-thought-card .ie-btn-forget {
-    margin-left: auto;
     opacity: 0.5;
     transition: opacity 0.2s;
 }
@@ -793,6 +1025,43 @@
 /* Thought Generator */
 .ie-thought-generator-section {
     border: 1px dashed var(--ie-accent-purple);
+}
+
+.ie-thought-generator-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.ie-perspective-toggle {
+    display: flex;
+    gap: 4px;
+    background: var(--ie-bg-tertiary);
+    border-radius: 6px;
+    padding: 2px;
+}
+
+.ie-perspective-btn {
+    padding: 4px 10px;
+    font-size: 11px;
+    border: none;
+    background: transparent;
+    color: var(--ie-text-secondary);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ie-perspective-btn:hover {
+    color: var(--ie-text-primary);
+}
+
+.ie-perspective-btn.ie-perspective-active {
+    background: var(--ie-accent-purple);
+    color: var(--ie-bg-primary);
 }
 
 .ie-thought-generator {
