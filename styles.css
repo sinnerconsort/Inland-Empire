@@ -1016,12 +1016,20 @@
     border-left: 3px solid var(--ie-border);
 }
 
-.ie-ancient-voice-item:first-child {
-    border-left-color: #2F4F4F;
+.ie-ancient-voice-item:nth-child(1) {
+    border-left-color: #2F4F4F; /* ARB - dark teal */
 }
 
-.ie-ancient-voice-item:last-child {
-    border-left-color: #8B0000;
+.ie-ancient-voice-item:nth-child(2) {
+    border-left-color: #FF4500; /* Limbic - orange-red */
+}
+
+.ie-ancient-voice-item:nth-child(3) {
+    border-left-color: #FFD700; /* Spinal Cord - gold */
+}
+
+.ie-ancient-voice-combo {
+    background: linear-gradient(135deg, var(--ie-bg-tertiary), rgba(255, 215, 0, 0.1));
 }
 
 .ie-ancient-icon {
