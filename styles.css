@@ -1068,12 +1068,19 @@
 .ie-chat-voices-block .ie-chat-voice {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
     padding: 6px 8px;
     background: rgba(0, 0, 0, 0.2);
     border-radius: 4px;
     border-left: 2px solid currentColor;
     margin-bottom: 0;
+}
+
+.ie-chat-voice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
 }
 
 .ie-chat-voice-sig {
@@ -1083,23 +1090,55 @@
     letter-spacing: 0.5px;
 }
 
+.ie-chat-badge {
+    font-size: 0.7em;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.ie-chat-badge-success {
+    background: rgba(76, 175, 80, 0.2);
+    color: var(--ie-success);
+}
+
+.ie-chat-badge-failure {
+    background: rgba(244, 67, 54, 0.2);
+    color: var(--ie-error);
+}
+
+.ie-chat-crit-success {
+    background: gold;
+    color: #000;
+}
+
+.ie-chat-crit-fail {
+    background: #8B0000;
+    color: #fff;
+}
+
+.ie-chat-badge-primal {
+    background: rgba(47, 79, 79, 0.3);
+    color: #7FDBCA;
+}
+
+.ie-chat-badge-intrusive {
+    background: rgba(138, 43, 226, 0.2);
+    color: #DDA0DD;
+}
+
+.ie-chat-badge-object {
+    background: rgba(70, 130, 180, 0.2);
+    color: #89CFF0;
+}
+
 .ie-chat-voice-text {
     color: #e0e0e0;
     font-size: 0.95em;
     line-height: 1.4;
 }
 
-/* Check result styling for in-chat */
-.ie-chat-success .ie-chat-voice-sig::after {
-    content: " ✓";
-    color: var(--ie-success);
-}
-
-.ie-chat-failure .ie-chat-voice-sig::after {
-    content: " ✗";
-    color: var(--ie-error);
-}
-
+/* Check result styling for in-chat - now handled by badges */
 .ie-chat-critical-success {
     background: rgba(255, 215, 0, 0.1) !important;
     border-left-color: gold !important;
@@ -1113,12 +1152,16 @@
 .ie-chat-intrusive {
     background: rgba(138, 43, 226, 0.1) !important;
     border-left-color: #8A2BE2 !important;
-    font-style: italic;
 }
 
 .ie-chat-object {
     background: rgba(70, 130, 180, 0.1) !important;
     border-left-color: #4682B4 !important;
+}
+
+.ie-chat-primal {
+    background: rgba(47, 79, 79, 0.15) !important;
+    border-left-color: #2F4F4F !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════
