@@ -624,10 +624,17 @@ function handleExpandThought(thoughtId) {
             setTimeout(() => overlay.remove(), 200);
         };
 
-        closeBtn.addEventListener('click', closeModal);
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) closeModal();
+        closeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeModal();
         });
+        
+        // Delay adding overlay click handler to prevent immediate close from bubbled events
+        setTimeout(() => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) closeModal();
+            });
+        }, 100);
 
         // ESC key to close
         const escHandler = (e) => {
@@ -637,6 +644,12 @@ function handleExpandThought(thoughtId) {
             }
         };
         document.addEventListener('keydown', escHandler);
+        
+        // Prevent modal content clicks from closing
+        const modal = overlay.querySelector('.ie-thought-modal');
+        if (modal) {
+            modal.addEventListener('click', (e) => e.stopPropagation());
+        }
     } catch (error) {
         console.error('[Inland Empire] Modal error:', error);
         overlay.remove();
