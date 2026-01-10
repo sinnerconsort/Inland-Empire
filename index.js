@@ -125,16 +125,30 @@ function getChatContainer() {
 // ═══════════════════════════════════════════════════════════════
 
 async function triggerVoices(messageText = null) {
-    if (!extensionSettings.enabled) return;
-
-    const context = getContext();
-    const text = messageText || getLastMessage()?.mes || '';
-
-    if (!text.trim()) {
-        showToast('No message to analyze', 'info');
+    if (!extensionSettings.enabled) {
+        showToast('Extension is disabled', 'error', 3000);
         return;
     }
 
+    const context = getContext();
+    
+    // Debug: Check if we can get context
+    if (!context) {
+        showToast('Could not get ST context', 'error', 5000);
+        return;
+    }
+
+    const lastMsg = getLastMessage();
+    const text = messageText || lastMsg?.mes || '';
+
+    // Debug: Show what we're working with
+    if (!text.trim()) {
+        const chatLen = context?.chat?.length || 0;
+        showToast(`No message found (chat has ${chatLen} messages)`, 'info', 5000);
+        return;
+    }
+
+    showToast(`Analyzing: "${text.substring(0, 30)}..."`, 'info', 2000);
     const loadingToast = showToast('The voices stir...', 'loading');
 
     try {
@@ -166,12 +180,16 @@ async function triggerVoices(messageText = null) {
 
         if (selectedSkills.length === 0) {
             hideToast(loadingToast);
-            showToast('The voices have nothing to say...', 'info');
+            showToast('No skills selected (context too vague?)', 'info', 5000);
             return;
         }
 
+        showToast(`${selectedSkills.length} skills speaking...`, 'info', 2000);
+
         // Generate voices
         const voiceResults = await generateVoices(selectedSkills, analysisContext, intrusiveData);
+        
+        showToast(`Generated ${voiceResults.length} voices`, 'info', 2000);
 
         // Advance research
         const completedThoughts = advanceResearch(text);
