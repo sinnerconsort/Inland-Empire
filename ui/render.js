@@ -113,32 +113,44 @@ export function appendVoicesToChat(voiceResults, chatContainer) {
     voicesContainer.className = 'ie-chat-voices-content';
     
     voicesContainer.innerHTML = voiceResults.map(voice => {
-        let checkInfo = '';
+        let checkBadge = '';
         let checkClass = '';
         
         if (voice.checkResult) {
             if (voice.checkResult.isBoxcars) {
-                checkInfo = ' ⚡';
+                checkBadge = '<span class="ie-chat-badge ie-chat-crit-success">⚡ CRITICAL</span>';
                 checkClass = 'ie-chat-critical-success';
             } else if (voice.checkResult.isSnakeEyes) {
-                checkInfo = ' 💀';
+                checkBadge = '<span class="ie-chat-badge ie-chat-crit-fail">💀 FUMBLE</span>';
                 checkClass = 'ie-chat-critical-failure';
-            } else if (voice.checkResult.success) {
-                checkClass = 'ie-chat-success';
             } else {
-                checkClass = 'ie-chat-failure';
+                const result = voice.checkResult.success ? 'Success' : 'Failure';
+                const badgeClass = voice.checkResult.success ? 'ie-chat-badge-success' : 'ie-chat-badge-failure';
+                const diffName = voice.checkResult.difficultyName || 'Check';
+                checkBadge = `<span class="ie-chat-badge ${badgeClass}">${diffName} [${result}]</span>`;
+                checkClass = voice.checkResult.success ? 'ie-chat-success' : 'ie-chat-failure';
             }
+        } else if (voice.isAncient) {
+            let ancientIcon = '🦎';
+            if (voice.skillId === 'limbic_system') ancientIcon = '❤️‍🔥';
+            else if (voice.skillId === 'spinal_cord') ancientIcon = '🦴';
+            checkBadge = `<span class="ie-chat-badge ie-chat-badge-primal">${ancientIcon} Primal</span>`;
+            checkClass = 'ie-chat-primal';
         } else if (voice.isIntrusive) {
-            checkInfo = ' 💭';
+            checkBadge = '<span class="ie-chat-badge ie-chat-badge-intrusive">💭 Intrusive</span>';
             checkClass = 'ie-chat-intrusive';
         } else if (voice.isObject) {
-            checkInfo = ` ${voice.icon || '📦'}`;
+            checkBadge = `<span class="ie-chat-badge ie-chat-badge-object">${voice.icon || '📦'} Object</span>`;
             checkClass = 'ie-chat-object';
         }
+        // Passive voices (no check) get no badge - they just observe
 
         return `
             <div class="ie-chat-voice ${checkClass}">
-                <span class="ie-chat-voice-sig" style="color: ${voice.color}">${voice.signature || voice.name}${checkInfo}</span>
+                <div class="ie-chat-voice-header">
+                    <span class="ie-chat-voice-sig" style="color: ${voice.color}">${voice.signature || voice.name}</span>
+                    ${checkBadge}
+                </div>
                 <span class="ie-chat-voice-text">${voice.content}</span>
             </div>
         `;
