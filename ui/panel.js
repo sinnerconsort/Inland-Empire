@@ -108,6 +108,13 @@ export function createPsychePanel() {
 
             <!-- Settings Tab -->
             <div class="ie-tab-content" data-tab-content="settings">
+                <div class="ie-section ie-section-primary">
+                    <label class="ie-checkbox ie-checkbox-large">
+                        <input type="checkbox" id="ie-enabled" checked />
+                        <span>🧠 Enable Inland Empire</span>
+                    </label>
+                </div>
+
                 <div class="ie-section">
                     <div class="ie-section-header"><span>API Configuration</span></div>
                     <div class="ie-form-group">
