@@ -39,13 +39,17 @@ export function renderVoices(voiceResults, container) {
         let checkBadge = '';
         if (voice.checkResult) {
             if (voice.checkResult.isBoxcars) {
-                checkBadge = `<span class="ie-check-badge ie-critical-success" title="Critical Success!">⚡ ${voice.checkResult.dice.join('+')}+${voice.checkResult.skillLevel}=${voice.checkResult.total}</span>`;
+                // Critical success - show dramatically
+                checkBadge = `<span class="ie-check-badge ie-critical-success" title="Double Sixes!">⚡ CRITICAL</span>`;
             } else if (voice.checkResult.isSnakeEyes) {
-                checkBadge = `<span class="ie-check-badge ie-critical-failure" title="Critical Failure!">💀 ${voice.checkResult.dice.join('+')}+${voice.checkResult.skillLevel}=${voice.checkResult.total}</span>`;
+                // Critical failure - show dramatically
+                checkBadge = `<span class="ie-check-badge ie-critical-failure" title="Snake Eyes!">💀 FUMBLE</span>`;
             } else if (extensionSettings.showDiceRolls) {
-                const icon = voice.checkResult.success ? '✓' : '✗';
+                // Normal check - show difficulty name + pass/fail like the game
+                const result = voice.checkResult.success ? 'Success' : 'Failure';
                 const cls = voice.checkResult.success ? 'ie-success' : 'ie-failure';
-                checkBadge = `<span class="ie-check-badge ${cls}" title="${voice.checkResult.difficultyName} (${voice.checkResult.threshold})">${icon} ${voice.checkResult.dice.join('+')}+${voice.checkResult.skillLevel}=${voice.checkResult.total}</span>`;
+                const diffName = voice.checkResult.difficultyName || 'Check';
+                checkBadge = `<span class="ie-check-badge ${cls}" title="${voice.checkResult.total} vs ${voice.checkResult.threshold}">${diffName} [${result}]</span>`;
             }
         } else if (voice.isAncient) {
             checkBadge = `<span class="ie-check-badge ie-primal" title="Primal Voice">🦎</span>`;
