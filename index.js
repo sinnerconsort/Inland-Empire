@@ -228,8 +228,10 @@ async function triggerVoices(messageText = null) {
         const voicesContainer = document.getElementById('ie-voices-output');
         renderVoices(allVoices, voicesContainer);
 
-        // Optionally append to chat
-        // appendVoicesToChat(allVoices, getChatContainer());
+        // Append to chat if enabled
+        if (extensionSettings.showInChat !== false) {
+            appendVoicesToChat(allVoices, getChatContainer());
+        }
 
         hideToast(loadingToast);
 
@@ -456,7 +458,8 @@ function loadSettingsToUI() {
         'ie-intrusive-in-chat': extensionSettings.intrusiveInChat,
         'ie-object-voices-enabled': extensionSettings.objectVoicesEnabled,
         'ie-thought-discovery-enabled': extensionSettings.thoughtDiscoveryEnabled,
-        'ie-auto-discover-thoughts': extensionSettings.autoDiscoverThoughts
+        'ie-auto-discover-thoughts': extensionSettings.autoDiscoverThoughts,
+        'ie-show-in-chat': extensionSettings.showInChat !== false
     };
 
     for (const [id, value] of Object.entries(checks)) {
@@ -498,7 +501,8 @@ function saveSettingsFromUI() {
         objectVoicesEnabled: document.getElementById('ie-object-voices-enabled')?.checked !== false,
         objectVoiceChance: (parseInt(document.getElementById('ie-object-chance')?.value) || 40) / 100,
         thoughtDiscoveryEnabled: document.getElementById('ie-thought-discovery-enabled')?.checked !== false,
-        autoDiscoverThoughts: document.getElementById('ie-auto-discover-thoughts')?.checked !== false
+        autoDiscoverThoughts: document.getElementById('ie-auto-discover-thoughts')?.checked !== false,
+        showInChat: document.getElementById('ie-show-in-chat')?.checked !== false
     });
 
     saveState(getContext());
