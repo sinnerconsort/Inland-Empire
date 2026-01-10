@@ -125,17 +125,24 @@ function getChatContainer() {
 // ═══════════════════════════════════════════════════════════════
 
 async function triggerVoices(messageText = null) {
-    if (!extensionSettings.enabled) return;
+    // Debug: show we got here
+    try {
+        if (!extensionSettings.enabled) {
+            alert('[IE Debug] Extension disabled');
+            return;
+        }
 
-    const context = getContext();
-    const text = messageText || getLastMessage()?.mes || '';
+        const context = getContext();
+        const text = messageText || getLastMessage()?.mes || '';
 
-    if (!text.trim()) {
-        showToast('No message to analyze', 'info');
-        return;
-    }
+        if (!text.trim()) {
+            alert('[IE Debug] No message found to analyze');
+            showToast('No message to analyze', 'info');
+            return;
+        }
 
-    const loadingToast = showToast('The voices stir...', 'loading');
+        alert(`[IE Debug] Analyzing: "${text.substring(0, 50)}..."`);
+        const loadingToast = showToast('The voices stir...', 'loading');
 
     try {
         // Analyze context
@@ -540,7 +547,15 @@ function bindEvents() {
     });
 
     // Manual trigger
-    document.getElementById('ie-manual-trigger')?.addEventListener('click', () => triggerVoices());
+    const triggerBtn = document.getElementById('ie-manual-trigger');
+    if (triggerBtn) {
+        triggerBtn.addEventListener('click', () => {
+            alert('[IE Debug] Button clicked!');
+            triggerVoices();
+        });
+    } else {
+        console.error('[Inland Empire] Manual trigger button not found!');
+    }
 
     // Clear voices
     document.querySelector('.ie-btn-clear-voices')?.addEventListener('click', () => {
@@ -597,36 +612,49 @@ function setupAutoTrigger() {
 
 async function init() {
     console.log('[Inland Empire] Initializing...');
+    
+    try {
+        // Load state
+        loadState(getContext());
+        initializeThemeCounters();
 
-    // Load state
-    loadState(getContext());
-    initializeThemeCounters();
+        // Load CSS
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = `${extensionFolderPath}/styles.css`;
+        document.head.appendChild(link);
 
-    // Load CSS
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = `${extensionFolderPath}/styles.css`;
-    document.head.appendChild(link);
+        // Create UI
+        const panel = createPsychePanel();
+        const fab = createToggleFAB(getContext);
 
-    // Create UI
-    const panel = createPsychePanel();
-    const fab = createToggleFAB(getContext);
+        document.body.appendChild(panel);
+        document.body.appendChild(fab);
 
-    document.body.appendChild(panel);
-    document.body.appendChild(fab);
+        // Initial renders
+        refreshAttributesDisplay();
+        refreshStatusTab();
+        refreshCabinetTab();
 
-    // Initial renders
-    refreshAttributesDisplay();
-    refreshStatusTab();
-    refreshCabinetTab();
+        // Bind events
+        bindEvents();
 
-    // Bind events
-    bindEvents();
+        // Setup auto-trigger
+        setupAutoTrigger();
 
-    // Setup auto-trigger
-    setupAutoTrigger();
-
-    console.log('[Inland Empire] Ready!');
+        console.log('[Inland Empire] Ready!');
+        
+        // Debug notification - will show briefly
+        const debugDiv = document.createElement('div');
+        debugDiv.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#4CAF50;color:white;padding:10px 20px;border-radius:5px;z-index:99999;';
+        debugDiv.textContent = '✓ Inland Empire Loaded!';
+        document.body.appendChild(debugDiv);
+        setTimeout(() => debugDiv.remove(), 3000);
+        
+    } catch (initError) {
+        console.error('[Inland Empire] Init error:', initError);
+        alert('[IE Debug] Init failed: ' + initError.message);
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════
