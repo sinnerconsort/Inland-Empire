@@ -695,7 +695,7 @@ export function renderThoughtModal(thoughtId, container) {
                 <span class="ie-thought-icon-large">${thought.icon}</span>
                 <h2 class="ie-thought-modal-name">${thought.name}</h2>
                 <button class="ie-btn ie-btn-close-modal">
-                    <i class="fa-solid fa-times"></i> Close
+                    <i class="fa-solid fa-times"></i>
                 </button>
             </div>
             
