@@ -125,24 +125,17 @@ function getChatContainer() {
 // ═══════════════════════════════════════════════════════════════
 
 async function triggerVoices(messageText = null) {
-    // Debug: show we got here
-    try {
-        if (!extensionSettings.enabled) {
-            alert('[IE Debug] Extension disabled');
-            return;
-        }
+    if (!extensionSettings.enabled) return;
 
-        const context = getContext();
-        const text = messageText || getLastMessage()?.mes || '';
+    const context = getContext();
+    const text = messageText || getLastMessage()?.mes || '';
 
-        if (!text.trim()) {
-            alert('[IE Debug] No message found to analyze');
-            showToast('No message to analyze', 'info');
-            return;
-        }
+    if (!text.trim()) {
+        showToast('No message to analyze', 'info');
+        return;
+    }
 
-        alert(`[IE Debug] Analyzing: "${text.substring(0, 50)}..."`);
-        const loadingToast = showToast('The voices stir...', 'loading');
+    const loadingToast = showToast('The voices stir...', 'loading');
 
     try {
         // Analyze context
@@ -493,6 +486,68 @@ function saveSettingsFromUI() {
     showToast('Settings saved!', 'success');
 }
 
+async function testAPIConnection() {
+    // Read current values from UI (not saved settings)
+    const endpoint = document.getElementById('ie-api-endpoint')?.value?.trim();
+    const apiKey = document.getElementById('ie-api-key')?.value?.trim();
+    const model = document.getElementById('ie-model')?.value?.trim() || 'glm-4-plus';
+
+    if (!endpoint) {
+        showToast('Enter an API endpoint first', 'error', 5000);
+        return;
+    }
+    if (!apiKey) {
+        showToast('Enter an API key first', 'error', 5000);
+        return;
+    }
+
+    const loadingToast = showToast('Testing connection...', 'loading');
+
+    try {
+        const cleanEndpoint = endpoint.replace(/\/+$/, '');
+        
+        const response = await fetch(cleanEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: model,
+                messages: [
+                    { role: 'user', content: 'Say "Connection successful!" and nothing else.' }
+                ],
+                max_tokens: 20,
+                temperature: 0.1
+            })
+        });
+
+        hideToast(loadingToast);
+
+        if (!response.ok) {
+            let errorText = '';
+            try {
+                errorText = await response.text();
+                errorText = errorText.substring(0, 100);
+            } catch (e) {}
+            showToast(`API Error ${response.status}: ${errorText || response.statusText}`, 'error', 8000);
+            return;
+        }
+
+        const data = await response.json();
+        const content = data.choices?.[0]?.message?.content || 
+                       data.choices?.[0]?.text || 
+                       data.content || 
+                       'No response content';
+        
+        showToast(`✓ API Works! Response: "${content.substring(0, 50)}"`, 'success', 5000);
+
+    } catch (err) {
+        hideToast(loadingToast);
+        showToast(`Network error: ${err.message}`, 'error', 8000);
+    }
+}
+
 function updatePOVOptions() {
     const pov = document.getElementById('ie-pov-style')?.value;
     const thirdPersonOptions = document.querySelectorAll('.ie-third-person-options');
@@ -547,15 +602,7 @@ function bindEvents() {
     });
 
     // Manual trigger
-    const triggerBtn = document.getElementById('ie-manual-trigger');
-    if (triggerBtn) {
-        triggerBtn.addEventListener('click', () => {
-            alert('[IE Debug] Button clicked!');
-            triggerVoices();
-        });
-    } else {
-        console.error('[Inland Empire] Manual trigger button not found!');
-    }
+    document.getElementById('ie-manual-trigger')?.addEventListener('click', () => triggerVoices());
 
     // Clear voices
     document.querySelector('.ie-btn-clear-voices')?.addEventListener('click', () => {
@@ -572,6 +619,9 @@ function bindEvents() {
 
     // Save settings
     document.querySelector('.ie-btn-save-settings')?.addEventListener('click', saveSettingsFromUI);
+
+    // Test API button
+    document.getElementById('ie-test-api-btn')?.addEventListener('click', testAPIConnection);
 
     // Reset FAB
     document.querySelector('.ie-btn-reset-fab')?.addEventListener('click', resetFABPosition);
@@ -612,49 +662,36 @@ function setupAutoTrigger() {
 
 async function init() {
     console.log('[Inland Empire] Initializing...');
-    
-    try {
-        // Load state
-        loadState(getContext());
-        initializeThemeCounters();
 
-        // Load CSS
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = `${extensionFolderPath}/styles.css`;
-        document.head.appendChild(link);
+    // Load state
+    loadState(getContext());
+    initializeThemeCounters();
 
-        // Create UI
-        const panel = createPsychePanel();
-        const fab = createToggleFAB(getContext);
+    // Load CSS
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = `${extensionFolderPath}/styles.css`;
+    document.head.appendChild(link);
 
-        document.body.appendChild(panel);
-        document.body.appendChild(fab);
+    // Create UI
+    const panel = createPsychePanel();
+    const fab = createToggleFAB(getContext);
 
-        // Initial renders
-        refreshAttributesDisplay();
-        refreshStatusTab();
-        refreshCabinetTab();
+    document.body.appendChild(panel);
+    document.body.appendChild(fab);
 
-        // Bind events
-        bindEvents();
+    // Initial renders
+    refreshAttributesDisplay();
+    refreshStatusTab();
+    refreshCabinetTab();
 
-        // Setup auto-trigger
-        setupAutoTrigger();
+    // Bind events
+    bindEvents();
 
-        console.log('[Inland Empire] Ready!');
-        
-        // Debug notification - will show briefly
-        const debugDiv = document.createElement('div');
-        debugDiv.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#4CAF50;color:white;padding:10px 20px;border-radius:5px;z-index:99999;';
-        debugDiv.textContent = '✓ Inland Empire Loaded!';
-        document.body.appendChild(debugDiv);
-        setTimeout(() => debugDiv.remove(), 3000);
-        
-    } catch (initError) {
-        console.error('[Inland Empire] Init error:', initError);
-        alert('[IE Debug] Init failed: ' + initError.message);
-    }
+    // Setup auto-trigger
+    setupAutoTrigger();
+
+    console.log('[Inland Empire] Ready!');
 }
 
 // ═══════════════════════════════════════════════════════════════

@@ -225,6 +225,20 @@
     background: #C499C4;
 }
 
+.ie-btn-test-api {
+    width: 100%;
+    margin-top: 10px;
+    background: var(--ie-bg-tertiary);
+    border: 1px dashed var(--ie-accent-blue);
+    color: var(--ie-accent-blue);
+}
+
+.ie-btn-test-api:hover {
+    background: var(--ie-accent-blue);
+    color: var(--ie-bg-primary);
+    border-style: solid;
+}
+
 .ie-btn-sm {
     padding: 4px 10px;
     font-size: 12px;
