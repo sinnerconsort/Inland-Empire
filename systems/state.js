@@ -4,7 +4,7 @@
  */
 
 import { ATTRIBUTES, SKILLS } from '../data/skills.js';
-import { STATUS_EFFECTS } from '../data/statuses.js';
+import { STATUS_EFFECTS, ARCHETYPE_IDS } from '../data/statuses.js';
 
 // ═══════════════════════════════════════════════════════════════
 // STATE VARIABLES
@@ -137,9 +137,19 @@ export function getSkillCap(skillId) {
 // ═══════════════════════════════════════════════════════════════
 
 export function toggleStatus(statusId, context = null) {
+    const status = STATUS_EFFECTS[statusId];
+    
     if (activeStatuses.has(statusId)) {
+        // Turning off
         activeStatuses.delete(statusId);
     } else {
+        // Turning on
+        // If this is an archetype, remove any other active archetypes first
+        if (status && status.exclusive === 'archetype') {
+            for (const archetypeId of ARCHETYPE_IDS) {
+                activeStatuses.delete(archetypeId);
+            }
+        }
         activeStatuses.add(statusId);
     }
     if (context) saveState(context);
@@ -176,7 +186,13 @@ export function getActiveAncientVoices() {
     for (const statusId of activeStatuses) {
         const status = STATUS_EFFECTS[statusId];
         if (status && status.ancientVoice) {
-            ancientVoices.add(status.ancientVoice);
+            if (status.ancientVoice === 'both') {
+                // Special case: triggers both ancient voices
+                ancientVoices.add('ancient_reptilian_brain');
+                ancientVoices.add('limbic_system');
+            } else {
+                ancientVoices.add(status.ancientVoice);
+            }
         }
     }
     return ancientVoices;
