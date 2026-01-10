@@ -396,6 +396,15 @@ export function renderProfilesList(container, onLoad, onDelete) {
 // THOUGHT CABINET
 // ═══════════════════════════════════════════════════════════════
 
+// Constants - should match cabinet.js
+const MAX_INTERNALIZED_THOUGHTS = 5;
+const RESEARCH_TIME_MULTIPLIER = 3;
+
+// Helper to get thought from either THOUGHTS or customThoughts
+function getThought(id) {
+    return THOUGHTS[id] || thoughtCabinet.customThoughts?.[id];
+}
+
 export function renderThoughtCabinet(container, callbacks = {}) {
     if (!container) return;
 
@@ -407,16 +416,18 @@ export function renderThoughtCabinet(container, callbacks = {}) {
         topThemes.map(t => `<span class="ie-theme-tag">${t.icon} ${t.name}: ${t.count}</span>`).join('') :
         '<em>No themes tracked yet</em>';
 
-    // Discovered thoughts
+    // Discovered thoughts (including custom)
     const discoveredHtml = thoughtCabinet.discovered.length > 0 ?
         thoughtCabinet.discovered.map(id => {
-            const thought = THOUGHTS[id];
+            const thought = getThought(id);
             if (!thought) return '';
+            const customBadge = thought.isCustom ? '<span class="ie-custom-badge">Custom</span>' : '';
             return `
-                <div class="ie-thought-card ie-thought-discovered">
+                <div class="ie-thought-card ie-thought-discovered ${thought.isCustom ? 'ie-thought-custom' : ''}">
                     <div class="ie-thought-header">
                         <span class="ie-thought-icon">${thought.icon}</span>
                         <span class="ie-thought-name">${thought.name}</span>
+                        ${customBadge}
                     </div>
                     <div class="ie-thought-desc">${thought.description}</div>
                     <div class="ie-thought-actions">
@@ -430,9 +441,10 @@ export function renderThoughtCabinet(container, callbacks = {}) {
 
     // Researching thoughts
     const researchingHtml = Object.entries(thoughtCabinet.researching).map(([id, research]) => {
-        const thought = THOUGHTS[id];
+        const thought = getThought(id);
         if (!thought) return '';
-        const progress = Math.min(100, (research.progress / thought.researchTime) * 100);
+        const effectiveTime = (thought.researchTime || 10) * RESEARCH_TIME_MULTIPLIER;
+        const progress = Math.min(100, (research.progress / effectiveTime) * 100);
 
         const penaltyText = thought.researchPenalty ?
             Object.entries(thought.researchPenalty)
@@ -440,7 +452,7 @@ export function renderThoughtCabinet(container, callbacks = {}) {
                 .join(', ') : '';
 
         return `
-            <div class="ie-thought-card ie-thought-researching">
+            <div class="ie-thought-card ie-thought-researching ${thought.isCustom ? 'ie-thought-custom' : ''}">
                 <div class="ie-thought-header">
                     <span class="ie-thought-icon">${thought.icon}</span>
                     <span class="ie-thought-name">${thought.name}</span>
@@ -456,10 +468,13 @@ export function renderThoughtCabinet(container, callbacks = {}) {
         `;
     }).join('') || '<div class="ie-thoughts-empty"><em>Not researching anything</em></div>';
 
-    // Internalized thoughts
-    const internalizedHtml = thoughtCabinet.internalized.length > 0 ?
+    // Internalized thoughts with forget button
+    const internalizedCount = thoughtCabinet.internalized.length;
+    const atCap = internalizedCount >= MAX_INTERNALIZED_THOUGHTS;
+    
+    const internalizedHtml = internalizedCount > 0 ?
         thoughtCabinet.internalized.map(id => {
-            const thought = THOUGHTS[id];
+            const thought = getThought(id);
             if (!thought) return '';
 
             const bonusText = thought.internalizedBonus ?
@@ -468,10 +483,13 @@ export function renderThoughtCabinet(container, callbacks = {}) {
                     .join(' ') : '';
 
             return `
-                <div class="ie-thought-card ie-thought-internalized">
+                <div class="ie-thought-card ie-thought-internalized ${thought.isCustom ? 'ie-thought-custom' : ''}">
                     <div class="ie-thought-header">
                         <span class="ie-thought-icon">${thought.icon}</span>
                         <span class="ie-thought-name">${thought.name}</span>
+                        <button class="ie-btn ie-btn-xs ie-btn-forget" data-thought="${id}" title="Forget this thought">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
                     </div>
                     <div class="ie-thought-flavor">${thought.flavorText}</div>
                     ${bonusText ? `<div class="ie-thought-bonuses">${bonusText}</div>` : ''}
@@ -504,8 +522,30 @@ export function renderThoughtCabinet(container, callbacks = {}) {
         </div>
 
         <div class="ie-section">
-            <div class="ie-section-header"><span>Internalized</span></div>
+            <div class="ie-section-header">
+                <span>Internalized</span>
+                <span class="ie-slots-info ${atCap ? 'ie-cap-reached' : ''}">${internalizedCount}/${MAX_INTERNALIZED_THOUGHTS}</span>
+            </div>
+            ${atCap ? '<div class="ie-cap-warning">Cabinet full. Forget a thought to make room.</div>' : ''}
             <div class="ie-thoughts-internalized">${internalizedHtml}</div>
+        </div>
+
+        <div class="ie-section ie-thought-generator-section">
+            <div class="ie-section-header">
+                <span>Generate Thought</span>
+                <label class="ie-checkbox ie-checkbox-sm">
+                    <input type="checkbox" id="ie-thought-from-context" />
+                    <span>From chat</span>
+                </label>
+            </div>
+            <div class="ie-thought-generator">
+                <textarea id="ie-thought-prompt" rows="2" placeholder="Enter a concept, obsession, or idea to mull over..."></textarea>
+                <button class="ie-btn ie-btn-primary ie-btn-generate-thought" id="ie-generate-thought-btn">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    <span>Generate</span>
+                </button>
+            </div>
+            <small class="ie-form-hint">Creates a custom Disco Elysium-style thought to research and internalize.</small>
         </div>
     `;
 
@@ -526,6 +566,19 @@ export function renderThoughtCabinet(container, callbacks = {}) {
         btn.addEventListener('click', () => {
             if (callbacks.onAbandon) callbacks.onAbandon(btn.dataset.thought);
         });
+    });
+
+    container.querySelectorAll('.ie-btn-forget').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (callbacks.onForget) callbacks.onForget(btn.dataset.thought);
+        });
+    });
+
+    // Generate thought button
+    document.getElementById('ie-generate-thought-btn')?.addEventListener('click', () => {
+        const prompt = document.getElementById('ie-thought-prompt')?.value?.trim();
+        const fromContext = document.getElementById('ie-thought-from-context')?.checked;
+        if (callbacks.onGenerate) callbacks.onGenerate(prompt, fromContext);
     });
 }
 
