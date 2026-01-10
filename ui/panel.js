@@ -242,8 +242,35 @@ export function createPsychePanel() {
                     <div class="ie-form-group">
                         <label class="ie-checkbox">
                             <input type="checkbox" id="ie-auto-discover-thoughts" checked />
-                            <span>Auto-discover thoughts</span>
+                            <span>Auto-discover built-in thoughts</span>
                         </label>
+                    </div>
+                    <div class="ie-form-group">
+                        <label class="ie-checkbox">
+                            <input type="checkbox" id="ie-auto-generate-thoughts" />
+                            <span>Auto-generate custom thoughts from chat</span>
+                        </label>
+                    </div>
+                    <div class="ie-form-group ie-auto-gen-options">
+                        <label>Theme threshold for auto-gen</label>
+                        <input type="number" id="ie-auto-gen-threshold" min="5" max="30" value="10" />
+                        <small class="ie-form-hint">Highest theme count needed to trigger</small>
+                    </div>
+                    <div class="ie-form-group ie-auto-gen-options">
+                        <label>Messages between auto-gen</label>
+                        <input type="number" id="ie-auto-gen-cooldown" min="3" max="20" value="5" />
+                    </div>
+                    <div class="ie-form-group ie-auto-gen-options">
+                        <label>Default perspective</label>
+                        <select id="ie-auto-gen-perspective">
+                            <option value="observer">Observer (wrestling with what you saw)</option>
+                            <option value="participant">Participant (embodying the mindset)</option>
+                        </select>
+                    </div>
+                    <div class="ie-form-group ie-auto-gen-options">
+                        <label>Player context for auto-gen</label>
+                        <input type="text" id="ie-auto-gen-player-context" placeholder="e.g., 'survivor investigating the killer'" />
+                        <small class="ie-form-hint">Who you are in the scene (saved)</small>
                     </div>
                 </div>
 
