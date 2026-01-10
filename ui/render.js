@@ -208,8 +208,8 @@ export function renderAttributesDisplay(container) {
         }).join('');
 
         return `
-            <div class="ie-attribute-card" style="border-color: ${attr.color}">
-                <div class="ie-attribute-header" style="background: ${attr.color}20">
+            <div class="ie-attribute-card" style="border-left-color: ${attr.color}">
+                <div class="ie-attribute-header" style="background: linear-gradient(90deg, ${attr.color}66 0%, ${attr.color}22 50%, transparent 100%)">
                     <span class="ie-attribute-name">${attr.name}</span>
                     <span class="ie-attribute-points">${points}</span>
                 </div>
