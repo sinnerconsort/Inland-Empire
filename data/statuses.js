@@ -1,49 +1,36 @@
 /**
  * Inland Empire - Status Effects Data
  * Physical and mental states that modify skills
- * Disco Elysium flavored
+ * Full Disco Elysium flavor
  */
 
 export const STATUS_EFFECTS = {
     // ═══════════════════════════════════════════════════════════════
     // PHYSICAL STATUS EFFECTS
     // ═══════════════════════════════════════════════════════════════
-    intoxicated: {
-        id: 'intoxicated',
-        name: 'Intoxicated',
+    revacholian_courage: {
+        id: 'revacholian_courage',
+        name: 'Revacholian Courage',
         icon: '🍺',
         category: 'physical',
-        description: 'The world softens at the edges. Everything makes more sense now.',
-        boosts: ['electrochemistry', 'inland_empire', 'drama', 'suggestion'],
+        description: 'The world softens at the edges. Liquid bravery courses through you. Everything makes more sense now.',
+        boosts: ['electrochemistry', 'inland_empire', 'drama', 'suggestion', 'physical_instrument'],
         debuffs: ['logic', 'hand_eye_coordination', 'reaction_speed', 'composure'],
         difficultyMod: 2,
-        keywords: ['drunk', 'intoxicated', 'wasted', 'high', 'tipsy', 'booze', 'liquor', 'alcohol'],
+        keywords: ['drunk', 'intoxicated', 'wasted', 'high', 'tipsy', 'booze', 'liquor', 'alcohol', 'drinking'],
         ancientVoice: null,
         intrusiveBoost: ['electrochemistry', 'inland_empire']
     },
-    hung_over: {
-        id: 'hung_over',
-        name: 'Hung Over',
-        icon: '🤢',
+    pyrholidon: {
+        id: 'pyrholidon',
+        name: 'Pyrholidon',
+        icon: '💊',
         category: 'physical',
-        description: 'The morning after. Your body remembers what your mind forgot.',
-        boosts: ['pain_threshold', 'inland_empire'],
-        debuffs: ['perception', 'reaction_speed', 'composure', 'authority'],
-        difficultyMod: 2,
-        keywords: ['hangover', 'hung over', 'headache', 'nauseous', 'morning after'],
-        ancientVoice: null,
-        intrusiveBoost: ['pain_threshold', 'electrochemistry']
-    },
-    stimulated: {
-        id: 'stimulated',
-        name: 'Stimulated',
-        icon: '⚡',
-        category: 'physical',
-        description: 'Your neurons fire like a city grid at rush hour. Everything is FAST.',
-        boosts: ['reaction_speed', 'perception', 'logic', 'visual_calculus'],
+        description: 'Your neurons fire like a city grid at rush hour. The world sharpens. Time dilates. You are AWAKE.',
+        boosts: ['reaction_speed', 'perception', 'logic', 'visual_calculus', 'volition'],
         debuffs: ['composure', 'empathy', 'inland_empire'],
         difficultyMod: -1,
-        keywords: ['stimulant', 'speed', 'amphetamine', 'wired', 'pyrholidon', 'uppers'],
+        keywords: ['stimulant', 'speed', 'amphetamine', 'wired', 'pyrholidon', 'uppers', 'drugs', 'pills'],
         ancientVoice: null,
         intrusiveBoost: ['electrochemistry', 'reaction_speed']
     },
@@ -52,94 +39,107 @@ export const STATUS_EFFECTS = {
         name: 'Nicotine Rush',
         icon: '🚬',
         category: 'physical',
-        description: 'A small death, a small resurrection. The smoke fills the void.',
-        boosts: ['composure', 'volition', 'conceptualization'],
+        description: 'A small death, a small resurrection. The smoke fills the void where thoughts used to be.',
+        boosts: ['composure', 'volition', 'conceptualization', 'logic'],
         debuffs: ['endurance'],
         difficultyMod: 0,
-        keywords: ['cigarette', 'smoke', 'smoking', 'nicotine', 'tobacco'],
+        keywords: ['cigarette', 'smoke', 'smoking', 'nicotine', 'tobacco', 'astra'],
         ancientVoice: null,
         intrusiveBoost: ['electrochemistry', 'composure']
     },
-    wounded: {
-        id: 'wounded',
-        name: 'Wounded',
+    volumetric_shit_compressor: {
+        id: 'volumetric_shit_compressor',
+        name: 'Volumetric Shit Compressor',
+        icon: '🤢',
+        category: 'physical',
+        description: 'The morning after. Your body processes the sins of yesterday through industrial-grade suffering.',
+        boosts: ['pain_threshold', 'inland_empire', 'endurance'],
+        debuffs: ['perception', 'reaction_speed', 'composure', 'authority'],
+        difficultyMod: 2,
+        keywords: ['hangover', 'hung over', 'headache', 'nauseous', 'morning after', 'vomit', 'puke', 'sick'],
+        ancientVoice: null,
+        intrusiveBoost: ['pain_threshold', 'electrochemistry']
+    },
+    finger_on_the_eject_button: {
+        id: 'finger_on_the_eject_button',
+        name: 'Finger on the Eject Button',
         icon: '🩸',
         category: 'physical',
-        description: 'Pain is just information. Your body is screaming it.',
-        boosts: ['pain_threshold', 'endurance', 'half_light'],
-        debuffs: ['composure', 'savoir_faire', 'hand_eye_coordination'],
+        description: 'How wounded are you? Is it worth getting back up? Can you? The freedom of finality whispers.',
+        boosts: ['pain_threshold', 'endurance', 'half_light', 'volition'],
+        debuffs: ['composure', 'savoir_faire', 'hand_eye_coordination', 'authority'],
         difficultyMod: 2,
-        keywords: ['hurt', 'wounded', 'injured', 'bleeding', 'pain', 'cut', 'bruise'],
+        keywords: ['hurt', 'wounded', 'injured', 'bleeding', 'pain', 'cut', 'bruise', 'broken'],
         ancientVoice: null,
-        intrusiveBoost: ['pain_threshold', 'half_light']
+        intrusiveBoost: ['pain_threshold', 'half_light', 'volition']
     },
-    exhausted: {
-        id: 'exhausted',
-        name: 'Exhausted',
+    waste_land: {
+        id: 'waste_land',
+        name: 'Waste Land',
         icon: '😴',
         category: 'physical',
-        description: 'The weight of existence presses down. Rest is a distant memory.',
-        boosts: ['volition', 'inland_empire'],
-        debuffs: ['reaction_speed', 'perception', 'logic'],
+        description: 'The weight of existence presses down. You are a barren landscape. Rest is a distant memory.',
+        boosts: ['volition', 'inland_empire', 'empathy'],
+        debuffs: ['reaction_speed', 'perception', 'logic', 'physical_instrument'],
         difficultyMod: 2,
-        keywords: ['tired', 'exhausted', 'sleepy', 'drowsy', 'fatigued', 'weary'],
+        keywords: ['tired', 'exhausted', 'sleepy', 'drowsy', 'fatigued', 'weary', 'drained'],
         ancientVoice: null,
         intrusiveBoost: ['inland_empire', 'endurance']
     },
-    starving: {
-        id: 'starving',
-        name: 'Starving',
+    the_hunger: {
+        id: 'the_hunger',
+        name: 'The Hunger',
         icon: '🍽️',
         category: 'physical',
-        description: 'The body demands. The stomach is a void that echoes.',
-        boosts: ['electrochemistry', 'perception'],
+        description: 'The body demands. The stomach is a void that echoes. Feed it or it will feed on you.',
+        boosts: ['electrochemistry', 'perception', 'half_light'],
         debuffs: ['logic', 'composure', 'volition'],
         difficultyMod: 1,
-        keywords: ['hungry', 'starving', 'famished', 'food', 'eat'],
+        keywords: ['hungry', 'starving', 'famished', 'food', 'eat', 'starve'],
         ancientVoice: null,
-        intrusiveBoost: ['electrochemistry']
+        intrusiveBoost: ['electrochemistry', 'half_light']
     },
-    hypothermic: {
-        id: 'hypothermic',
-        name: 'Hypothermic',
+    martinaise_winter: {
+        id: 'martinaise_winter',
+        name: 'Martinaise Winter',
         icon: '🥶',
         category: 'physical',
-        description: 'The cold seeps into your bones. Martinaise winter shows no mercy.',
-        boosts: ['shivers', 'pain_threshold', 'inland_empire'],
+        description: 'The cold seeps into your bones. The coast shows no mercy. You feel the pale at the edges.',
+        boosts: ['shivers', 'pain_threshold', 'inland_empire', 'endurance'],
         debuffs: ['hand_eye_coordination', 'reaction_speed', 'interfacing'],
         difficultyMod: 2,
-        keywords: ['cold', 'freezing', 'hypothermia', 'shivering', 'frost', 'winter'],
+        keywords: ['cold', 'freezing', 'hypothermia', 'shivering', 'frost', 'winter', 'frozen'],
         ancientVoice: null,
         intrusiveBoost: ['shivers', 'inland_empire']
     },
-    dying: {
-        id: 'dying',
-        name: 'Dying',
+    white_mourning: {
+        id: 'white_mourning',
+        name: 'White Mourning',
         icon: '💀',
         category: 'physical',
-        description: 'The final curtain approaches. The ancient parts of you stir.',
-        boosts: ['pain_threshold', 'inland_empire', 'shivers'],
-        debuffs: ['logic', 'rhetoric', 'authority'],
+        description: 'The final curtain approaches. Something is ending. The ancient parts of you stir in the dark.',
+        boosts: ['pain_threshold', 'inland_empire', 'shivers', 'empathy'],
+        debuffs: ['logic', 'rhetoric', 'authority', 'physical_instrument'],
         difficultyMod: 4,
-        keywords: ['dying', 'death', 'fading', 'bleeding out', 'critical'],
-        ancientVoice: 'ancient_reptilian_brain',
+        keywords: ['dying', 'death', 'fading', 'bleeding out', 'critical', 'end', 'final'],
+        ancientVoice: null,
         intrusiveBoost: ['inland_empire', 'shivers']
     },
 
     // ═══════════════════════════════════════════════════════════════
-    // MENTAL STATUS EFFECTS (Disco Elysium Flavored)
+    // MENTAL STATUS EFFECTS
     // ═══════════════════════════════════════════════════════════════
     tequila_sunset: {
         id: 'tequila_sunset',
         name: 'Tequila Sunset',
         icon: '🌅',
         category: 'mental',
-        description: 'The bender takes hold. You are electric and unstoppable and definitely making good decisions.',
+        description: 'The bender takes hold. You are electric and unstoppable and definitely making good decisions right now.',
         boosts: ['electrochemistry', 'reaction_speed', 'conceptualization', 'inland_empire', 'drama'],
         debuffs: ['composure', 'logic', 'volition', 'authority'],
         difficultyMod: 1,
-        keywords: ['manic', 'hyper', 'racing', 'unstoppable', 'wired', 'frantic', 'bender'],
-        ancientVoice: 'limbic_system',
+        keywords: ['manic', 'hyper', 'racing', 'unstoppable', 'wired', 'frantic', 'bender', 'party'],
+        ancientVoice: null,
         intrusiveBoost: ['electrochemistry', 'conceptualization', 'drama']
     },
     the_pale: {
@@ -160,12 +160,12 @@ export const STATUS_EFFECTS = {
         name: 'Homo-Sexual Underground',
         icon: '💜',
         category: 'mental',
-        description: 'The obsessive spiral of desire. Who are you? Who do you want? Does it matter?',
+        description: 'The obsessive spiral of desire. Who are you? Who do you want? Does it even matter anymore?',
         boosts: ['electrochemistry', 'suggestion', 'empathy', 'drama', 'inland_empire'],
         debuffs: ['logic', 'volition', 'composure', 'authority'],
         difficultyMod: 2,
         keywords: ['aroused', 'desire', 'attraction', 'lust', 'seduction', 'beautiful', 'sexuality', 'obsess'],
-        ancientVoice: 'limbic_system',
+        ancientVoice: null,
         intrusiveBoost: ['electrochemistry', 'suggestion', 'inland_empire']
     },
     jamrock_shuffle: {
@@ -173,51 +173,51 @@ export const STATUS_EFFECTS = {
         name: 'Jamrock Shuffle',
         icon: '🎲',
         category: 'mental',
-        description: 'Trust the gut. The streets taught you things no book ever could.',
+        description: 'Trust the gut. The streets taught you things no book ever could. Let instinct guide you.',
         boosts: ['shivers', 'perception', 'reaction_speed', 'savoir_faire', 'half_light'],
         debuffs: ['logic', 'encyclopedia', 'rhetoric'],
         difficultyMod: -1,
-        keywords: ['luck', 'instinct', 'gut', 'street', 'shuffle', 'gamble', 'chance'],
+        keywords: ['luck', 'instinct', 'gut', 'street', 'shuffle', 'gamble', 'chance', 'lucky'],
         ancientVoice: null,
         intrusiveBoost: ['shivers', 'perception', 'half_light']
     },
-    paranoid: {
-        id: 'paranoid',
-        name: 'Paranoid',
+    doom_spiral: {
+        id: 'doom_spiral',
+        name: 'Doom Spiral',
         icon: '👁️',
         category: 'mental',
-        description: 'They are watching. They are always watching. Trust no one.',
-        boosts: ['half_light', 'perception', 'shivers'],
-        debuffs: ['empathy', 'suggestion', 'composure'],
+        description: 'They are watching. They are always watching. The thought loops back on itself, tightening.',
+        boosts: ['half_light', 'perception', 'shivers', 'visual_calculus'],
+        debuffs: ['empathy', 'suggestion', 'composure', 'authority'],
         difficultyMod: 1,
-        keywords: ['paranoid', 'suspicious', 'watching', 'followed', 'conspiracy'],
+        keywords: ['paranoid', 'suspicious', 'watching', 'followed', 'conspiracy', 'spiral', 'loop'],
         ancientVoice: null,
-        intrusiveBoost: ['half_light', 'perception']
+        intrusiveBoost: ['half_light', 'perception', 'shivers']
     },
-    terrified: {
-        id: 'terrified',
-        name: 'Terrified',
+    caustic_echo: {
+        id: 'caustic_echo',
+        name: 'Caustic Echo',
         icon: '😨',
         category: 'mental',
-        description: 'Fear grips your ancient brain. Fight or flight. There is no think.',
+        description: 'Fear grips your ancient brain. Your body becomes paralyzed with the echo of trauma. Fight or flight. There is no think.',
         boosts: ['half_light', 'shivers', 'reaction_speed', 'perception'],
-        debuffs: ['authority', 'composure', 'rhetoric'],
+        debuffs: ['authority', 'composure', 'rhetoric', 'suggestion'],
         difficultyMod: 2,
-        keywords: ['scared', 'afraid', 'terrified', 'fear', 'panic', 'horror'],
-        ancientVoice: 'ancient_reptilian_brain',
+        keywords: ['scared', 'afraid', 'terrified', 'fear', 'panic', 'horror', 'terror', 'dread'],
+        ancientVoice: null,
         intrusiveBoost: ['half_light', 'shivers']
     },
-    enraged: {
-        id: 'enraged',
-        name: 'Enraged',
+    law_jaw: {
+        id: 'law_jaw',
+        name: 'Law-Jaw',
         icon: '😤',
         category: 'mental',
-        description: 'The fire in your blood. Violence simmers just beneath the surface.',
+        description: 'I AM THE LAW. The fire in your blood demands compliance. Violence simmers beneath the badge.',
         boosts: ['authority', 'physical_instrument', 'half_light', 'endurance'],
         debuffs: ['empathy', 'composure', 'logic', 'suggestion'],
         difficultyMod: 2,
-        keywords: ['angry', 'furious', 'rage', 'mad', 'pissed', 'infuriated'],
-        ancientVoice: 'limbic_system',
+        keywords: ['angry', 'furious', 'rage', 'mad', 'pissed', 'infuriated', 'law', 'authority'],
+        ancientVoice: null,
         intrusiveBoost: ['half_light', 'authority', 'physical_instrument']
     },
     the_expression: {
@@ -225,26 +225,13 @@ export const STATUS_EFFECTS = {
         name: 'The Expression',
         icon: '😢',
         category: 'mental',
-        description: 'Grief made manifest. The face you make when the world breaks you.',
+        description: 'Grief made manifest. The face you make when the world breaks you. Everyone can see it.',
         boosts: ['empathy', 'inland_empire', 'shivers', 'volition', 'drama'],
         debuffs: ['authority', 'electrochemistry', 'savoir_faire', 'composure'],
         difficultyMod: 2,
-        keywords: ['grief', 'loss', 'mourning', 'tears', 'sad', 'crying', 'sob', 'heartbreak'],
-        ancientVoice: 'limbic_system',
-        intrusiveBoost: ['empathy', 'inland_empire', 'drama']
-    },
-    the_innocence: {
-        id: 'the_innocence',
-        name: 'The Innocence',
-        icon: '🦋',
-        category: 'mental',
-        description: 'A moment of pure wonder. The child you were, before the world happened to you.',
-        boosts: ['inland_empire', 'empathy', 'perception', 'shivers', 'conceptualization'],
-        debuffs: ['authority', 'half_light', 'rhetoric'],
-        difficultyMod: -1,
-        keywords: ['innocent', 'wonder', 'child', 'pure', 'phasmid', 'miracle', 'beautiful'],
+        keywords: ['grief', 'loss', 'mourning', 'tears', 'sad', 'crying', 'sob', 'heartbreak', 'sorrow'],
         ancientVoice: null,
-        intrusiveBoost: ['inland_empire', 'empathy', 'conceptualization']
+        intrusiveBoost: ['empathy', 'inland_empire', 'drama']
     },
 
     // ═══════════════════════════════════════════════════════════════
@@ -260,7 +247,7 @@ export const STATUS_EFFECTS = {
         debuffs: ['empathy', 'suggestion', 'savoir_faire'],
         difficultyMod: 0,
         keywords: ['apocalypse', 'end times', 'doom', 'final', 'revelation'],
-        ancientVoice: 'ancient_reptilian_brain',
+        ancientVoice: null,
         intrusiveBoost: ['half_light', 'shivers', 'inland_empire'],
         exclusive: 'archetype'
     },
@@ -283,7 +270,7 @@ export const STATUS_EFFECTS = {
         name: 'Superstar Cop',
         icon: '⭐',
         category: 'archetype',
-        description: 'You are the LAW. You are DISCO. You are absolutely insufferable.',
+        description: 'You are the LAW. You are DISCO. You are absolutely insufferable and magnificent.',
         boosts: ['authority', 'savoir_faire', 'rhetoric', 'drama', 'electrochemistry'],
         debuffs: ['empathy', 'logic', 'composure'],
         difficultyMod: -1,
@@ -341,5 +328,8 @@ export const ARCHETYPE_IDS = Object.entries(STATUS_EFFECTS)
     .filter(([_, status]) => status.category === 'archetype')
     .map(([id, _]) => id);
 
-// Statuses that trigger BOTH ancient voices
+// Statuses that trigger BOTH ancient voices (Ancient Reptilian Brain + Limbic System)
 export const DUAL_ANCIENT_TRIGGERS = ['the_pale'];
+
+// Combo triggers for Spinal Cord (party state)
+export const SPINAL_CORD_COMBO = ['tequila_sunset', 'revacholian_courage'];
