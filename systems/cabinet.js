@@ -18,6 +18,15 @@ import {
 } from './state.js';
 
 // ═══════════════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════════════
+
+export const MAX_INTERNALIZED_THOUGHTS = 5;
+export const RESEARCH_PROGRESS_BASE = 1;
+export const RESEARCH_PROGRESS_KEYWORD_BONUS = 0.5; // Per keyword match, max 2
+export const RESEARCH_TIME_MULTIPLIER = 3; // Makes research take longer
+
+// ═══════════════════════════════════════════════════════════════
 // THEME TRACKING
 // ═══════════════════════════════════════════════════════════════
 
@@ -150,7 +159,7 @@ export function checkThoughtDiscovery() {
 // ═══════════════════════════════════════════════════════════════
 
 export function startResearch(thoughtId, context = null) {
-    const thought = THOUGHTS[thoughtId];
+    const thought = THOUGHTS[thoughtId] || thoughtCabinet.customThoughts?.[thoughtId];
     if (!thought) return false;
 
     const researchingCount = Object.keys(thoughtCabinet.researching).length;
@@ -158,6 +167,11 @@ export function startResearch(thoughtId, context = null) {
 
     const idx = thoughtCabinet.discovered.indexOf(thoughtId);
     if (idx === -1) return false;
+
+    // Check if we're at internalized cap
+    if (thoughtCabinet.internalized.length >= MAX_INTERNALIZED_THOUGHTS) {
+        return { error: 'cap_reached' };
+    }
 
     thoughtCabinet.discovered.splice(idx, 1);
     thoughtCabinet.researching[thoughtId] = {
@@ -179,27 +193,38 @@ export function abandonResearch(thoughtId, context = null) {
     return true;
 }
 
+export function getEffectiveResearchTime(thought) {
+    // Apply multiplier to make research take longer
+    return (thought.researchTime || 10) * RESEARCH_TIME_MULTIPLIER;
+}
+
 export function advanceResearch(messageText = '') {
     const completed = [];
 
     for (const [thoughtId, research] of Object.entries(thoughtCabinet.researching)) {
-        const thought = THOUGHTS[thoughtId];
+        const thought = THOUGHTS[thoughtId] || thoughtCabinet.customThoughts?.[thoughtId];
         if (!thought) continue;
 
-        let progressGain = 1;
+        // Check if we're at internalized cap - don't complete if we are
+        if (thoughtCabinet.internalized.length >= MAX_INTERNALIZED_THOUGHTS) {
+            continue;
+        }
 
-        // Bonus for relevant keywords in message
+        let progressGain = RESEARCH_PROGRESS_BASE;
+
+        // Smaller bonus for relevant keywords in message
         const themeId = thought.category;
         if (THEMES[themeId]) {
             const matches = THEMES[themeId].keywords.filter(kw =>
                 messageText.toLowerCase().includes(kw)
             );
-            progressGain += Math.min(matches.length, 2);
+            progressGain += Math.min(matches.length * RESEARCH_PROGRESS_KEYWORD_BONUS, 1);
         }
 
         research.progress += progressGain;
 
-        if (research.progress >= thought.researchTime) {
+        const effectiveTime = getEffectiveResearchTime(thought);
+        if (research.progress >= effectiveTime) {
             completed.push(thoughtId);
         }
     }
@@ -212,8 +237,13 @@ export function advanceResearch(messageText = '') {
 }
 
 export function internalizeThought(thoughtId, context = null) {
-    const thought = THOUGHTS[thoughtId];
+    const thought = THOUGHTS[thoughtId] || thoughtCabinet.customThoughts?.[thoughtId];
     if (!thought || !thoughtCabinet.researching[thoughtId]) return null;
+
+    // Check cap
+    if (thoughtCabinet.internalized.length >= MAX_INTERNALIZED_THOUGHTS) {
+        return null;
+    }
 
     delete thoughtCabinet.researching[thoughtId];
     thoughtCabinet.internalized.push(thoughtId);
@@ -245,6 +275,45 @@ export function internalizeThought(thoughtId, context = null) {
     return thought;
 }
 
+export function forgetThought(thoughtId, context = null) {
+    const idx = thoughtCabinet.internalized.indexOf(thoughtId);
+    if (idx === -1) return false;
+
+    const thought = THOUGHTS[thoughtId] || thoughtCabinet.customThoughts?.[thoughtId];
+    
+    // Remove from internalized
+    thoughtCabinet.internalized.splice(idx, 1);
+
+    // Remove bonuses from current build
+    if (thought?.internalizedBonus && currentBuild) {
+        for (const [skillId, bonus] of Object.entries(thought.internalizedBonus)) {
+            currentBuild.skillLevels[skillId] = Math.max(
+                1,
+                (currentBuild.skillLevels[skillId] || 1) - bonus
+            );
+        }
+    }
+
+    // Remove cap modifiers
+    if (thought?.capModifier && currentBuild) {
+        for (const [skillId, bonus] of Object.entries(thought.capModifier)) {
+            if (currentBuild.skillCaps[skillId]) {
+                currentBuild.skillCaps[skillId].learning = Math.max(
+                    4,
+                    currentBuild.skillCaps[skillId].learning - bonus
+                );
+            }
+        }
+    }
+
+    // Add to forgotten list (can't re-discover)
+    if (!thoughtCabinet.forgotten) thoughtCabinet.forgotten = [];
+    thoughtCabinet.forgotten.push(thoughtId);
+
+    if (context) saveState(context);
+    return true;
+}
+
 export function dismissThought(thoughtId, context = null) {
     const idx = thoughtCabinet.discovered.indexOf(thoughtId);
     if (idx === -1) return false;
@@ -257,6 +326,32 @@ export function dismissThought(thoughtId, context = null) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// CUSTOM THOUGHT GENERATION
+// ═══════════════════════════════════════════════════════════════
+
+export function addCustomThought(thought, context = null) {
+    if (!thoughtCabinet.customThoughts) {
+        thoughtCabinet.customThoughts = {};
+    }
+
+    // Generate unique ID
+    const id = `custom_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    thought.id = id;
+    thought.isCustom = true;
+
+    // Store and add to discovered
+    thoughtCabinet.customThoughts[id] = thought;
+    thoughtCabinet.discovered.push(id);
+
+    if (context) saveState(context);
+    return thought;
+}
+
+export function getThought(thoughtId) {
+    return THOUGHTS[thoughtId] || thoughtCabinet.customThoughts?.[thoughtId];
+}
+
+// ═══════════════════════════════════════════════════════════════
 // RESEARCH PENALTIES
 // ═══════════════════════════════════════════════════════════════
 
@@ -264,7 +359,7 @@ export function getResearchPenalties() {
     const penalties = {};
 
     for (const thoughtId of Object.keys(thoughtCabinet.researching)) {
-        const thought = THOUGHTS[thoughtId];
+        const thought = THOUGHTS[thoughtId] || thoughtCabinet.customThoughts?.[thoughtId];
         if (thought?.researchPenalty) {
             for (const [skillId, penalty] of Object.entries(thought.researchPenalty)) {
                 penalties[skillId] = (penalties[skillId] || 0) + penalty;
@@ -280,9 +375,10 @@ export function getResearchPenalties() {
 // ═══════════════════════════════════════════════════════════════
 
 export function hasSpecialEffect(effectName) {
-    return thoughtCabinet.internalized.some(id =>
-        THOUGHTS[id]?.specialEffect === effectName
-    );
+    return thoughtCabinet.internalized.some(id => {
+        const thought = THOUGHTS[id] || thoughtCabinet.customThoughts?.[id];
+        return thought?.specialEffect === effectName;
+    });
 }
 
 // ═══════════════════════════════════════════════════════════════
