@@ -830,10 +830,9 @@
     background: rgba(0, 0, 0, 0.8);
     z-index: 10001;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
-    padding: 40px 20px 20px 20px;
-    overflow-y: auto;
+    padding: 20px;
 }
 
 .ie-thought-modal {
@@ -842,10 +841,11 @@
     border-radius: 8px;
     max-width: 500px;
     width: 100%;
-    max-height: calc(100vh - 60px);
+    max-height: 70vh;
     overflow-y: auto;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-    margin-top: 10px;
+    margin-top: 80px;
+    margin-bottom: auto;
 }
 
 .ie-thought-modal-header {
@@ -855,10 +855,6 @@
     padding: 16px;
     background: var(--ie-bg-secondary);
     border-bottom: 1px solid var(--ie-border);
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    border-radius: 8px 8px 0 0;
 }
 
 .ie-thought-icon-large {
@@ -880,15 +876,13 @@
     border: 1px solid var(--ie-border);
     color: var(--ie-text-primary);
     cursor: pointer;
-    padding: 8px 14px;
-    border-radius: 6px;
+    padding: 6px 12px;
+    border-radius: 4px;
     font-size: 14px;
-    flex-shrink: 0;
 }
 
 .ie-btn-close-modal:hover {
     background: var(--ie-error);
-    border-color: var(--ie-error);
     color: white;
 }
 
