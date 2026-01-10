@@ -637,9 +637,7 @@ export function renderThoughtCabinet(container, callbacks = {}) {
     });
 
     container.querySelectorAll('.ie-btn-expand-thought').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            e.preventDefault();
+        btn.addEventListener('click', () => {
             if (callbacks.onExpand) callbacks.onExpand(btn.dataset.thought);
         });
     });
@@ -673,11 +671,7 @@ export function renderThoughtCabinet(container, callbacks = {}) {
 // Full thought modal/expanded view
 export function renderThoughtModal(thoughtId, container) {
     const thought = getThought(thoughtId);
-    
-    if (!thought || !container) {
-        console.warn('[Inland Empire] Cannot render modal - thought or container missing');
-        return null;
-    }
+    if (!thought || !container) return;
 
     const isInternalized = thoughtCabinet.internalized.includes(thoughtId);
     const isResearching = thoughtId in thoughtCabinet.researching;
@@ -700,40 +694,38 @@ export function renderThoughtModal(thoughtId, container) {
             <div class="ie-thought-modal-header">
                 <span class="ie-thought-icon-large">${thought.icon}</span>
                 <h2 class="ie-thought-modal-name">${thought.name}</h2>
-                <button class="ie-btn ie-btn-close-modal" title="Close">
-                    <i class="fa-solid fa-times"></i> Close
+                <button class="ie-btn ie-btn-close-modal">
+                    <i class="fa-solid fa-times"></i>
                 </button>
             </div>
             
-            <div class="ie-thought-modal-body">
-                <div class="ie-thought-modal-bonuses">
-                    <div class="ie-thought-modal-bonus-section">
-                        <span class="ie-bonus-label">Bonuses from the thought:</span>
-                        ${internalizedBonusHtml || '<em>None</em>'}
-                    </div>
-                    ${researchBonusHtml ? `
-                    <div class="ie-thought-modal-bonus-section ie-research-section">
-                        <span class="ie-bonus-label">While researching:</span>
-                        ${researchBonusHtml}
-                    </div>
-                    ` : ''}
+            <div class="ie-thought-modal-bonuses">
+                <div class="ie-thought-modal-bonus-section">
+                    <span class="ie-bonus-label">Bonuses from the thought:</span>
+                    ${internalizedBonusHtml || '<em>None</em>'}
                 </div>
-
-                <div class="ie-thought-modal-tabs">
-                    <button class="ie-thought-tab ${!isInternalized ? 'ie-thought-tab-active' : ''}" data-tab="problem">PROBLEM</button>
-                    <button class="ie-thought-tab ${isInternalized ? 'ie-thought-tab-active' : ''}" data-tab="solution">SOLUTION</button>
+                ${researchBonusHtml ? `
+                <div class="ie-thought-modal-bonus-section ie-research-section">
+                    <span class="ie-bonus-label">While researching:</span>
+                    ${researchBonusHtml}
                 </div>
+                ` : ''}
+            </div>
 
-                <div class="ie-thought-modal-content">
-                    <div class="ie-thought-tab-content ${!isInternalized ? 'ie-thought-tab-content-active' : ''}" data-tab-content="problem">
-                        ${(thought.problemText || thought.description || '').split('\n\n').map(p => `<p>${p}</p>`).join('')}
-                    </div>
-                    <div class="ie-thought-tab-content ${isInternalized ? 'ie-thought-tab-content-active' : ''}" data-tab-content="solution">
-                        ${isInternalized || isResearching 
-                            ? (thought.solutionText || thought.flavorText || '').split('\n\n').map(p => `<p>${p}</p>`).join('')
-                            : '<p class="ie-solution-locked"><i class="fa-solid fa-lock"></i> Complete research to unlock</p>'
-                        }
-                    </div>
+            <div class="ie-thought-modal-tabs">
+                <button class="ie-thought-tab ${!isInternalized ? 'ie-thought-tab-active' : ''}" data-tab="problem">PROBLEM</button>
+                <button class="ie-thought-tab ${isInternalized ? 'ie-thought-tab-active' : ''}" data-tab="solution">SOLUTION</button>
+            </div>
+
+            <div class="ie-thought-modal-content">
+                <div class="ie-thought-tab-content ${!isInternalized ? 'ie-thought-tab-content-active' : ''}" data-tab-content="problem">
+                    ${(thought.problemText || thought.description || '').split('\n\n').map(p => `<p>${p}</p>`).join('')}
+                </div>
+                <div class="ie-thought-tab-content ${isInternalized ? 'ie-thought-tab-content-active' : ''}" data-tab-content="solution">
+                    ${isInternalized || isResearching 
+                        ? (thought.solutionText || thought.flavorText || '').split('\n\n').map(p => `<p>${p}</p>`).join('')
+                        : '<p class="ie-solution-locked"><i class="fa-solid fa-lock"></i> Complete research to unlock</p>'
+                    }
                 </div>
             </div>
         </div>
