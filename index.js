@@ -47,8 +47,11 @@ import {
     abandonResearch,
     advanceResearch,
     dismissThought,
+    forgetThought,
+    addCustomThought,
     incrementMessageCount,
-    getResearchPenalties
+    getResearchPenalties,
+    MAX_INTERNALIZED_THOUGHTS
 } from './systems/cabinet.js';
 
 import {
@@ -250,10 +253,12 @@ async function triggerVoices(messageText = null) {
 // ═══════════════════════════════════════════════════════════════
 
 function handleStartResearch(thoughtId) {
-    const success = startResearch(thoughtId, getContext());
-    if (success) {
+    const result = startResearch(thoughtId, getContext());
+    if (result === true) {
         showToast('Research begun...', 'info');
         refreshCabinetTab();
+    } else if (result?.error === 'cap_reached') {
+        showToast('Cabinet full! Forget a thought first.', 'error');
     } else {
         showToast('No available research slots', 'error');
     }
@@ -269,13 +274,128 @@ function handleAbandonResearch(thoughtId) {
     refreshCabinetTab();
 }
 
+function handleForgetThought(thoughtId) {
+    if (confirm('Forget this thought? Its bonuses will be removed.')) {
+        forgetThought(thoughtId, getContext());
+        refreshAttributesDisplay();
+        refreshCabinetTab();
+        showToast('Thought forgotten...', 'info');
+    }
+}
+
+async function handleGenerateThought(prompt, fromContext) {
+    const context = getContext();
+    
+    // Get context from chat if requested
+    let contextText = '';
+    if (fromContext) {
+        const recentMessages = context?.chat?.slice(-5) || [];
+        contextText = recentMessages.map(m => m.mes).join('\n');
+    }
+    
+    if (!prompt && !contextText) {
+        showToast('Enter a concept or check "From chat"', 'error');
+        return;
+    }
+
+    const loadingToast = showToast('Generating thought...', 'loading');
+
+    try {
+        const skillList = Object.entries(SKILLS)
+            .map(([id, s]) => `${id}: ${s.name}`)
+            .join(', ');
+
+        const systemPrompt = `You are a Disco Elysium thought generator. Create a single thought for the Thought Cabinet system.
+
+Available skills for bonuses: ${skillList}
+
+Output ONLY valid JSON with this exact structure:
+{
+  "name": "Evocative 2-4 word name",
+  "icon": "single emoji",
+  "description": "1-2 sentence cryptic/philosophical description of the obsession",
+  "researchTime": 8,
+  "researchPenalty": {"skill_id": -1},
+  "internalizedBonus": {"skill_id": 2},
+  "flavorText": "1-2 sentence poetic completion text in second person"
+}
+
+Rules:
+- Names should be evocative and slightly absurd like "Volumetric Shit Compressor" or "Finger on the Eject Button"
+- Research penalties should be small (-1 to -2) to 1-2 skills
+- Internalized bonuses should be +1 to +3 to 1-2 skills that thematically fit
+- Research time 6-15 (higher = more profound thoughts)
+- Flavor text is what the player sees when research completes - make it meaningful
+- Match the darkly humorous, philosophical tone of Disco Elysium`;
+
+        const userPrompt = prompt 
+            ? `Create a thought about: ${prompt}${contextText ? `\n\nRecent scene context:\n${contextText}` : ''}`
+            : `Create a thought based on this scene:\n${contextText}`;
+
+        const response = await fetch(extensionSettings.apiEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${extensionSettings.apiKey}`
+            },
+            body: JSON.stringify({
+                model: extensionSettings.model,
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt }
+                ],
+                max_tokens: 500,
+                temperature: 0.9
+            })
+        });
+
+        hideToast(loadingToast);
+
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const content = data.choices?.[0]?.message?.content || '';
+        
+        // Parse JSON from response (handle markdown code blocks)
+        let jsonStr = content;
+        const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (jsonMatch) jsonStr = jsonMatch[1];
+        
+        const thought = JSON.parse(jsonStr.trim());
+        
+        // Validate required fields
+        if (!thought.name || !thought.icon || !thought.description) {
+            throw new Error('Invalid thought format');
+        }
+
+        // Add the custom thought
+        const added = addCustomThought(thought, context);
+        
+        // Clear the input
+        const promptInput = document.getElementById('ie-thought-prompt');
+        if (promptInput) promptInput.value = '';
+
+        showToast(`Discovered: ${thought.name}`, 'success');
+        refreshCabinetTab();
+
+    } catch (error) {
+        hideToast(loadingToast);
+        console.error('[Inland Empire] Thought generation failed:', error);
+        showToast(`Failed: ${error.message}`, 'error', 5000);
+    }
+}
+
 function refreshCabinetTab() {
     const container = document.getElementById('ie-cabinet-content');
     if (container) {
         renderThoughtCabinet(container, {
             onResearch: handleStartResearch,
             onDismiss: handleDismissThought,
-            onAbandon: handleAbandonResearch
+            onAbandon: handleAbandonResearch,
+            onForget: handleForgetThought,
+            onGenerate: handleGenerateThought
         });
     }
 }

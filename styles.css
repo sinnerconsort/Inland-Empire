@@ -750,6 +750,106 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   THOUGHT CABINET EXTRAS
+   ═══════════════════════════════════════════════════════════════ */
+
+.ie-cap-reached {
+    color: var(--ie-accent-red) !important;
+}
+
+.ie-cap-warning {
+    background: rgba(244, 67, 54, 0.15);
+    color: var(--ie-accent-red);
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.ie-thought-card .ie-btn-forget {
+    margin-left: auto;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.ie-thought-card:hover .ie-btn-forget {
+    opacity: 1;
+}
+
+.ie-thought-custom {
+    border-left: 3px solid var(--ie-accent-blue);
+}
+
+.ie-custom-badge {
+    font-size: 9px;
+    background: var(--ie-accent-blue);
+    color: var(--ie-bg-primary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: auto;
+}
+
+/* Thought Generator */
+.ie-thought-generator-section {
+    border: 1px dashed var(--ie-accent-purple);
+}
+
+.ie-thought-generator {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ie-thought-generator textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--ie-border);
+    background: var(--ie-bg-tertiary);
+    color: var(--ie-text-primary);
+    font-size: 13px;
+    resize: vertical;
+    min-height: 50px;
+}
+
+.ie-thought-generator textarea:focus {
+    outline: none;
+    border-color: var(--ie-accent-purple);
+}
+
+.ie-btn-generate-thought {
+    align-self: flex-end;
+}
+
+.ie-checkbox-sm {
+    font-size: 11px;
+}
+
+.ie-checkbox-sm input {
+    width: 14px;
+    height: 14px;
+}
+
+.ie-thought-generating {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px;
+    color: var(--ie-text-secondary);
+}
+
+.ie-thought-generating i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
    PROFILES
    ═══════════════════════════════════════════════════════════════ */
 
