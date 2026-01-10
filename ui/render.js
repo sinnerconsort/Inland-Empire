@@ -183,18 +183,46 @@ export function updatePointsRemaining(container, points) {
 export function renderStatusGrid(container, onToggle) {
     if (!container) return;
 
-    container.innerHTML = Object.entries(STATUS_EFFECTS).map(([statusId, status]) => {
-        const isActive = activeStatuses.has(statusId);
+    // Group statuses by category
+    const categories = {
+        physical: { name: 'Physical', statuses: [] },
+        mental: { name: 'Mental', statuses: [] },
+        archetype: { name: 'Cop Archetypes', statuses: [] }
+    };
 
-        return `
-            <div class="ie-status-card ${isActive ? 'ie-status-active' : ''}" 
-                 data-status="${statusId}" 
-                 title="${status.boosts.join(', ')} ↑ / ${status.debuffs.join(', ')} ↓">
-                <span class="ie-status-icon">${status.icon}</span>
-                <span class="ie-status-name">${status.name}</span>
-            </div>
-        `;
-    }).join('');
+    Object.entries(STATUS_EFFECTS).forEach(([statusId, status]) => {
+        const cat = categories[status.category] || categories.mental;
+        cat.statuses.push({ id: statusId, ...status });
+    });
+
+    let html = '';
+
+    for (const [catId, category] of Object.entries(categories)) {
+        if (category.statuses.length === 0) continue;
+
+        html += `<div class="ie-status-category">
+            <div class="ie-status-category-header">${category.name}</div>
+            <div class="ie-status-grid ${catId === 'archetype' ? 'ie-archetype-grid' : ''}">`;
+
+        for (const status of category.statuses) {
+            const isActive = activeStatuses.has(status.id);
+            const boostList = status.boosts.map(s => SKILLS[s]?.signature || s).join(', ');
+            const debuffList = status.debuffs.map(s => SKILLS[s]?.signature || s).join(', ');
+
+            html += `
+                <div class="ie-status-card ${isActive ? 'ie-status-active' : ''} ${catId === 'archetype' ? 'ie-archetype-card' : ''}" 
+                     data-status="${status.id}" 
+                     title="${status.description}&#10;&#10;↑ ${boostList}&#10;↓ ${debuffList}">
+                    <span class="ie-status-icon">${status.icon}</span>
+                    <span class="ie-status-name">${status.name}</span>
+                </div>
+            `;
+        }
+
+        html += `</div></div>`;
+    }
+
+    container.innerHTML = html;
 
     container.querySelectorAll('.ie-status-card').forEach(card => {
         card.addEventListener('click', () => {

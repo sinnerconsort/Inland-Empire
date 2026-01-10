@@ -87,20 +87,24 @@ export function createPsychePanel() {
                 </div>
                 <div class="ie-section">
                     <div class="ie-section-header"><span>Toggle Status Effects</span></div>
-                    <div class="ie-status-grid" id="ie-status-grid"></div>
+                    <div id="ie-status-grid"></div>
                 </div>
                 <div class="ie-section">
                     <div class="ie-section-header"><span>Ancient Voices</span></div>
-                    <div class="ie-ancient-voices-info">
+                    <div class="ie-ancient-voices-info" id="ie-ancient-voices-info">
                         <div class="ie-ancient-voice-item">
                             <span class="ie-ancient-icon">🦎</span>
-                            <span class="ie-ancient-name">Ancient Reptilian Brain</span>
-                            <span class="ie-ancient-triggers">Triggers: Dying, Starving, Terrified, Aroused</span>
+                            <div class="ie-ancient-details">
+                                <span class="ie-ancient-name">Ancient Reptilian Brain</span>
+                                <span class="ie-ancient-triggers">Triggers: The Pale, Dying, Terrified, Apocalypse Cop</span>
+                            </div>
                         </div>
                         <div class="ie-ancient-voice-item">
                             <span class="ie-ancient-icon">❤️‍🔥</span>
-                            <span class="ie-ancient-name">Limbic System</span>
-                            <span class="ie-ancient-triggers">Triggers: Enraged, Grieving, Manic</span>
+                            <div class="ie-ancient-details">
+                                <span class="ie-ancient-name">Limbic System</span>
+                                <span class="ie-ancient-triggers">Triggers: The Pale, Tequila Sunset, Homo-Sexual Underground, Enraged, The Expression</span>
+                            </div>
                         </div>
                     </div>
                 </div>
