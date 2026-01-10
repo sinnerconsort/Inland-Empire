@@ -4,7 +4,7 @@
  */
 
 import { ATTRIBUTES, SKILLS } from '../data/skills.js';
-import { STATUS_EFFECTS, ARCHETYPE_IDS } from '../data/statuses.js';
+import { STATUS_EFFECTS, ARCHETYPE_IDS, SPINAL_CORD_COMBO } from '../data/statuses.js';
 
 // ═══════════════════════════════════════════════════════════════
 // STATE VARIABLES
@@ -183,11 +183,13 @@ export function getEffectiveSkillLevel(skillId, researchPenalties = {}) {
 
 export function getActiveAncientVoices() {
     const ancientVoices = new Set();
+    
+    // Check individual status triggers
     for (const statusId of activeStatuses) {
         const status = STATUS_EFFECTS[statusId];
         if (status && status.ancientVoice) {
             if (status.ancientVoice === 'both') {
-                // Special case: triggers both ancient voices
+                // Special case: The Pale triggers both ancient voices
                 ancientVoices.add('ancient_reptilian_brain');
                 ancientVoices.add('limbic_system');
             } else {
@@ -195,6 +197,13 @@ export function getActiveAncientVoices() {
             }
         }
     }
+    
+    // Check for Spinal Cord combo (party state: Tequila Sunset + Revacholian Courage)
+    const hasAllCombo = SPINAL_CORD_COMBO.every(id => activeStatuses.has(id));
+    if (hasAllCombo) {
+        ancientVoices.add('spinal_cord');
+    }
+    
     return ancientVoices;
 }
 
