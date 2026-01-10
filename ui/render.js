@@ -16,7 +16,7 @@ import {
     thoughtCabinet,
     themeCounters
 } from '../systems/state.js';
-import { getResearchPenalties, getTopThemes } from '../systems/cabinet.js';
+import { getResearchPenalties, getTopThemes, thoughtCabinet } from '../systems/cabinet.js';
 
 // ═══════════════════════════════════════════════════════════════
 // VOICE RENDERING
@@ -671,7 +671,11 @@ export function renderThoughtCabinet(container, callbacks = {}) {
 // Full thought modal/expanded view
 export function renderThoughtModal(thoughtId, container) {
     const thought = getThought(thoughtId);
-    if (!thought || !container) return;
+    
+    if (!thought || !container) {
+        console.warn('[Inland Empire] Cannot render modal - thought or container missing');
+        return null;
+    }
 
     const isInternalized = thoughtCabinet.internalized.includes(thoughtId);
     const isResearching = thoughtId in thoughtCabinet.researching;
