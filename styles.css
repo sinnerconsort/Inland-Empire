@@ -281,7 +281,7 @@
 
 [data-tab-content="settings"] .ie-section {
     background: rgba(29, 38, 51, 0.6);
-    border-left: 3px solid #90511d;
+    border-left: 3px solid #9b9e99;
     backdrop-filter: blur(4px);
 }
 
@@ -291,7 +291,7 @@
 }
 
 [data-tab-content="settings"] .ie-section-header span::before {
-    color: #90511d;
+    color: #1c2630;
 }
 
 [data-tab-content="settings"] .ie-form-group label {
@@ -318,7 +318,7 @@
 }
 
 [data-tab-content="settings"] .ie-checkbox input {
-    accent-color: #90511d;
+    accent-color: #9b9e99;
 }
 
 [data-tab-content="settings"] .ie-btn {
@@ -366,6 +366,71 @@
 .ie-tab[data-tab="settings"].ie-tab-active {
     color: #90511d;
     border-bottom-color: #90511d;
+}
+
+/* Range/slider inputs in settings */
+[data-tab-content="settings"] input[type="range"] {
+    accent-color: #9b9e99;
+    background: #1c2630;
+}
+
+[data-tab-content="settings"] input[type="range"]::-webkit-slider-runnable-track {
+    background: #1c2630;
+}
+
+[data-tab-content="settings"] input[type="range"]::-webkit-slider-thumb {
+    background: #9b9e99;
+}
+
+/* Override any remaining attribute colors in settings */
+[data-tab-content="settings"] .ie-attribute-card,
+[data-tab-content="settings"] .ie-attribute-block {
+    border-left-color: #1c2630;
+}
+
+[data-tab-content="settings"] [style*="border-left-color"],
+[data-tab-content="settings"] [style*="border-color"] {
+    border-left-color: #9b9e99 !important;
+}
+
+/* Nested/sub-options in settings - override purple borders */
+[data-tab-content="settings"] .ie-auto-gen-options {
+    border-left-color: #9b9e99;
+}
+
+/* Force checkbox styling in settings */
+[data-tab-content="settings"] input[type="checkbox"] {
+    accent-color: #9b9e99 !important;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #9b9e99;
+    border-radius: 4px;
+    background: rgba(13, 13, 18, 0.8);
+    cursor: pointer;
+    position: relative;
+}
+
+[data-tab-content="settings"] input[type="checkbox"]:checked {
+    background: #9b9e99;
+    border-color: #9b9e99;
+}
+
+[data-tab-content="settings"] input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #0d0d12;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Textarea focus in settings */
+[data-tab-content="settings"] textarea:focus {
+    border-color: #90511d !important;
 }
 
 /* Panel content wrapper */
