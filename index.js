@@ -448,6 +448,7 @@ function loadSettingsToUI() {
 
     // Checkboxes
     const checks = {
+        'ie-enabled': extensionSettings.enabled,
         'ie-show-dice-rolls': extensionSettings.showDiceRolls,
         'ie-show-failed-checks': extensionSettings.showFailedChecks,
         'ie-auto-trigger': extensionSettings.autoTrigger,
@@ -473,6 +474,7 @@ function refreshSettingsUI() {
 
 function saveSettingsFromUI() {
     updateSettings({
+        enabled: document.getElementById('ie-enabled')?.checked !== false,
         apiEndpoint: document.getElementById('ie-api-endpoint')?.value || '',
         apiKey: document.getElementById('ie-api-key')?.value || '',
         model: document.getElementById('ie-model')?.value || 'glm-4-plus',

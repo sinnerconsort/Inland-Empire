@@ -173,6 +173,23 @@
     padding: 12px;
 }
 
+.ie-section-primary {
+    background: linear-gradient(135deg, var(--ie-bg-secondary), var(--ie-bg-tertiary));
+    border: 1px solid var(--ie-accent-purple);
+    text-align: center;
+    padding: 16px;
+}
+
+.ie-checkbox-large {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.ie-checkbox-large input {
+    width: 20px;
+    height: 20px;
+}
+
 .ie-section-header {
     display: flex;
     justify-content: space-between;
