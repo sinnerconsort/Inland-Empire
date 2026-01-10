@@ -51,6 +51,7 @@ import {
     addCustomThought,
     incrementMessageCount,
     getResearchPenalties,
+    getTopThemes,
     MAX_INTERNALIZED_THOUGHTS
 } from './systems/cabinet.js';
 
@@ -101,6 +102,10 @@ const extensionFolderPath = `scripts/extensions/third-party/${extensionName}`;
 
 // SillyTavern context reference
 let stContext = null;
+
+// Auto-generation tracking
+let messagesSinceAutoGen = 0;
+let isAutoGenerating = false;
 
 // ═══════════════════════════════════════════════════════════════
 // SILLYTAVERN INTEGRATION
@@ -210,6 +215,12 @@ async function triggerVoices(messageText = null) {
             showDiscoveryToast(thought, handleStartResearch, handleDismissThought);
         }
 
+        // Check for auto-generation of custom thoughts
+        messagesSinceAutoGen++;
+        if (shouldAutoGenerateThought(newThoughts.length)) {
+            autoGenerateThought(text);
+        }
+
         // Combine results
         const allVoices = [];
 
@@ -284,7 +295,166 @@ function handleForgetThought(thoughtId) {
     }
 }
 
-async function handleGenerateThought(prompt, fromContext, perspective = 'observer') {
+// ═══════════════════════════════════════════════════════════════
+// AUTO-GENERATION LOGIC
+// ═══════════════════════════════════════════════════════════════
+
+function shouldAutoGenerateThought(builtInDiscoveredCount) {
+    // Check if auto-generation is enabled
+    if (!extensionSettings.autoGenerateThoughts) return false;
+    
+    // Don't auto-gen if we're already generating
+    if (isAutoGenerating) return false;
+    
+    // Check cooldown
+    const cooldown = extensionSettings.autoGenCooldown || 5;
+    if (messagesSinceAutoGen < cooldown) return false;
+    
+    // If a built-in thought was just discovered, don't also auto-gen
+    if (builtInDiscoveredCount > 0) return false;
+    
+    // Check theme threshold
+    const topThemes = getTopThemes(1);
+    const threshold = extensionSettings.autoGenThreshold || 10;
+    if (topThemes.length === 0 || topThemes[0].count < threshold) return false;
+    
+    // Check if discovered thoughts are piling up (don't flood)
+    if (thoughtCabinet.discovered.length >= 5) return false;
+    
+    return true;
+}
+
+async function autoGenerateThought(recentMessageText) {
+    isAutoGenerating = true;
+    messagesSinceAutoGen = 0;
+    
+    const context = getContext();
+    const perspective = extensionSettings.autoGenPerspective || 'observer';
+    const playerContext = extensionSettings.autoGenPlayerContext || '';
+    
+    // Get recent chat context
+    const recentMessages = context?.chat?.slice(-5) || [];
+    const contextText = recentMessages.map(m => m.mes).join('\n');
+    
+    // Get top themes for the prompt
+    const topThemes = getTopThemes(3);
+    const themeHint = topThemes.map(t => `${t.name}: ${t.count}`).join(', ');
+    
+    console.log('[Inland Empire] Auto-generating thought. Themes:', themeHint);
+
+    try {
+        const skillList = Object.entries(SKILLS)
+            .map(([id, s]) => `${id}: ${s.name}`)
+            .join(', ');
+
+        // Build player identity string
+        const playerIdentity = playerContext 
+            ? `The player character is: ${playerContext}.`
+            : 'The player character is an outside observer.';
+
+        // Perspective-specific instructions
+        const perspectiveInstructions = perspective === 'observer'
+            ? `CRITICAL PERSPECTIVE - OBSERVER MODE:
+${playerIdentity}
+
+IMPORTANT: The thought belongs to the PLAYER CHARACTER, NOT any NPC in the scene.
+- If there's a killer/villain/antagonist in the scene, the player is NOT that character
+- The thought is about the player's REACTION to witnessing this NPC's behavior
+- "Why does part of you understand them?" NOT "Why do you do this?"
+- The player observes, questions, wrestles with what they've seen
+- Never write from the perpetrator's POV - write from the witness's POV`
+            : `CRITICAL PERSPECTIVE - PARTICIPANT MODE:
+${playerIdentity}
+
+- The thought emerges FROM the mindset shown in the scene
+- The player IS the character having these thoughts naturally
+- No external judgment - this is how they genuinely think`;
+
+        const systemPrompt = `You are a Disco Elysium thought generator. Create a single thought for the Thought Cabinet system.
+
+Available skills for bonuses: ${skillList}
+
+${perspectiveInstructions}
+
+The dominant themes in this conversation are: ${themeHint}
+Generate a thought that reflects these themes.
+
+Output ONLY valid JSON with this exact structure:
+{
+  "name": "Evocative 2-4 word name",
+  "icon": "single emoji",
+  "category": "philosophy|identity|obsession|survival|mental|social|emotion",
+  "researchTime": 8,
+  "researchBonus": {
+    "skill_id": {"value": -1, "flavor": "Short reason for penalty"}
+  },
+  "internalizedBonus": {
+    "skill_id": {"value": 2, "flavor": "Short thematic label"}
+  },
+  "problemText": "3-4 paragraphs of stream-of-consciousness questioning.",
+  "solutionText": "2-3 paragraphs of resolution."
+}
+
+TONE: Match Disco Elysium's darkly humorous, philosophical tone. Use second person.`;
+
+        const userPrompt = `Generate a thought based on this scene:\n${contextText}`;
+
+        const response = await fetch(extensionSettings.apiEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${extensionSettings.apiKey}`
+            },
+            body: JSON.stringify({
+                model: extensionSettings.model,
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt }
+                ],
+                max_tokens: 1500,
+                temperature: 0.9
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const content = data.choices?.[0]?.message?.content || '';
+        
+        // Parse JSON from response
+        let jsonStr = content;
+        const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (jsonMatch) jsonStr = jsonMatch[1];
+        
+        const thought = JSON.parse(jsonStr.trim());
+        
+        if (!thought.name || !thought.icon || !thought.problemText) {
+            throw new Error('Invalid thought format');
+        }
+
+        if (!thought.category) {
+            thought.category = 'philosophy';
+        }
+
+        // Add the custom thought
+        addCustomThought(thought, context);
+        
+        // Show discovery toast
+        showDiscoveryToast(thought, handleStartResearch, handleDismissThought);
+        
+        console.log('[Inland Empire] Auto-generated thought:', thought.name);
+        refreshCabinetTab();
+
+    } catch (error) {
+        console.error('[Inland Empire] Auto-generation failed:', error);
+    } finally {
+        isAutoGenerating = false;
+    }
+}
+
+async function handleGenerateThought(prompt, fromContext, perspective = 'observer', playerContext = '') {
     const context = getContext();
     
     // Get context from chat if requested
@@ -306,19 +476,31 @@ async function handleGenerateThought(prompt, fromContext, perspective = 'observe
             .map(([id, s]) => `${id}: ${s.name}`)
             .join(', ');
 
+        // Build player identity string
+        const playerIdentity = playerContext 
+            ? `The player character is: ${playerContext}.`
+            : 'The player character is an outside observer.';
+
         // Perspective-specific instructions
         const perspectiveInstructions = perspective === 'observer'
             ? `CRITICAL PERSPECTIVE - OBSERVER MODE:
-- The thought is from a PLAYER CHARACTER who is OBSERVING or PROCESSING events
-- If the scene involves another character's worldview (a killer, ideologue, etc.), the thought is about WRESTLING WITH that worldview
-- Questions like "Why do you understand this? What does it say about you?"
-- The player is an outsider looking in, processing what they've witnessed
-- Like Harry Du Bois trying to make sense of a chaotic world
-- Second person "you" refers to the player character, not the NPCs`
+${playerIdentity}
+
+IMPORTANT: The thought belongs to the PLAYER CHARACTER, NOT any NPC in the scene.
+- If there's a killer/villain/antagonist in the scene, the player is NOT that character
+- The thought is about the player's REACTION to witnessing this NPC's behavior
+- "Why does part of you understand them?" NOT "Why do you do this?"
+- "What does it mean that you can see their logic?" NOT "The hunt is boring"
+- The player observes, questions, wrestles with what they've seen
+- They might be disturbed, fascinated, horrified, or darkly intrigued - but they are OUTSIDE looking IN
+- Never write from the perpetrator's POV - write from the witness's POV
+- Example: Instead of "You feel the thrill of the hunt" write "You watched them hunt. And something in you understood the thrill. That's what disturbs you."`
             : `CRITICAL PERSPECTIVE - PARTICIPANT MODE:
+${playerIdentity}
+
 - The thought emerges FROM the mindset shown in the scene
-- If the scene shows a particular worldview, the thought EMBODIES that perspective
 - The player IS the character having these thoughts naturally
+- If they're a killer, the thought is about their philosophy of killing
 - No external judgment or wrestling - this is how they genuinely think
 - Second person "you" is someone fully inhabiting this headspace`;
 
@@ -623,7 +805,11 @@ function loadSettingsToUI() {
         'ie-character-pronouns': extensionSettings.characterPronouns,
         'ie-character-context': extensionSettings.characterContext,
         'ie-intrusive-chance': (extensionSettings.intrusiveChance || 0.15) * 100,
-        'ie-object-chance': (extensionSettings.objectVoiceChance || 0.4) * 100
+        'ie-object-chance': (extensionSettings.objectVoiceChance || 0.4) * 100,
+        'ie-auto-gen-threshold': extensionSettings.autoGenThreshold || 10,
+        'ie-auto-gen-cooldown': extensionSettings.autoGenCooldown || 5,
+        'ie-auto-gen-perspective': extensionSettings.autoGenPerspective || 'observer',
+        'ie-auto-gen-player-context': extensionSettings.autoGenPlayerContext || ''
     };
 
     for (const [id, value] of Object.entries(els)) {
@@ -642,6 +828,7 @@ function loadSettingsToUI() {
         'ie-object-voices-enabled': extensionSettings.objectVoicesEnabled,
         'ie-thought-discovery-enabled': extensionSettings.thoughtDiscoveryEnabled,
         'ie-auto-discover-thoughts': extensionSettings.autoDiscoverThoughts,
+        'ie-auto-generate-thoughts': extensionSettings.autoGenerateThoughts,
         'ie-show-in-chat': extensionSettings.showInChat !== false
     };
 
@@ -649,6 +836,10 @@ function loadSettingsToUI() {
         const el = document.getElementById(id);
         if (el) el.checked = value !== false;
     }
+
+    // Show/hide auto-gen options
+    const autoGenOptions = document.querySelectorAll('.ie-auto-gen-options');
+    autoGenOptions.forEach(el => el.classList.toggle('ie-visible', extensionSettings.autoGenerateThoughts));
 
     updatePOVOptions();
 }
@@ -685,6 +876,11 @@ function saveSettingsFromUI() {
         objectVoiceChance: (parseInt(document.getElementById('ie-object-chance')?.value) || 40) / 100,
         thoughtDiscoveryEnabled: document.getElementById('ie-thought-discovery-enabled')?.checked !== false,
         autoDiscoverThoughts: document.getElementById('ie-auto-discover-thoughts')?.checked !== false,
+        autoGenerateThoughts: document.getElementById('ie-auto-generate-thoughts')?.checked || false,
+        autoGenThreshold: parseInt(document.getElementById('ie-auto-gen-threshold')?.value) || 10,
+        autoGenCooldown: parseInt(document.getElementById('ie-auto-gen-cooldown')?.value) || 5,
+        autoGenPerspective: document.getElementById('ie-auto-gen-perspective')?.value || 'observer',
+        autoGenPlayerContext: document.getElementById('ie-auto-gen-player-context')?.value || '',
         showInChat: document.getElementById('ie-show-in-chat')?.checked !== false
     });
 
@@ -834,6 +1030,12 @@ function bindEvents() {
 
     // POV change
     document.getElementById('ie-pov-style')?.addEventListener('change', updatePOVOptions);
+
+    // Auto-gen toggle
+    document.getElementById('ie-auto-generate-thoughts')?.addEventListener('change', (e) => {
+        const autoGenOptions = document.querySelectorAll('.ie-auto-gen-options');
+        autoGenOptions.forEach(el => el.classList.toggle('ie-visible', e.target.checked));
+    });
 
     // Apply build
     document.querySelector('.ie-btn-apply-build')?.addEventListener('click', applyBuild);

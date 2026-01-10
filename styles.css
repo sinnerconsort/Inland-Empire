@@ -1064,6 +1064,42 @@
     color: var(--ie-bg-primary);
 }
 
+.ie-player-context-row {
+    margin-bottom: 8px;
+}
+
+.ie-player-context-row input {
+    width: 100%;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--ie-border);
+    background: var(--ie-bg-tertiary);
+    color: var(--ie-text-primary);
+    font-size: 12px;
+}
+
+.ie-player-context-row input:focus {
+    outline: none;
+    border-color: var(--ie-accent-purple);
+}
+
+.ie-player-context-row input::placeholder {
+    color: var(--ie-text-muted);
+    font-style: italic;
+}
+
+/* Auto-gen options (hidden by default) */
+.ie-auto-gen-options {
+    display: none;
+    padding-left: 20px;
+    border-left: 2px solid var(--ie-accent-purple);
+    margin-left: 10px;
+}
+
+.ie-auto-gen-options.ie-visible {
+    display: block;
+}
+
 .ie-thought-generator {
     display: flex;
     flex-direction: column;
