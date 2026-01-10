@@ -457,19 +457,39 @@ export function buildChorusPrompt(voiceData, context, intrusiveData = null) {
     const pronouns = extensionSettings.characterPronouns || 'they';
     const characterContext = extensionSettings.characterContext || '';
 
-    // POV instruction
+    // POV instruction - must clearly establish WHO the character is
     let povInstruction;
+    const charIdentity = charName || 'the character';
+    const pronounMap = {
+        'she': { subject: 'she', object: 'her', possessive: 'her' },
+        'he': { subject: 'he', object: 'him', possessive: 'his' },
+        'they': { subject: 'they', object: 'them', possessive: 'their' }
+    };
+    const charPronouns = pronounMap[pronouns] || pronounMap['they'];
+    
     if (povStyle === 'third') {
-        povInstruction = `Write in THIRD PERSON about ${charName || 'the character'}. Use "${charName || pronouns}" - NEVER "you".`;
+        povInstruction = `Write in THIRD PERSON about ${charIdentity}. Use "${charIdentity}" or "${charPronouns.subject}/${charPronouns.object}" - NEVER "you".`;
     } else if (povStyle === 'first') {
         povInstruction = `Write in FIRST PERSON. Use "I/me/my" - NEVER "you".`;
     } else {
-        povInstruction = `Write in SECOND PERSON. Address the character as "you".`;
+        // Second person - need to be VERY clear about identity
+        povInstruction = `Write in SECOND PERSON. 
+CRITICAL IDENTITY RULES:
+- "You" = ${charIdentity} (${charPronouns.subject}/${charPronouns.object}/${charPronouns.possessive})
+- These voices exist INSIDE ${charIdentity}'s head, commenting on what ${charPronouns.subject} observes
+- When the voices address ${charIdentity}, use "you/your"
+- Other people in the scene are NOT "you" - use THEIR pronouns (he/him, she/her, they/them as appropriate)
+- If ${charIdentity} observes someone else, describe THEM in third person, not "you"`;
     }
 
-    // Context section
-    let contextSection = characterContext.trim() ?
-        `\nCHARACTER CONTEXT:\n${characterContext}\n` : '';
+    // Context section - make it clear this defines WHO "you" is
+    let contextSection = '';
+    if (characterContext.trim()) {
+        contextSection = `
+WHO "YOU" IS (the character whose head these voices are in):
+${characterContext}
+---`;
+    }
 
     // Status context
     let statusContext = '';
