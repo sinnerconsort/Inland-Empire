@@ -520,6 +520,11 @@ export function parseChorusResponse(response, voiceData) {
 // ═══════════════════════════════════════════════════════════════
 
 export async function generateVoices(selectedSkills, context, intrusiveData = null) {
+    if (!selectedSkills || selectedSkills.length === 0) {
+        console.error('[Inland Empire] generateVoices called with no skills');
+        return [];
+    }
+
     const researchPenalties = getResearchPenalties();
 
     // Prepare voice data with checks
@@ -546,9 +551,13 @@ export async function generateVoices(selectedSkills, context, intrusiveData = nu
             ANCIENT_VOICES[selected.skillId] :
             SKILLS[selected.skillId];
 
+        if (!skill) {
+            console.error('[Inland Empire] Could not find skill:', selected.skillId);
+        }
+
         return {
             ...selected,
-            skill,
+            skill: skill || { name: selected.skillId, signature: selected.skillId, color: '#888', personality: 'Unknown' },
             checkResult,
             effectiveLevel: selected.isAncient ? 6 : getEffectiveSkillLevel(selected.skillId, researchPenalties)
         };
@@ -559,20 +568,11 @@ export async function generateVoices(selectedSkills, context, intrusiveData = nu
 
     try {
         const response = await callAPI(chorusPrompt.system, chorusPrompt.user);
-        return parseChorusResponse(response, voiceData);
+        const parsed = parseChorusResponse(response, voiceData);
+        console.log('[Inland Empire] Generated', parsed.length, 'voice responses');
+        return parsed;
     } catch (error) {
         console.error('[Inland Empire] Chorus generation failed:', error);
-
-        // Return fallback
-        return voiceData.map(v => ({
-            skillId: v.skillId,
-            skillName: v.skill.name,
-            signature: v.skill.signature,
-            color: v.skill.color,
-            content: '*static*',
-            checkResult: v.checkResult,
-            isAncient: v.isAncient,
-            success: false
-        }));
+        throw error; // Re-throw so triggerVoices can show the error
     }
 }
