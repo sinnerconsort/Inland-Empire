@@ -1,10 +1,20 @@
 /**
  * Inland Empire - Voice Generation System
  * Context analysis, voice selection, API calls, and prompt building
+ * 
+ * Now with CASCADE SYSTEM - skills react to each other!
  */
 
 import { SKILLS, ANCIENT_VOICES } from '../data/skills.js';
 import { INTRUSIVE_THOUGHTS, OBJECT_VOICES } from '../data/voices.js';
+import {
+    SKILL_DYNAMICS,
+    CASCADE_RULES,
+    getCascadeResponders,
+    getReactionLine,
+    getNickname,
+    getSkillDynamics
+} from '../data/relationships.js';
 import {
     extensionSettings,
     activeStatuses,
@@ -109,7 +119,6 @@ export function calculateSkillRelevance(skillId, context) {
 }
 
 function getSkillModifier(skillId, researchPenalties) {
-    // Import from state would create circular dependency, so inline simple version
     let modifier = 0;
     if (researchPenalties[skillId]) {
         modifier += researchPenalties[skillId];
@@ -118,7 +127,7 @@ function getSkillModifier(skillId, researchPenalties) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// VOICE SELECTION
+// VOICE SELECTION (with CASCADE support)
 // ═══════════════════════════════════════════════════════════════
 
 export function selectSpeakingSkills(context, options = {}) {
@@ -153,7 +162,7 @@ export function selectSpeakingSkills(context, options = {}) {
         .filter(r => r.score >= 0.3)
         .sort((a, b) => b.score - a.score);
 
-    // Determine number of voices based on intensity
+    // Determine number of PRIMARY voices based on intensity
     const intensity = Math.max(
         context.emotionalIntensity,
         context.dangerLevel,
@@ -161,21 +170,59 @@ export function selectSpeakingSkills(context, options = {}) {
     );
     const targetVoices = Math.round(minVoices + (maxVoices - minVoices) * intensity);
 
-    // Select skills
-    const selected = [...ancientVoicesToSpeak];
+    // Select PRIMARY skills
+    const primarySkills = [];
     for (const relevance of allRelevance) {
-        if (selected.length >= targetVoices + ancientVoicesToSpeak.length) break;
+        if (primarySkills.length >= targetVoices) break;
         if (Math.random() < relevance.score * 0.8 + 0.2) {
-            selected.push(relevance);
+            primarySkills.push({ ...relevance, isPrimary: true });
         }
     }
 
     // Ensure minimum voices
-    while (selected.filter(s => !s.isAncient).length < minVoices && allRelevance.length > 0) {
-        const next = allRelevance.find(r => !selected.find(s => s.skillId === r.skillId));
-        if (next) selected.push(next);
+    while (primarySkills.length < minVoices && allRelevance.length > 0) {
+        const next = allRelevance.find(r => !primarySkills.find(s => s.skillId === r.skillId));
+        if (next) primarySkills.push({ ...next, isPrimary: true });
         else break;
     }
+
+    // ═══════════════════════════════════════════════════════════
+    // CASCADE DETECTION - Who wants to respond?
+    // ═══════════════════════════════════════════════════════════
+    const cascadeSkills = [];
+    
+    for (const primary of primarySkills) {
+        const responders = getCascadeResponders(primary.skillId, context.message);
+        
+        for (const responder of responders) {
+            // Don't add if already in primary or cascade
+            if (primarySkills.find(s => s.skillId === responder.skillId)) continue;
+            if (cascadeSkills.find(s => s.skillId === responder.skillId)) continue;
+            
+            // Get skill data
+            const skillData = SKILLS[responder.skillId];
+            if (!skillData) continue;
+            
+            cascadeSkills.push({
+                skillId: responder.skillId,
+                skillName: skillData.name,
+                score: 0.7, // Cascade skills get decent priority
+                skillLevel: getSkillLevel(responder.skillId),
+                attribute: skillData.attribute,
+                isPrimary: false,
+                isCascade: true,
+                cascadeReason: responder.relationship,
+                respondingTo: primary.skillId
+            });
+        }
+    }
+
+    // Combine: ancient voices + primary + cascade (limited)
+    const selected = [
+        ...ancientVoicesToSpeak,
+        ...primarySkills,
+        ...cascadeSkills.slice(0, CASCADE_RULES.maxCascadeVoices)
+    ];
 
     return selected;
 }
@@ -255,7 +302,6 @@ export function getIntrusiveThought(messageText = '') {
 export function detectObjects(text) {
     if (!extensionSettings.objectVoicesEnabled) return [];
 
-    // Check for anti-object thought effect
     if (hasSpecialEffect('objectVoiceReduction') && Math.random() < 0.85) {
         return [];
     }
@@ -277,7 +323,6 @@ export function getObjectVoice(objectId) {
     const obj = OBJECT_VOICES[objectId];
     if (!obj) return null;
 
-    // Avoid repeating same object
     if (lastObjectVoice === objectId && Math.random() > 0.3) return null;
 
     lastObjectVoice = objectId;
@@ -299,7 +344,6 @@ export function getObjectVoice(objectId) {
 export async function processIntrusiveThoughts(messageText) {
     const results = { intrusive: null, objects: [] };
 
-    // Intrusive thought chance
     let intrusiveChance = extensionSettings.intrusiveChance || 0.15;
     if (activeStatuses.size > 0) {
         intrusiveChance += activeStatuses.size * 0.05;
@@ -309,7 +353,6 @@ export async function processIntrusiveThoughts(messageText) {
         results.intrusive = getIntrusiveThought(messageText);
     }
 
-    // Object voices
     const detectedObjects = detectObjects(messageText);
     for (const obj of detectedObjects) {
         if (Math.random() < (extensionSettings.objectVoiceChance || 0.4)) {
@@ -322,8 +365,91 @@ export async function processIntrusiveThoughts(messageText) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// PROMPT BUILDING
+// RELATIONSHIP-AWARE PROMPT BUILDING
 // ═══════════════════════════════════════════════════════════════
+
+/**
+ * Build relationship context for the prompt
+ * Tells the LLM who argues with whom, nicknames, etc.
+ */
+function buildRelationshipContext(voiceData) {
+    const relationships = [];
+    const nicknames = [];
+    
+    const skillIds = voiceData.map(v => v.skillId);
+    
+    for (const voice of voiceData) {
+        if (voice.isAncient) continue;
+        
+        const dynamics = getSkillDynamics(voice.skillId);
+        if (!dynamics) continue;
+        
+        // Find rivals present in this conversation
+        const presentRivals = dynamics.rivals.filter(r => skillIds.includes(r));
+        if (presentRivals.length > 0) {
+            const rivalNames = presentRivals.map(r => SKILLS[r]?.signature || r).join(', ');
+            relationships.push(`${voice.skill.signature} argues with ${rivalNames}`);
+        }
+        
+        // Find allies present
+        const presentAllies = dynamics.allies.filter(a => skillIds.includes(a));
+        if (presentAllies.length > 0) {
+            const allyNames = presentAllies.map(a => SKILLS[a]?.signature || a).join(', ');
+            relationships.push(`${voice.skill.signature} supports ${allyNames}`);
+        }
+        
+        // Collect nicknames
+        if (dynamics.nicknames) {
+            const playerNick = dynamics.nicknames['_player'];
+            if (playerNick) {
+                nicknames.push(`${voice.skill.signature} calls the character "${playerNick}"`);
+            }
+            
+            for (const [target, nick] of Object.entries(dynamics.nicknames)) {
+                if (target.startsWith('_')) continue;
+                if (skillIds.includes(target)) {
+                    const targetName = SKILLS[target]?.signature || target;
+                    nicknames.push(`${voice.skill.signature} calls ${targetName} "${nick}"`);
+                }
+            }
+        }
+    }
+    
+    // Note cascade relationships
+    const cascadeVoices = voiceData.filter(v => v.isCascade);
+    for (const cascade of cascadeVoices) {
+        const respondingToSkill = SKILLS[cascade.respondingTo];
+        if (respondingToSkill) {
+            relationships.push(
+                `${cascade.skill.signature} is responding to ${respondingToSkill.signature} (${cascade.cascadeReason})`
+            );
+        }
+    }
+    
+    return { relationships, nicknames };
+}
+
+/**
+ * Get sample reaction lines to seed the prompt
+ */
+function getSampleReactions(voiceData) {
+    const samples = [];
+    
+    for (const voice of voiceData) {
+        if (voice.isAncient || !voice.isCascade) continue;
+        
+        const reactionLine = getReactionLine(voice.skillId, voice.respondingTo);
+        if (reactionLine) {
+            samples.push({
+                skill: voice.skill.signature,
+                line: reactionLine,
+                respondingTo: SKILLS[voice.respondingTo]?.signature
+            });
+        }
+    }
+    
+    return samples;
+}
 
 export function buildChorusPrompt(voiceData, context, intrusiveData = null) {
     const povStyle = extensionSettings.povStyle || 'second';
@@ -349,10 +475,7 @@ export function buildChorusPrompt(voiceData, context, intrusiveData = null) {
     let statusContext = '';
     if (activeStatuses.size > 0) {
         const statusNames = [...activeStatuses]
-            .map(id => {
-                // We'd need STATUS_EFFECTS here but avoid circular import
-                return id.replace(/_/g, ' ');
-            })
+            .map(id => id.replace(/_/g, ' '))
             .filter(Boolean)
             .join(', ');
         statusContext = `\nCurrent state: ${statusNames}.`;
@@ -369,16 +492,43 @@ export function buildChorusPrompt(voiceData, context, intrusiveData = null) {
         }
     }
 
-    // Voice descriptions
+    // ═══════════════════════════════════════════════════════════
+    // NEW: Build relationship context
+    // ═══════════════════════════════════════════════════════════
+    const { relationships, nicknames } = buildRelationshipContext(voiceData);
+    const sampleReactions = getSampleReactions(voiceData);
+    
+    let relationshipSection = '';
+    if (relationships.length > 0 || nicknames.length > 0) {
+        relationshipSection = '\nSKILL DYNAMICS (use these!):\n';
+        if (relationships.length > 0) {
+            relationshipSection += relationships.map(r => `• ${r}`).join('\n') + '\n';
+        }
+        if (nicknames.length > 0) {
+            relationshipSection += 'Nicknames: ' + nicknames.join('; ') + '\n';
+        }
+    }
+    
+    let reactionExamples = '';
+    if (sampleReactions.length > 0) {
+        reactionExamples = '\nEXAMPLE REACTIONS (adapt these, don\'t copy verbatim):\n';
+        for (const sample of sampleReactions) {
+            reactionExamples += `• ${sample.skill} responding to ${sample.respondingTo}: "${sample.line}"\n`;
+        }
+    }
+
+    // Voice descriptions with check info
     const voiceDescriptions = voiceData.map(v => {
         let checkInfo = '';
         if (v.checkResult) {
-            if (v.checkResult.isBoxcars) checkInfo = ' [CRITICAL SUCCESS]';
-            else if (v.checkResult.isSnakeEyes) checkInfo = ' [CRITICAL FAILURE]';
+            if (v.checkResult.isBoxcars) checkInfo = ' [CRITICAL SUCCESS - profound insight]';
+            else if (v.checkResult.isSnakeEyes) checkInfo = ' [CRITICAL FAILURE - hilariously wrong]';
             else if (v.checkResult.success) checkInfo = ' [Success]';
-            else checkInfo = ' [Failed]';
+            else checkInfo = ' [Failed - uncertain/bad advice]';
         } else if (v.isAncient) {
-            checkInfo = ' [PRIMAL]';
+            checkInfo = ' [PRIMAL - speaks in fragments, poetically]';
+        } else if (v.isCascade) {
+            checkInfo = ` [REACTING to ${SKILLS[v.respondingTo]?.signature || v.respondingTo}]`;
         } else {
             checkInfo = ' [Passive]';
         }
@@ -386,26 +536,29 @@ export function buildChorusPrompt(voiceData, context, intrusiveData = null) {
         return `${v.skill.signature}${checkInfo}: ${v.skill.personality}`;
     }).join('\n\n');
 
-    const systemPrompt = `You generate internal mental voices for a roleplayer, inspired by Disco Elysium.
+    const systemPrompt = `You generate internal mental voices for a roleplayer, inspired by Disco Elysium's skill system.
 
-THE VOICES SPEAKING:
+THE VOICES SPEAKING THIS ROUND:
 ${voiceDescriptions}
-
-RULES:
+${relationshipSection}${reactionExamples}
+CRITICAL RULES:
 1. ${povInstruction}
-2. Voices REACT to each other - argue, agree, interrupt, give nicknames
+2. Voices MUST react to each other - argue, agree, interrupt, use nicknames!
 3. Format EXACTLY as: SKILL_NAME - dialogue
 4. Keep each line 1-2 sentences MAX
-5. Failed checks = uncertain/wrong/bad advice. Critical success = profound insight. Critical failure = hilariously wrong
-6. Ancient/Primal voices speak in fragments, poetically
-7. Total: 4-12 voice lines
+5. Failed checks = uncertain/wrong/bad advice
+6. Critical success = profound insight. Critical failure = hilariously wrong
+7. Ancient/Primal voices speak in fragments, poetically
+8. CASCADE voices are RESPONDING to another voice - make this clear!
+9. Let skills interrupt and talk over each other
+10. Total: 4-12 voice lines, with back-and-forth exchanges
 ${contextSection}${statusContext}${intrusiveContext}
 
-Output ONLY voice dialogue. No narration or explanation.`;
+Output ONLY voice dialogue. No narration or explanation. Make them ARGUE and REACT.`;
 
     return {
         system: systemPrompt,
-        user: `Scene: "${context.message.substring(0, 800)}"\n\nGenerate the internal chorus.`
+        user: `Scene: "${context.message.substring(0, 800)}"\n\nGenerate the internal chorus. Include skill arguments and reactions.`
     };
 }
 
@@ -420,8 +573,6 @@ export async function callAPI(systemPrompt, userPrompt) {
         throw new Error('API not configured - check settings');
     }
 
-    // Clean up endpoint - remove trailing slash but DON'T force /chat/completions
-    // User should provide the full endpoint path as needed for their API
     apiEndpoint = apiEndpoint.replace(/\/+$/, '');
 
     console.log('[Inland Empire] Calling API:', apiEndpoint, 'Model:', model);
@@ -477,8 +628,23 @@ export function parseChorusResponse(response, voiceData) {
         skillMap[v.skill.signature.toUpperCase()] = v;
         skillMap[v.skill.name.toUpperCase()] = v;
     });
+    
+    // Also add all skills for unexpected voices (cascades might generate extras)
+    for (const [skillId, skill] of Object.entries(SKILLS)) {
+        if (!skillMap[skill.signature.toUpperCase()]) {
+            skillMap[skill.signature.toUpperCase()] = {
+                skillId,
+                skill,
+                checkResult: null,
+                isAncient: false,
+                isCascade: false,
+                effectiveLevel: getEffectiveSkillLevel(skillId)
+            };
+        }
+    }
 
     for (const line of lines) {
+        // Match patterns like "SKILL_NAME - dialogue" or "SKILL_NAME: dialogue"
         const match = line.match(/^([A-Z][A-Z\s\/]+)\s*[-:–—]\s*(.+)$/i);
         if (match) {
             const voiceInfo = skillMap[match[1].trim().toUpperCase()];
@@ -491,6 +657,7 @@ export function parseChorusResponse(response, voiceData) {
                     content: match[2].trim(),
                     checkResult: voiceInfo.checkResult,
                     isAncient: voiceInfo.isAncient,
+                    isCascade: voiceInfo.isCascade,
                     success: true
                 });
             }
@@ -566,6 +733,11 @@ export async function generateVoices(selectedSkills, context, intrusiveData = nu
     // Build and send prompt
     const chorusPrompt = buildChorusPrompt(voiceData, context, intrusiveData);
 
+    // Debug: Log the prompt
+    console.log('[Inland Empire] Chorus prompt relationships:', 
+        voiceData.filter(v => v.isCascade).map(v => `${v.skillId} -> ${v.respondingTo}`)
+    );
+
     try {
         const response = await callAPI(chorusPrompt.system, chorusPrompt.user);
         const parsed = parseChorusResponse(response, voiceData);
@@ -573,6 +745,6 @@ export async function generateVoices(selectedSkills, context, intrusiveData = nu
         return parsed;
     } catch (error) {
         console.error('[Inland Empire] Chorus generation failed:', error);
-        throw error; // Re-throw so triggerVoices can show the error
+        throw error;
     }
 }
