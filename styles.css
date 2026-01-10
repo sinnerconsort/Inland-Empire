@@ -58,6 +58,37 @@
     color: var(--ie-bg-primary);
 }
 
+.ie-fab-disabled {
+    opacity: 0.4;
+    border-color: var(--ie-border);
+    color: var(--ie-text-secondary);
+}
+
+.ie-fab-disabled:hover {
+    transform: scale(1.05);
+    border-color: var(--ie-border);
+    color: var(--ie-text-secondary);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   EXTENSION SETTINGS (in ST's extension panel)
+   ═══════════════════════════════════════════════════════════════ */
+
+#ie-extension-settings .ie-ext-setting {
+    padding: 8px 0;
+}
+
+#ie-extension-settings .ie-ext-setting small {
+    display: block;
+    margin-top: 4px;
+    opacity: 0.7;
+}
+
+#ie-extension-settings .ie-ext-info {
+    padding: 8px 0;
+    text-align: center;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    MAIN PANEL
    ═══════════════════════════════════════════════════════════════ */
@@ -497,9 +528,11 @@
 
 .ie-check-badge {
     font-size: 10px;
-    padding: 2px 6px;
+    padding: 2px 8px;
     border-radius: 4px;
     background: var(--ie-bg-secondary);
+    white-space: nowrap;
+    font-weight: 500;
 }
 
 .ie-check-result {

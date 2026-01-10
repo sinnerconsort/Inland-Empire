@@ -448,7 +448,6 @@ function loadSettingsToUI() {
 
     // Checkboxes
     const checks = {
-        'ie-enabled': extensionSettings.enabled,
         'ie-show-dice-rolls': extensionSettings.showDiceRolls,
         'ie-show-failed-checks': extensionSettings.showFailedChecks,
         'ie-auto-trigger': extensionSettings.autoTrigger,
@@ -474,7 +473,7 @@ function refreshSettingsUI() {
 
 function saveSettingsFromUI() {
     updateSettings({
-        enabled: document.getElementById('ie-enabled')?.checked !== false,
+        // Note: 'enabled' is managed by the extension menu toggle, not saved here
         apiEndpoint: document.getElementById('ie-api-endpoint')?.value || '',
         apiKey: document.getElementById('ie-api-key')?.value || '',
         model: document.getElementById('ie-model')?.value || 'glm-4-plus',
@@ -693,12 +692,53 @@ async function init() {
     link.href = `${extensionFolderPath}/styles.css`;
     document.head.appendChild(link);
 
+    // Create extension settings in ST's extension panel
+    const extensionSettingsContainer = document.getElementById('extensions_settings');
+    if (extensionSettingsContainer) {
+        const settingsHtml = `
+            <div class="inline-drawer" id="ie-extension-settings">
+                <div class="inline-drawer-toggle inline-drawer-header">
+                    <b>🧠 Inland Empire</b>
+                    <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
+                </div>
+                <div class="inline-drawer-content">
+                    <div class="ie-ext-setting">
+                        <label class="checkbox_label">
+                            <input type="checkbox" id="ie-ext-enabled" ${extensionSettings.enabled ? 'checked' : ''} />
+                            <span>Enable Inland Empire</span>
+                        </label>
+                        <small>When disabled, voices won't trigger and the FAB will be dimmed.</small>
+                    </div>
+                    <hr>
+                    <div class="ie-ext-info">
+                        <small>Click the 🧠 button to open the Psyche panel.</small>
+                    </div>
+                </div>
+            </div>
+        `;
+        extensionSettingsContainer.insertAdjacentHTML('beforeend', settingsHtml);
+        
+        // Bind the enable toggle
+        document.getElementById('ie-ext-enabled')?.addEventListener('change', (e) => {
+            extensionSettings.enabled = e.target.checked;
+            saveState(getContext());
+            updateFABState();
+            // Sync with the settings panel checkbox too
+            const settingsCheckbox = document.getElementById('ie-enabled');
+            if (settingsCheckbox) settingsCheckbox.checked = e.target.checked;
+            showToast(e.target.checked ? 'Inland Empire enabled' : 'Inland Empire disabled', 'info');
+        });
+    }
+
     // Create UI
     const panel = createPsychePanel();
     const fab = createToggleFAB(getContext);
 
     document.body.appendChild(panel);
     document.body.appendChild(fab);
+    
+    // Set initial FAB state
+    updateFABState();
 
     // Initial renders
     refreshAttributesDisplay();
@@ -712,6 +752,19 @@ async function init() {
     setupAutoTrigger();
 
     console.log('[Inland Empire] Ready!');
+}
+
+function updateFABState() {
+    const fab = document.getElementById('inland-empire-fab');
+    if (fab) {
+        if (extensionSettings.enabled) {
+            fab.classList.remove('ie-fab-disabled');
+            fab.title = 'Open Psyche Panel';
+        } else {
+            fab.classList.add('ie-fab-disabled');
+            fab.title = 'Inland Empire (Disabled)';
+        }
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════
