@@ -398,34 +398,71 @@
     border-left-color: #9b9e99;
 }
 
-/* Force checkbox styling in settings */
-[data-tab-content="settings"] input[type="checkbox"] {
+/* Force checkbox styling in settings - override ST theme */
+[data-tab-content="settings"] input[type="checkbox"],
+[data-tab-content="settings"] .ie-checkbox input,
+[data-tab-content="settings"] .checkbox_label input,
+.inland-empire-panel [data-tab-content="settings"] input[type="checkbox"] {
     accent-color: #9b9e99 !important;
-    -webkit-appearance: none;
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    border: 2px solid #9b9e99;
-    border-radius: 4px;
-    background: rgba(13, 13, 18, 0.8);
-    cursor: pointer;
-    position: relative;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px !important;
+    min-height: 22px !important;
+    border: 2px solid #9b9e99 !important;
+    border-radius: 4px !important;
+    background: rgba(13, 13, 18, 0.8) !important;
+    cursor: pointer !important;
+    position: relative !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex-shrink: 0 !important;
 }
 
-[data-tab-content="settings"] input[type="checkbox"]:checked {
-    background: #9b9e99;
-    border-color: #9b9e99;
+[data-tab-content="settings"] input[type="checkbox"]:checked,
+[data-tab-content="settings"] .ie-checkbox input:checked,
+[data-tab-content="settings"] .checkbox_label input:checked,
+.inland-empire-panel [data-tab-content="settings"] input[type="checkbox"]:checked {
+    background: #9b9e99 !important;
+    border-color: #9b9e99 !important;
 }
 
-[data-tab-content="settings"] input[type="checkbox"]:checked::after {
-    content: '✓';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #0d0d12;
-    font-size: 14px;
-    font-weight: bold;
+[data-tab-content="settings"] input[type="checkbox"]:checked::after,
+[data-tab-content="settings"] .ie-checkbox input:checked::after,
+[data-tab-content="settings"] .checkbox_label input:checked::after,
+.inland-empire-panel [data-tab-content="settings"] input[type="checkbox"]:checked::after {
+    content: '✓' !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    color: #0d0d12 !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+}
+
+/* Hide any ST theme pseudo-elements on checkboxes */
+[data-tab-content="settings"] input[type="checkbox"]::before,
+[data-tab-content="settings"] .ie-checkbox input::before,
+.inland-empire-panel [data-tab-content="settings"] input[type="checkbox"]::before {
+    display: none !important;
+    content: none !important;
+}
+
+/* Override ST's label-based toggle styling */
+[data-tab-content="settings"] label.checkbox_label,
+[data-tab-content="settings"] .toggle,
+[data-tab-content="settings"] .toggle-input {
+    background: transparent !important;
+}
+
+[data-tab-content="settings"] label.checkbox_label::before,
+[data-tab-content="settings"] label.checkbox_label::after,
+[data-tab-content="settings"] .toggle::before,
+[data-tab-content="settings"] .toggle::after {
+    display: none !important;
 }
 
 /* Textarea focus in settings */
@@ -566,6 +603,49 @@
 .ie-btn-xs {
     padding: 2px 8px;
     font-size: 10px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SPECIFIC BUTTON STYLES - DE Themed
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Close panel button (X in top right) */
+.ie-btn-close-panel {
+    background: #8c3115 !important;
+    border-color: #8c3115 !important;
+    color: #ffffff !important;
+}
+
+.ie-btn-close-panel:hover:not(:disabled) {
+    background: #a33a1a !important;
+    border-color: #a33a1a !important;
+    color: #ffffff !important;
+}
+
+/* Clear/eraser button for voices */
+.ie-btn-clear-voices {
+    background: #8c3115 !important;
+    border-color: #8c3115 !important;
+    color: #ffffff !important;
+}
+
+.ie-btn-clear-voices:hover:not(:disabled) {
+    background: #a33a1a !important;
+    border-color: #a33a1a !important;
+    color: #ffffff !important;
+}
+
+/* Consult Inner Voices button */
+.ie-btn-trigger {
+    background: #254750 !important;
+    border-color: #254750 !important;
+    color: #ffffff !important;
+}
+
+.ie-btn-trigger:hover:not(:disabled) {
+    background: #2d5660 !important;
+    border-color: #2d5660 !important;
+    color: #ffffff !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════
