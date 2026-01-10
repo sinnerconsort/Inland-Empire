@@ -637,7 +637,9 @@ export function renderThoughtCabinet(container, callbacks = {}) {
     });
 
     container.querySelectorAll('.ie-btn-expand-thought').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
             if (callbacks.onExpand) callbacks.onExpand(btn.dataset.thought);
         });
     });
