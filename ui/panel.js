@@ -96,14 +96,21 @@ export function createPsychePanel() {
                             <span class="ie-ancient-icon">🦎</span>
                             <div class="ie-ancient-details">
                                 <span class="ie-ancient-name">Ancient Reptilian Brain</span>
-                                <span class="ie-ancient-triggers">Triggers: The Pale, Dying, Terrified, Apocalypse Cop</span>
+                                <span class="ie-ancient-triggers">Triggers: The Pale</span>
                             </div>
                         </div>
                         <div class="ie-ancient-voice-item">
                             <span class="ie-ancient-icon">❤️‍🔥</span>
                             <div class="ie-ancient-details">
                                 <span class="ie-ancient-name">Limbic System</span>
-                                <span class="ie-ancient-triggers">Triggers: The Pale, Tequila Sunset, Homo-Sexual Underground, Enraged, The Expression</span>
+                                <span class="ie-ancient-triggers">Triggers: The Pale</span>
+                            </div>
+                        </div>
+                        <div class="ie-ancient-voice-item ie-ancient-voice-combo">
+                            <span class="ie-ancient-icon">🦴</span>
+                            <div class="ie-ancient-details">
+                                <span class="ie-ancient-name">Spinal Cord</span>
+                                <span class="ie-ancient-triggers">Triggers: Tequila Sunset + Revacholian Courage</span>
                             </div>
                         </div>
                     </div>

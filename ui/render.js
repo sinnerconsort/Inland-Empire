@@ -52,7 +52,11 @@ export function renderVoices(voiceResults, container) {
                 checkBadge = `<span class="ie-check-badge ${cls}" title="${voice.checkResult.total} vs ${voice.checkResult.threshold}">${diffName} [${result}]</span>`;
             }
         } else if (voice.isAncient) {
-            checkBadge = `<span class="ie-check-badge ie-primal" title="Primal Voice">🦎</span>`;
+            // Different icons for different ancient voices
+            let ancientIcon = '🦎'; // Default: ARB
+            if (voice.id === 'limbic_system') ancientIcon = '❤️‍🔥';
+            else if (voice.id === 'spinal_cord') ancientIcon = '🦴';
+            checkBadge = `<span class="ie-check-badge ie-primal" title="Primal Voice">${ancientIcon}</span>`;
         } else if (voice.isIntrusive) {
             checkBadge = `<span class="ie-check-badge ie-intrusive" title="Intrusive Thought">💭</span>`;
         } else if (voice.isObject) {
