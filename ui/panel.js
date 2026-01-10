@@ -132,6 +132,10 @@ export function createPsychePanel() {
                             <input type="number" id="ie-max-tokens" min="50" max="1000" value="300" />
                         </div>
                     </div>
+                    <button class="ie-btn ie-btn-test-api" id="ie-test-api-btn">
+                        <i class="fa-solid fa-plug"></i>
+                        <span>Test API Connection</span>
+                    </button>
                 </div>
 
                 <div class="ie-section">
