@@ -25,10 +25,10 @@
     --ie-accent-orange-glow: rgba(212, 118, 59, 0.3);
     
     /* Attribute colors - true to DE */
-    --ie-accent-blue: #6eb4c4;      /* INT - cool blue */
-    --ie-accent-purple: #9d7dc4;    /* PSY - muted purple */
-    --ie-accent-red: #c45c5c;       /* FYS - blood red */
-    --ie-accent-yellow: #c4a94e;    /* MOT - gold/ochre */
+    --ie-accent-blue: #51a4b2;      /* INT - cool blue */
+    --ie-accent-purple: #6448b2;    /* PSY - deep purple */
+    --ie-accent-red: #b13b5b;       /* FYS - magenta red */
+    --ie-accent-yellow: #c29f2d;    /* MOT - gold */
     
     /* Status colors */
     --ie-success: #6b9c5a;
@@ -261,6 +261,111 @@
 .ie-tab-content-active {
     display: flex;
     flex-direction: column;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SETTINGS TAB - DE Main Menu Style
+   ═══════════════════════════════════════════════════════════════ */
+
+[data-tab-content="settings"] {
+    background: linear-gradient(
+        to bottom,
+        #90511d 0%,
+        #5a3010 25%,
+        #2a1808 50%,
+        #0d0d12 75%,
+        #0d0d12 100%
+    );
+    padding-right: 36px;
+}
+
+[data-tab-content="settings"] .ie-section {
+    background: rgba(29, 38, 51, 0.6);
+    border-left: 3px solid #90511d;
+    backdrop-filter: blur(4px);
+}
+
+[data-tab-content="settings"] .ie-section-header {
+    color: #e8e4de;
+    border-bottom-color: rgba(157, 161, 160, 0.3);
+}
+
+[data-tab-content="settings"] .ie-section-header span::before {
+    color: #90511d;
+}
+
+[data-tab-content="settings"] .ie-form-group label {
+    color: #9da1a0;
+}
+
+[data-tab-content="settings"] .ie-form-group input,
+[data-tab-content="settings"] .ie-form-group select,
+[data-tab-content="settings"] .ie-form-group textarea {
+    background: rgba(13, 13, 18, 0.8);
+    border-color: #1d2633;
+    color: #e8e4de;
+}
+
+[data-tab-content="settings"] .ie-form-group input:focus,
+[data-tab-content="settings"] .ie-form-group select:focus,
+[data-tab-content="settings"] .ie-form-group textarea:focus {
+    border-color: #90511d;
+    box-shadow: 0 0 0 1px rgba(144, 81, 29, 0.3);
+}
+
+[data-tab-content="settings"] .ie-checkbox {
+    color: #9da1a0;
+}
+
+[data-tab-content="settings"] .ie-checkbox input {
+    accent-color: #90511d;
+}
+
+[data-tab-content="settings"] .ie-btn {
+    background: rgba(13, 13, 18, 0.8);
+    border-color: #1d2633;
+    color: #9da1a0;
+}
+
+[data-tab-content="settings"] .ie-btn:hover:not(:disabled) {
+    background: #1d2633;
+    border-color: #90511d;
+    color: #e8e4de;
+}
+
+[data-tab-content="settings"] .ie-btn-primary {
+    background: #e8e4de;
+    border-color: #e8e4de;
+    color: #0d0d12;
+}
+
+[data-tab-content="settings"] .ie-btn-primary:hover:not(:disabled) {
+    background: #ffffff;
+    border-color: #ffffff;
+    color: #0d0d12;
+}
+
+[data-tab-content="settings"] .ie-form-hint {
+    color: #6a6a6a;
+}
+
+[data-tab-content="settings"] .ie-btn-test-api {
+    background: transparent;
+    border: 1px dashed #9da1a0;
+    color: #9da1a0;
+}
+
+[data-tab-content="settings"] .ie-btn-test-api:hover {
+    background: #1d2633;
+    border-style: solid;
+    border-color: #90511d;
+    color: #e8e4de;
+}
+
+/* Settings tab button when active - match the gradient vibe */
+.ie-tab[data-tab="settings"].ie-tab-active {
+    color: #90511d;
+    border-bottom-color: #90511d;
 }
 
 /* Panel content wrapper */
