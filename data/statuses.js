@@ -52,7 +52,7 @@ export const STATUS_EFFECTS = {
         debuffs: ['logic', 'composure', 'volition'],
         difficultyMod: 1,
         keywords: ['hungry', 'starving', 'famished', 'food', 'eat'],
-        ancientVoice: 'ancient_reptilian_brain',
+        ancientVoice: null,
         intrusiveBoost: ['electrochemistry']
     },
     dying: {
@@ -92,7 +92,7 @@ export const STATUS_EFFECTS = {
         debuffs: ['logic', 'volition', 'composure'],
         difficultyMod: 2,
         keywords: ['aroused', 'desire', 'attraction', 'lust', 'seduction', 'beautiful'],
-        ancientVoice: 'ancient_reptilian_brain',
+        ancientVoice: 'limbic_system',
         intrusiveBoost: ['electrochemistry', 'suggestion']
     },
     enraged: {
@@ -163,8 +163,8 @@ export const STATUS_EFFECTS = {
         boosts: ['inland_empire', 'shivers', 'pain_threshold'],
         debuffs: ['perception', 'reaction_speed', 'empathy'],
         difficultyMod: 2,
-        keywords: ['dissociate', 'unreal', 'floating', 'numb', 'detached', 'distant'],
-        ancientVoice: null,
+        keywords: ['dissociate', 'unreal', 'floating', 'numb', 'detached', 'distant', 'unconscious', 'blackout'],
+        ancientVoice: 'ancient_reptilian_brain',
         intrusiveBoost: ['inland_empire', 'shivers']
     }
 };
