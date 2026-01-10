@@ -16,7 +16,7 @@ import {
     thoughtCabinet,
     themeCounters
 } from '../systems/state.js';
-import { getResearchPenalties, getTopThemes, thoughtCabinet } from '../systems/cabinet.js';
+import { getResearchPenalties, getTopThemes } from '../systems/cabinet.js';
 
 // ═══════════════════════════════════════════════════════════════
 // VOICE RENDERING
