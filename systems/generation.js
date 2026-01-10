@@ -473,13 +473,18 @@ export function buildChorusPrompt(voiceData, context, intrusiveData = null) {
         povInstruction = `Write in FIRST PERSON. Use "I/me/my" - NEVER "you".`;
     } else {
         // Second person - need to be VERY clear about identity
-        povInstruction = `Write in SECOND PERSON. 
-CRITICAL IDENTITY RULES:
-- "You" = ${charIdentity} (${charPronouns.subject}/${charPronouns.object}/${charPronouns.possessive})
-- These voices exist INSIDE ${charIdentity}'s head, commenting on what ${charPronouns.subject} observes
-- When the voices address ${charIdentity}, use "you/your"
-- Other people in the scene are NOT "you" - use THEIR pronouns (he/him, she/her, they/them as appropriate)
-- If ${charIdentity} observes someone else, describe THEM in third person, not "you"`;
+        povInstruction = `Write in SECOND PERSON addressing ${charIdentity}.
+
+IDENTITY RULES (READ CAREFULLY):
+- ${charIdentity} = ALWAYS "you/your" in the output. NEVER use "${charPronouns.subject}/${charPronouns.object}" for ${charIdentity}.
+- ${charIdentity}'s pronouns (${charPronouns.subject}/${charPronouns.object}) are provided for context only - since this is second person, ${charIdentity} is ALWAYS "you"
+- These voices are INSIDE ${charIdentity}'s head, so ${charIdentity} = "you"
+
+OTHER CHARACTERS (NPCs):
+- Other people are NEVER "you" - they are separate individuals observed by ${charIdentity}
+- Determine NPC pronouns from the SCENE TEXT: look at their names, physical descriptions, how they're referred to
+- Use he/him for male NPCs, she/her for female NPCs, they/them if unclear
+- Do NOT apply ${charIdentity}'s pronouns (${charPronouns.subject}/${charPronouns.object}) to NPCs`;
     }
 
     // Context section - make it clear this defines WHO "you" is
@@ -563,15 +568,18 @@ ${voiceDescriptions}
 ${relationshipSection}${reactionExamples}
 CRITICAL RULES:
 1. ${povInstruction}
-2. Voices MUST react to each other - argue, agree, interrupt, use nicknames!
-3. Format EXACTLY as: SKILL_NAME - dialogue
-4. Keep each line 1-2 sentences MAX
-5. Failed checks = uncertain/wrong/bad advice
-6. Critical success = profound insight. Critical failure = hilariously wrong
-7. Ancient/Primal voices speak in fragments, poetically
-8. CASCADE voices are RESPONDING to another voice - make this clear!
-9. Let skills interrupt and talk over each other
-10. Total: 4-12 voice lines, with back-and-forth exchanges
+2. PRONOUN EXAMPLE: If ${charIdentity} (you) fights a man named John:
+   - CORRECT: "You swing at him. He dodges. Your fist misses his face."
+   - WRONG: "She swings at her. She dodges." (NO - ${charIdentity} is "you", and if John is male, use "he/him")
+3. Voices MUST react to each other - argue, agree, interrupt, use nicknames!
+4. Format EXACTLY as: SKILL_NAME - dialogue
+5. Keep each line 1-2 sentences MAX
+6. Failed checks = uncertain/wrong/bad advice
+7. Critical success = profound insight. Critical failure = hilariously wrong
+8. Ancient/Primal voices speak in fragments, poetically
+9. CASCADE voices are RESPONDING to another voice - make this clear!
+10. Let skills interrupt and talk over each other
+11. Total: 4-12 voice lines, with back-and-forth exchanges
 ${contextSection}${statusContext}${intrusiveContext}
 
 Output ONLY voice dialogue. No narration or explanation. Make them ARGUE and REACT.`;
