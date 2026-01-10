@@ -827,14 +827,12 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.85);
-    z-index: 99999;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 10001;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
     padding: 20px;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
 }
 
 .ie-thought-modal {
@@ -843,13 +841,9 @@
     border-radius: 8px;
     max-width: 500px;
     width: 100%;
-    margin: auto;
+    max-height: 80vh;
+    overflow-y: auto;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-    display: flex;
-    flex-direction: column;
-    max-height: calc(100vh - 40px);
-    position: relative;
-    z-index: 100000;
 }
 
 .ie-thought-modal-header {
@@ -859,9 +853,6 @@
     padding: 16px;
     background: var(--ie-bg-secondary);
     border-bottom: 1px solid var(--ie-border);
-    border-radius: 8px 8px 0 0;
-    flex-shrink: 0;
-    min-height: 60px;
 }
 
 .ie-thought-icon-large {
@@ -879,28 +870,15 @@
 }
 
 .ie-btn-close-modal {
-    background: var(--ie-bg-tertiary);
-    border: 1px solid var(--ie-border);
-    color: var(--ie-text-primary);
+    background: transparent;
+    border: none;
+    color: var(--ie-text-secondary);
     cursor: pointer;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 16px;
-    flex-shrink: 0;
+    padding: 8px;
 }
 
 .ie-btn-close-modal:hover {
-    background: var(--ie-error);
-    border-color: var(--ie-error);
-    color: white;
-}
-
-.ie-thought-modal-body {
-    overflow-y: auto;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 200px;
+    color: var(--ie-text-primary);
 }
 
 .ie-thought-modal-bonuses {
@@ -972,9 +950,6 @@
 
 .ie-thought-modal-content {
     padding: 16px;
-    overflow-y: auto;
-    flex: 1;
-    min-height: 100px;
 }
 
 .ie-thought-tab-content {
@@ -1005,67 +980,6 @@
 
 .ie-solution-locked i {
     margin-right: 8px;
-}
-
-/* Modal animations */
-.ie-thought-modal-overlay {
-    animation: fadeIn 0.2s ease-out;
-}
-
-.ie-thought-modal {
-    animation: slideUp 0.2s ease-out;
-}
-
-.ie-modal-closing {
-    animation: fadeOut 0.2s ease-out forwards;
-}
-
-.ie-modal-closing .ie-thought-modal {
-    animation: slideDown 0.2s ease-out forwards;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes fadeOut {
-    from { opacity: 1; }
-    to { opacity: 0; }
-}
-
-@keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-@keyframes slideDown {
-    from { transform: translateY(0); opacity: 1; }
-    to { transform: translateY(20px); opacity: 0; }
-}
-
-/* Mobile adjustments for modal */
-@media (max-width: 500px) {
-    .ie-thought-modal-overlay {
-        padding: 10px;
-    }
-    
-    .ie-thought-modal {
-        max-height: calc(100vh - 20px);
-    }
-    
-    .ie-thought-modal-header {
-        padding: 12px;
-        gap: 8px;
-    }
-    
-    .ie-thought-icon-large {
-        font-size: 24px;
-    }
-    
-    .ie-thought-modal-name {
-        font-size: 14px;
-    }
 }
 
 /* ═══════════════════════════════════════════════════════════════
