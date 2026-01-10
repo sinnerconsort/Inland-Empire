@@ -17,6 +17,9 @@ import {
     setThemeCounters
 } from './state.js';
 
+// Re-export thoughtCabinet for use in other modules
+export { thoughtCabinet };
+
 // ═══════════════════════════════════════════════════════════════
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════
