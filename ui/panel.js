@@ -179,6 +179,12 @@ export function createPsychePanel() {
                     </div>
                     <div class="ie-form-group">
                         <label class="ie-checkbox">
+                            <input type="checkbox" id="ie-show-in-chat" checked />
+                            <span>Show voices in chat (after messages)</span>
+                        </label>
+                    </div>
+                    <div class="ie-form-group">
+                        <label class="ie-checkbox">
                             <input type="checkbox" id="ie-auto-trigger" />
                             <span>Auto-trigger on AI messages</span>
                         </label>
@@ -266,7 +272,8 @@ export function createPsychePanel() {
                     </div>
                     <div class="ie-form-group">
                         <label>Character Context</label>
-                        <textarea id="ie-character-context" rows="3" placeholder="Who are you? What's your situation?"></textarea>
+                        <textarea id="ie-character-context" rows="4" placeholder="Describe who YOU are (the character whose head these voices are in). For scenes with multiple characters, clarify who is who. Example: 'I am Julie, a streamer. The voices are in MY head. Danny is the guy I'm talking to (he/him).'"></textarea>
+                        <small class="ie-form-hint">Tip: Specify NPC names &amp; pronouns to help voices distinguish "you" from others in the scene.</small>
                     </div>
                     <button class="ie-btn ie-btn-primary ie-btn-save-settings" style="width: 100%; margin-top: 10px;">
                         <i class="fa-solid fa-save"></i>

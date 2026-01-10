@@ -78,24 +78,92 @@ export function renderVoices(voiceResults, container) {
 export function appendVoicesToChat(voiceResults, chatContainer) {
     if (!voiceResults || voiceResults.length === 0 || !chatContainer) return;
 
-    const wrapper = document.createElement('div');
-    wrapper.className = 'ie-chat-voices';
+    // Find the last message element (SillyTavern uses .mes class)
+    const messages = chatContainer.querySelectorAll('.mes');
+    const lastMessage = messages[messages.length - 1];
+    
+    if (!lastMessage) {
+        console.warn('[Inland Empire] No messages found in chat container');
+        return;
+    }
 
-    wrapper.innerHTML = voiceResults.map(voice => {
+    // Remove any existing voice block from this message to avoid duplicates
+    const existingVoices = lastMessage.querySelector('.ie-chat-voices-block');
+    if (existingVoices) existingVoices.remove();
+
+    // Create the voices block
+    const wrapper = document.createElement('div');
+    wrapper.className = 'ie-chat-voices-block';
+    
+    // Add a subtle header
+    const header = document.createElement('div');
+    header.className = 'ie-chat-voices-header';
+    header.innerHTML = `
+        <span class="ie-chat-voices-title">
+            <i class="fa-solid fa-brain"></i> Inner Voices
+        </span>
+        <button class="ie-chat-voices-toggle" title="Toggle voices">
+            <i class="fa-solid fa-chevron-up"></i>
+        </button>
+    `;
+    wrapper.appendChild(header);
+
+    // Create voices container
+    const voicesContainer = document.createElement('div');
+    voicesContainer.className = 'ie-chat-voices-content';
+    
+    voicesContainer.innerHTML = voiceResults.map(voice => {
         let checkInfo = '';
+        let checkClass = '';
+        
         if (voice.checkResult) {
-            if (voice.checkResult.isBoxcars) checkInfo = ' [CRITICAL SUCCESS]';
-            else if (voice.checkResult.isSnakeEyes) checkInfo = ' [CRITICAL FAILURE]';
-            else if (voice.checkResult.success) checkInfo = ' [Success]';
-            else checkInfo = ' [Failed]';
+            if (voice.checkResult.isBoxcars) {
+                checkInfo = ' ⚡';
+                checkClass = 'ie-chat-critical-success';
+            } else if (voice.checkResult.isSnakeEyes) {
+                checkInfo = ' 💀';
+                checkClass = 'ie-chat-critical-failure';
+            } else if (voice.checkResult.success) {
+                checkClass = 'ie-chat-success';
+            } else {
+                checkClass = 'ie-chat-failure';
+            }
+        } else if (voice.isIntrusive) {
+            checkInfo = ' 💭';
+            checkClass = 'ie-chat-intrusive';
+        } else if (voice.isObject) {
+            checkInfo = ` ${voice.icon || '📦'}`;
+            checkClass = 'ie-chat-object';
         }
 
-        return `<div class="ie-chat-voice" style="color: ${voice.color}">
-            <strong>${voice.signature || voice.name}${checkInfo}:</strong> ${voice.content}
-        </div>`;
+        return `
+            <div class="ie-chat-voice ${checkClass}">
+                <span class="ie-chat-voice-sig" style="color: ${voice.color}">${voice.signature || voice.name}${checkInfo}</span>
+                <span class="ie-chat-voice-text">${voice.content}</span>
+            </div>
+        `;
     }).join('');
 
-    chatContainer.appendChild(wrapper);
+    wrapper.appendChild(voicesContainer);
+
+    // Add toggle functionality
+    header.querySelector('.ie-chat-voices-toggle').addEventListener('click', (e) => {
+        const btn = e.currentTarget;
+        const content = wrapper.querySelector('.ie-chat-voices-content');
+        const isCollapsed = content.classList.toggle('ie-collapsed');
+        btn.innerHTML = isCollapsed ? 
+            '<i class="fa-solid fa-chevron-down"></i>' : 
+            '<i class="fa-solid fa-chevron-up"></i>';
+    });
+
+    // Find the message text container and append after it
+    const mesText = lastMessage.querySelector('.mes_text');
+    if (mesText) {
+        mesText.insertAdjacentElement('afterend', wrapper);
+    } else {
+        // Fallback: just append to the message
+        lastMessage.appendChild(wrapper);
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -484,6 +552,7 @@ export function syncSettingsToUI() {
     setValue('ie-character-name', extensionSettings.characterName);
     setValue('ie-character-pronouns', extensionSettings.characterPronouns);
     setValue('ie-character-context', extensionSettings.characterContext);
+    setValue('ie-show-in-chat', extensionSettings.showInChat);
 
     // Show/hide third person options
     const thirdPersonOptions = document.querySelectorAll('.ie-third-person-options');
@@ -525,6 +594,7 @@ export function syncUIToSettings() {
     extensionSettings.characterName = getValue('ie-character-name', '');
     extensionSettings.characterPronouns = getValue('ie-character-pronouns', 'they');
     extensionSettings.characterContext = getValue('ie-character-context', '');
+    extensionSettings.showInChat = getValue('ie-show-in-chat', true);
 }
 
 export function clearVoices() {
