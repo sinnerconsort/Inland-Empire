@@ -480,6 +480,12 @@ IDENTITY RULES (READ CAREFULLY):
 - ${charIdentity}'s pronouns (${charPronouns.subject}/${charPronouns.object}) are provided for context only - since this is second person, ${charIdentity} is ALWAYS "you"
 - These voices are INSIDE ${charIdentity}'s head, so ${charIdentity} = "you"
 
+CRITICAL - SCENE TEXT CONVERSION:
+- The scene text may be written from ANY perspective (narrator, NPC POV, etc.)
+- If the scene says "he watched her kick" where "her" = ${charIdentity}, you MUST convert to "you kicked" or "your kick"
+- ALWAYS translate third-person references to ${charIdentity} into second person ("you/your")
+- Example: Scene says "Danny saw her miss" → Voice says "You missed" NOT "she missed"
+
 OTHER CHARACTERS (NPCs):
 - Other people are NEVER "you" - they are separate individuals observed by ${charIdentity}
 - Determine NPC pronouns from the SCENE TEXT: look at their names, physical descriptions, how they're referred to
@@ -568,9 +574,7 @@ ${voiceDescriptions}
 ${relationshipSection}${reactionExamples}
 CRITICAL RULES:
 1. ${povInstruction}
-2. PRONOUN EXAMPLE: If ${charIdentity} (you) fights a man named John:
-   - CORRECT: "You swing at him. He dodges. Your fist misses his face."
-   - WRONG: "She swings at her. She dodges." (NO - ${charIdentity} is "you", and if John is male, use "he/him")
+2. SCENE TEXT CONVERSION: The scene may describe ${charIdentity} in third person ("she kicked", "her foot"). CONVERT these to "you kicked", "your foot" in your output.
 3. Voices MUST react to each other - argue, agree, interrupt, use nicknames!
 4. Format EXACTLY as: SKILL_NAME - dialogue
 5. Keep each line 1-2 sentences MAX
