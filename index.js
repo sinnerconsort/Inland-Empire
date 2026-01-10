@@ -608,27 +608,40 @@ function handleExpandThought(thoughtId) {
     document.body.appendChild(overlay);
 
     // Render the modal
-    const closeBtn = renderThoughtModal(thoughtId, overlay);
-
-    // Close handlers
-    const closeModal = () => {
-        overlay.classList.add('ie-modal-closing');
-        setTimeout(() => overlay.remove(), 200);
-    };
-
-    closeBtn?.addEventListener('click', closeModal);
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) closeModal();
-    });
-
-    // ESC key to close
-    const escHandler = (e) => {
-        if (e.key === 'Escape') {
-            closeModal();
-            document.removeEventListener('keydown', escHandler);
+    try {
+        const closeBtn = renderThoughtModal(thoughtId, overlay);
+        
+        // If no close button returned, something went wrong
+        if (!closeBtn) {
+            overlay.remove();
+            showToast('Could not load thought details', 'error');
+            return;
         }
-    };
-    document.addEventListener('keydown', escHandler);
+
+        // Close handlers
+        const closeModal = () => {
+            overlay.classList.add('ie-modal-closing');
+            setTimeout(() => overlay.remove(), 200);
+        };
+
+        closeBtn.addEventListener('click', closeModal);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeModal();
+        });
+
+        // ESC key to close
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+    } catch (error) {
+        console.error('[Inland Empire] Modal error:', error);
+        overlay.remove();
+        showToast('Error loading thought', 'error');
+    }
 }
 
 function refreshCabinetTab() {
