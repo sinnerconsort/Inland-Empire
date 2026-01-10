@@ -250,7 +250,9 @@ export function internalizeThought(thoughtId, context = null) {
 
     // Apply bonuses to current build
     if (thought.internalizedBonus && currentBuild) {
-        for (const [skillId, bonus] of Object.entries(thought.internalizedBonus)) {
+        for (const [skillId, data] of Object.entries(thought.internalizedBonus)) {
+            // Handle both number format and object format {value, flavor}
+            const bonus = typeof data === 'number' ? data : data.value;
             currentBuild.skillLevels[skillId] = Math.min(
                 10,
                 (currentBuild.skillLevels[skillId] || 1) + bonus
@@ -260,7 +262,8 @@ export function internalizeThought(thoughtId, context = null) {
 
     // Apply cap modifiers
     if (thought.capModifier && currentBuild) {
-        for (const [skillId, bonus] of Object.entries(thought.capModifier)) {
+        for (const [skillId, data] of Object.entries(thought.capModifier)) {
+            const bonus = typeof data === 'number' ? data : data.value;
             if (!currentBuild.skillCaps[skillId]) {
                 currentBuild.skillCaps[skillId] = { starting: 4, learning: 7 };
             }
@@ -286,7 +289,9 @@ export function forgetThought(thoughtId, context = null) {
 
     // Remove bonuses from current build
     if (thought?.internalizedBonus && currentBuild) {
-        for (const [skillId, bonus] of Object.entries(thought.internalizedBonus)) {
+        for (const [skillId, data] of Object.entries(thought.internalizedBonus)) {
+            // Handle both number format and object format {value, flavor}
+            const bonus = typeof data === 'number' ? data : data.value;
             currentBuild.skillLevels[skillId] = Math.max(
                 1,
                 (currentBuild.skillLevels[skillId] || 1) - bonus
@@ -296,7 +301,8 @@ export function forgetThought(thoughtId, context = null) {
 
     // Remove cap modifiers
     if (thought?.capModifier && currentBuild) {
-        for (const [skillId, bonus] of Object.entries(thought.capModifier)) {
+        for (const [skillId, data] of Object.entries(thought.capModifier)) {
+            const bonus = typeof data === 'number' ? data : data.value;
             if (currentBuild.skillCaps[skillId]) {
                 currentBuild.skillCaps[skillId].learning = Math.max(
                     4,
@@ -360,9 +366,14 @@ export function getResearchPenalties() {
 
     for (const thoughtId of Object.keys(thoughtCabinet.researching)) {
         const thought = THOUGHTS[thoughtId] || thoughtCabinet.customThoughts?.[thoughtId];
-        if (thought?.researchPenalty) {
-            for (const [skillId, penalty] of Object.entries(thought.researchPenalty)) {
-                penalties[skillId] = (penalties[skillId] || 0) + penalty;
+        
+        // Handle both old format (researchPenalty) and new format (researchBonus)
+        const bonusSource = thought?.researchBonus || thought?.researchPenalty;
+        if (bonusSource) {
+            for (const [skillId, data] of Object.entries(bonusSource)) {
+                // Handle both number format and object format {value, flavor}
+                const value = typeof data === 'number' ? data : data.value;
+                penalties[skillId] = (penalties[skillId] || 0) + value;
             }
         }
     }
