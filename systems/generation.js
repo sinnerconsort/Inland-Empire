@@ -417,33 +417,44 @@ export async function callAPI(systemPrompt, userPrompt) {
     let { apiEndpoint, apiKey, model, maxTokens, temperature } = extensionSettings;
 
     if (!apiEndpoint || !apiKey) {
-        throw new Error('API not configured');
+        throw new Error('API not configured - check settings');
     }
 
-    // Ensure endpoint has /chat/completions
-    if (!apiEndpoint.includes('/chat/completions')) {
-        apiEndpoint = apiEndpoint.replace(/\/+$/, '') + '/chat/completions';
-    }
+    // Clean up endpoint - remove trailing slash but DON'T force /chat/completions
+    // User should provide the full endpoint path as needed for their API
+    apiEndpoint = apiEndpoint.replace(/\/+$/, '');
 
-    const response = await fetch(apiEndpoint, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-            model: model || 'glm-4-plus',
-            messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: userPrompt }
-            ],
-            max_tokens: maxTokens || 300,
-            temperature: temperature || 0.9
-        })
-    });
+    console.log('[Inland Empire] Calling API:', apiEndpoint, 'Model:', model);
+
+    let response;
+    try {
+        response = await fetch(apiEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: model || 'glm-4-plus',
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt }
+                ],
+                max_tokens: maxTokens || 300,
+                temperature: temperature || 0.9
+            })
+        });
+    } catch (fetchError) {
+        throw new Error(`Network error: ${fetchError.message}`);
+    }
 
     if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+        let errorDetail = '';
+        try {
+            const errorBody = await response.text();
+            errorDetail = errorBody.substring(0, 200);
+        } catch (e) {}
+        throw new Error(`API ${response.status}: ${errorDetail || response.statusText}`);
     }
 
     const data = await response.json();
