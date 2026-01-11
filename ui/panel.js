@@ -277,8 +277,13 @@ export function createPsychePanel() {
                     </div>
                     <div class="ie-form-group">
                         <label>Character Context</label>
-                        <textarea id="ie-character-context" rows="4" placeholder="Describe who YOU are (the character whose head these voices are in). Example: 'I am Harry, a detective. Kim is my partner.'"></textarea>
-                        <small class="ie-form-hint">Tip: Specify NPC names &amp; pronouns to help voices distinguish "you" from others.</small>
+                        <textarea id="ie-character-context" rows="3" placeholder="Describe who YOU are (the character whose head these voices are in). Example: 'I am Julie, trapped at a club.'"></textarea>
+                        <small class="ie-form-hint">Who is "you" - the character whose head these voices are in.</small>
+                    </div>
+                    <div class="ie-form-group">
+                        <label>Scene Perspective Notes</label>
+                        <textarea id="ie-scene-perspective" rows="3" placeholder="e.g. 'Scene is written from Danny's external POV watching Julie. Julie = you/your. Danny = he/him. When scene says her referring to Julie, convert to your.'"></textarea>
+                        <small class="ie-form-hint">Help voices convert third-person scene text to correct POV.</small>
                     </div>
                     <button class="ie-btn ie-btn-primary ie-btn-save-settings" style="width: 100%; margin-top: 10px;">
                         <i class="fa-solid fa-save"></i>
