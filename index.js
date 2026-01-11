@@ -997,6 +997,27 @@ function resetFABPosition() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// MODAL MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Close all open modals/overlays - escape hatch for UI trap situations
+ */
+function closeAllModals() {
+    // Close thought modal overlays
+    document.querySelectorAll('.ie-thought-modal-overlay').forEach(overlay => {
+        overlay.classList.add('ie-modal-closing');
+        setTimeout(() => overlay.remove(), 200);
+    });
+    
+    // Close discovery modal if open
+    const discoveryOverlay = document.getElementById('ie-discovery-overlay');
+    if (discoveryOverlay?.classList.contains('ie-discovery-open')) {
+        discoveryOverlay.classList.remove('ie-discovery-open');
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════
 // EVENT BINDING
 // ═══════════════════════════════════════════════════════════════
 
@@ -1011,8 +1032,11 @@ function bindEvents() {
         togglePanel();
     });
 
-    // Close button
-    document.querySelector('.ie-btn-close-panel')?.addEventListener('click', togglePanel);
+    // Close button - also close any open modals first
+    document.querySelector('.ie-btn-close-panel')?.addEventListener('click', () => {
+        closeAllModals();
+        togglePanel();
+    });
 
     // Tab switching
     document.querySelectorAll('.ie-tab').forEach(tab => {
@@ -1071,7 +1095,7 @@ function bindEvents() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// AUTO-TRIGGER HOOK - UPDATED with autoScan
+// AUTO-TRIGGER HOOK - UPDATED with autoScan and always updateSceneContext
 // ═══════════════════════════════════════════════════════════════
 
 function setupAutoTrigger() {
@@ -1083,6 +1107,10 @@ function setupAutoTrigger() {
         setTimeout(() => {
             const msg = getLastMessage();
             if (!msg || msg.is_user) return;
+            
+            // ALWAYS update scene context so discovery can work later
+            // This is the key fix - context is now available even without auto-scan
+            updateSceneContext(msg.mes);
             
             // Auto-scan for environmental awareness (runs independently)
             if (extensionSettings.autoScanEnabled) {
@@ -1176,6 +1204,19 @@ async function init() {
 
     // Bind events
     bindEvents();
+
+    // Global ESC key handler - escape from any modal
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeAllModals();
+            
+            // Also close panel if open and no modals were open
+            const panel = document.getElementById('inland-empire-panel');
+            if (panel?.classList.contains('ie-panel-open')) {
+                togglePanel();
+            }
+        }
+    });
 
     // Setup auto-trigger
     setupAutoTrigger();
