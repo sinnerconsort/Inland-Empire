@@ -1,70 +1,115 @@
 /**
- * Inland Empire - Discovery System
- * Environmental awareness, investigation, and discovery modal
+ * Inland Empire - Discovery System v2
+ * "Slay the Princess" style narrated investigations
  * 
- * Consolidates: Object Voices, Intrusive Thoughts, Scene Investigation
- * 
- * NEW: Auto-scan on messages, Quick-scan FAB button, Draggable FAB
- * FIXED: Magnifying glass icon, better context handling
+ * CONSOLIDATED SYSTEM:
+ * - One narrator skill describes the scene through their lens
+ * - 2-5 reactors (skills + objects) comment beneath
+ * - Objects speak as part of the chorus, not separate
+ * - Skill checks affect narrator reliability
  */
 
 import { SKILLS } from '../data/skills.js';
+import { OBJECT_VOICES } from '../data/voices.js';
 import { extensionSettings, saveState, getEffectiveSkillLevel } from './state.js';
 import { callAPI } from './generation.js';
+import { rollSkillCheck } from './dice.js';
 import { getResearchPenalties } from './cabinet.js';
+
+// ═══════════════════════════════════════════════════════════════
+// NARRATOR CONTEXT WEIGHTS
+// Which skills narrate best in which environments?
+// ═══════════════════════════════════════════════════════════════
+
+const NARRATOR_CONTEXTS = {
+    bar_club: {
+        keywords: ['bar', 'club', 'drink', 'party', 'dance', 'disco', 'music', 'drunk', 'booze', 'alcohol', 'nightclub', 'pub', 'tavern', 'lounge'],
+        primary: ['electrochemistry', 'drama', 'composure', 'savoir_faire'],
+        secondary: ['empathy', 'inland_empire', 'suggestion']
+    },
+    crime_scene: {
+        keywords: ['blood', 'body', 'corpse', 'murder', 'evidence', 'crime', 'victim', 'dead', 'death', 'killed', 'wound', 'forensic', 'investigate'],
+        primary: ['visual_calculus', 'perception', 'logic'],
+        secondary: ['esprit_de_corps', 'empathy', 'inland_empire']
+    },
+    abandoned_creepy: {
+        keywords: ['abandoned', 'empty', 'dark', 'shadow', 'haunted', 'decrepit', 'ruin', 'decay', 'forgotten', 'eerie', 'strange', 'uncanny', 'quiet', 'dust'],
+        primary: ['shivers', 'inland_empire', 'half_light'],
+        secondary: ['perception', 'conceptualization']
+    },
+    theater_stage: {
+        keywords: ['stage', 'theater', 'theatre', 'performance', 'audience', 'curtain', 'actor', 'play', 'show', 'spotlight', 'drama', 'scene'],
+        primary: ['drama', 'conceptualization', 'composure'],
+        secondary: ['rhetoric', 'suggestion', 'savoir_faire']
+    },
+    gym_physical: {
+        keywords: ['gym', 'muscle', 'exercise', 'training', 'fight', 'boxing', 'physical', 'sweat', 'weights', 'strong', 'punch', 'hit'],
+        primary: ['physical_instrument', 'endurance', 'pain_threshold'],
+        secondary: ['half_light', 'electrochemistry']
+    },
+    social_conversation: {
+        keywords: ['talk', 'conversation', 'meeting', 'interview', 'question', 'discuss', 'negotiate', 'argue', 'speak', 'said', 'asked'],
+        primary: ['empathy', 'drama', 'rhetoric'],
+        secondary: ['suggestion', 'authority', 'composure']
+    },
+    technical_mechanical: {
+        keywords: ['machine', 'computer', 'device', 'electronic', 'wire', 'mechanism', 'lock', 'system', 'technical', 'repair', 'button', 'switch'],
+        primary: ['interfacing', 'logic', 'perception'],
+        secondary: ['encyclopedia', 'visual_calculus']
+    },
+    artistic_creative: {
+        keywords: ['art', 'painting', 'sculpture', 'music', 'creative', 'beautiful', 'aesthetic', 'gallery', 'museum', 'design', 'color', 'canvas'],
+        primary: ['conceptualization', 'drama', 'inland_empire'],
+        secondary: ['encyclopedia', 'empathy']
+    },
+    urban_street: {
+        keywords: ['street', 'city', 'alley', 'urban', 'building', 'sidewalk', 'rain', 'night', 'neon', 'concrete', 'pavement', 'lamp'],
+        primary: ['shivers', 'perception', 'half_light'],
+        secondary: ['inland_empire', 'esprit_de_corps']
+    },
+    nature_outdoor: {
+        keywords: ['forest', 'tree', 'nature', 'outdoor', 'wild', 'animal', 'plant', 'sky', 'weather', 'cold', 'wind', 'water', 'sea', 'ocean'],
+        primary: ['shivers', 'endurance', 'perception'],
+        secondary: ['inland_empire', 'half_light']
+    },
+    intellectual_academic: {
+        keywords: ['book', 'library', 'study', 'research', 'theory', 'philosophy', 'academic', 'university', 'scholar', 'knowledge', 'read', 'write'],
+        primary: ['encyclopedia', 'logic', 'rhetoric'],
+        secondary: ['conceptualization', 'inland_empire']
+    },
+    dangerous_combat: {
+        keywords: ['gun', 'weapon', 'fight', 'attack', 'danger', 'threat', 'enemy', 'violent', 'kill', 'armed', 'shoot', 'blade', 'knife'],
+        primary: ['half_light', 'reaction_speed', 'hand_eye_coordination'],
+        secondary: ['physical_instrument', 'perception', 'authority']
+    },
+    emotional_intimate: {
+        keywords: ['love', 'hate', 'cry', 'tear', 'emotion', 'feel', 'heart', 'intimate', 'relationship', 'loss', 'grief', 'kiss', 'touch', 'hold'],
+        primary: ['empathy', 'inland_empire', 'volition'],
+        secondary: ['pain_threshold', 'drama', 'suggestion']
+    },
+    police_procedural: {
+        keywords: ['police', 'cop', 'detective', 'badge', 'arrest', 'suspect', 'witness', 'interrogate', 'case', 'investigation', 'RCM', 'precinct'],
+        primary: ['esprit_de_corps', 'authority', 'logic'],
+        secondary: ['perception', 'empathy', 'rhetoric']
+    },
+    mysterious_supernatural: {
+        keywords: ['pale', 'strange', 'impossible', 'dream', 'vision', 'ghost', 'spirit', 'otherworldly', 'surreal', 'void', 'entropy'],
+        primary: ['inland_empire', 'shivers', 'conceptualization'],
+        secondary: ['half_light', 'encyclopedia']
+    }
+};
 
 // ═══════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════
 
-// Pending discoveries waiting to be viewed
-let pendingDiscoveries = [];
-
-// Last scene context for investigation
 let lastSceneContext = '';
-
-// Is investigation in progress?
 let isInvestigating = false;
-
-// Context getter reference (set during init)
 let getContextRef = null;
+let currentInvestigation = null;
 
 // ═══════════════════════════════════════════════════════════════
-// DISCOVERY MANAGEMENT
-// ═══════════════════════════════════════════════════════════════
-
-export function addDiscovery(discovery) {
-    pendingDiscoveries.push({
-        ...discovery,
-        id: `discovery-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        timestamp: Date.now()
-    });
-    updateBadge();
-    pulseThoughtBubble();
-}
-
-export function removeDiscovery(discoveryId) {
-    pendingDiscoveries = pendingDiscoveries.filter(d => d.id !== discoveryId);
-    updateBadge();
-    renderDiscoveryList();
-}
-
-export function clearAllDiscoveries() {
-    pendingDiscoveries = [];
-    updateBadge();
-    renderDiscoveryList();
-}
-
-export function getDiscoveries() {
-    return [...pendingDiscoveries];
-}
-
-export function getDiscoveryCount() {
-    return pendingDiscoveries.length;
-}
-
-// ═══════════════════════════════════════════════════════════════
-// SCENE CONTEXT
+// SCENE CONTEXT MANAGEMENT
 // ═══════════════════════════════════════════════════════════════
 
 export function updateSceneContext(text) {
@@ -76,17 +121,11 @@ export function getSceneContext() {
     return lastSceneContext;
 }
 
-/**
- * NEW: Try to get context from SillyTavern if we don't have any
- * This ensures the discovery system can work even without auto-scan
- */
 export function ensureSceneContext(getContext) {
     if (lastSceneContext) return lastSceneContext;
     
-    // Try to get the last AI message from chat
     const context = getContext?.();
     if (context?.chat?.length) {
-        // Find the last non-user message
         for (let i = context.chat.length - 1; i >= 0; i--) {
             const msg = context.chat[i];
             if (!msg.is_user && msg.mes) {
@@ -102,240 +141,517 @@ export function ensureSceneContext(getContext) {
 function updateScenePreview() {
     const preview = document.getElementById('ie-scene-preview');
     if (preview && lastSceneContext) {
-        const truncated = lastSceneContext.length > 80 
-            ? lastSceneContext.substring(0, 80) + '...' 
+        const truncated = lastSceneContext.length > 100 
+            ? lastSceneContext.substring(0, 100) + '...' 
             : lastSceneContext;
         preview.textContent = truncated;
-        preview.title = lastSceneContext.substring(0, 300);
+        preview.title = lastSceneContext.substring(0, 500);
     }
 }
 
 // ═══════════════════════════════════════════════════════════════
-// INVESTIGATION
+// NARRATOR SELECTION
+// ═══════════════════════════════════════════════════════════════
+
+function analyzeSceneContext(sceneText) {
+    const lowerScene = sceneText.toLowerCase();
+    const contextScores = {};
+    
+    for (const [contextId, context] of Object.entries(NARRATOR_CONTEXTS)) {
+        const matches = context.keywords.filter(kw => lowerScene.includes(kw));
+        if (matches.length > 0) {
+            contextScores[contextId] = {
+                score: matches.length,
+                matches: matches,
+                primary: context.primary,
+                secondary: context.secondary
+            };
+        }
+    }
+    
+    return contextScores;
+}
+
+function selectNarrator(sceneText) {
+    const researchPenalties = getResearchPenalties();
+    const contextScores = analyzeSceneContext(sceneText);
+    
+    // Build weighted narrator pool
+    const narratorPool = [];
+    
+    // Add narrators based on context matches
+    for (const [contextId, data] of Object.entries(contextScores)) {
+        // Primary narrators get high weight
+        for (const skillId of data.primary) {
+            const skill = SKILLS[skillId];
+            if (!skill) continue;
+            
+            const level = getEffectiveSkillLevel(skillId, researchPenalties);
+            const existing = narratorPool.find(n => n.skillId === skillId);
+            
+            if (existing) {
+                existing.weight += data.score * 3 + level;
+                existing.contexts.push(contextId);
+                existing.relevance = 'primary';
+            } else {
+                narratorPool.push({
+                    skillId,
+                    skill,
+                    level,
+                    weight: data.score * 3 + level,
+                    contexts: [contextId],
+                    relevance: 'primary'
+                });
+            }
+        }
+        
+        // Secondary narrators get medium weight
+        for (const skillId of data.secondary) {
+            const skill = SKILLS[skillId];
+            if (!skill) continue;
+            
+            const level = getEffectiveSkillLevel(skillId, researchPenalties);
+            const existing = narratorPool.find(n => n.skillId === skillId);
+            
+            if (existing) {
+                existing.weight += data.score * 1.5 + level * 0.5;
+                if (existing.relevance !== 'primary') {
+                    existing.contexts.push(contextId);
+                    existing.relevance = 'secondary';
+                }
+            } else {
+                narratorPool.push({
+                    skillId,
+                    skill,
+                    level,
+                    weight: data.score * 1.5 + level * 0.5,
+                    contexts: [contextId],
+                    relevance: 'secondary'
+                });
+            }
+        }
+    }
+    
+    // If no context matches, fall back to skill levels + randomness
+    if (narratorPool.length === 0) {
+        const narratorSkills = [
+            'perception', 'inland_empire', 'shivers', 'visual_calculus',
+            'drama', 'empathy', 'conceptualization', 'encyclopedia',
+            'half_light', 'electrochemistry', 'composure', 'esprit_de_corps'
+        ];
+        
+        for (const skillId of narratorSkills) {
+            const skill = SKILLS[skillId];
+            if (!skill) continue;
+            
+            const level = getEffectiveSkillLevel(skillId, researchPenalties);
+            narratorPool.push({
+                skillId,
+                skill,
+                level,
+                weight: level + Math.random() * 3,
+                contexts: [],
+                relevance: 'neutral'
+            });
+        }
+    }
+    
+    // Sort by weight
+    narratorPool.sort((a, b) => b.weight - a.weight);
+    
+    // Weighted random selection from top candidates
+    const topCandidates = narratorPool.slice(0, Math.min(5, narratorPool.length));
+    const totalWeight = topCandidates.reduce((sum, n) => sum + n.weight, 0);
+    let random = Math.random() * totalWeight;
+    
+    for (const candidate of topCandidates) {
+        random -= candidate.weight;
+        if (random <= 0) {
+            return candidate;
+        }
+    }
+    
+    return topCandidates[0];
+}
+
+function getNarratorDifficulty(narrator) {
+    // Primary context = easier check, secondary = medium, neutral = harder
+    switch (narrator.relevance) {
+        case 'primary':
+            return Math.random() < 0.6 ? 8 : 10; // Easy or Medium
+        case 'secondary':
+            return Math.random() < 0.5 ? 10 : 12; // Medium or Challenging
+        default:
+            return Math.random() < 0.4 ? 12 : 14; // Challenging or Heroic
+    }
+}
+
+function getDifficultyName(difficulty) {
+    if (difficulty <= 6) return 'Trivial';
+    if (difficulty <= 8) return 'Easy';
+    if (difficulty <= 10) return 'Medium';
+    if (difficulty <= 12) return 'Challenging';
+    if (difficulty <= 14) return 'Heroic';
+    if (difficulty <= 16) return 'Legendary';
+    return 'Impossible';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// OBJECT DETECTION
+// ═══════════════════════════════════════════════════════════════
+
+function detectObjects(sceneText) {
+    const detectedObjects = [];
+    
+    for (const [objectId, object] of Object.entries(OBJECT_VOICES)) {
+        for (const pattern of object.patterns) {
+            if (pattern.test(sceneText)) {
+                detectedObjects.push({
+                    id: objectId,
+                    ...object,
+                    isObject: true
+                });
+                break; // Only add once per object type
+            }
+        }
+    }
+    
+    return detectedObjects;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// REACTOR SELECTION
+// ═══════════════════════════════════════════════════════════════
+
+function selectReactors(sceneText, narratorSkillId, detectedObjects) {
+    const researchPenalties = getResearchPenalties();
+    const reactorPool = [];
+    const lowerScene = sceneText.toLowerCase();
+    
+    // Add skill reactors (exclude the narrator)
+    for (const [skillId, skill] of Object.entries(SKILLS)) {
+        if (skillId === narratorSkillId) continue;
+        
+        const level = getEffectiveSkillLevel(skillId, researchPenalties);
+        
+        // Check trigger conditions
+        const triggerMatches = skill.triggerConditions.filter(tc => 
+            lowerScene.includes(tc.toLowerCase())
+        ).length;
+        
+        // Include if: trigger matches, high level, or random chance
+        if (triggerMatches > 0 || level >= 4 || Math.random() < 0.1) {
+            reactorPool.push({
+                id: skillId,
+                name: skill.name,
+                signature: skill.signature,
+                color: skill.color,
+                level,
+                weight: triggerMatches * 2.5 + level + Math.random() * 2,
+                isSkill: true,
+                personality: skill.personality
+            });
+        }
+    }
+    
+    // Add detected objects with high priority - they WANT to speak
+    for (const obj of detectedObjects) {
+        reactorPool.push({
+            id: obj.id,
+            name: obj.name,
+            signature: obj.name,
+            color: obj.color,
+            icon: obj.icon,
+            weight: 12 + Math.random() * 5, // High priority - objects are exciting!
+            isObject: true,
+            lines: obj.lines,
+            affinitySkill: obj.affinitySkill
+        });
+    }
+    
+    // Sort by weight
+    reactorPool.sort((a, b) => b.weight - a.weight);
+    
+    // Select 2-5 reactors
+    const numReactors = 2 + Math.floor(Math.random() * 4);
+    const selectedReactors = [];
+    
+    // Ensure at least one object if any were detected (80% chance)
+    const objectReactors = reactorPool.filter(r => r.isObject);
+    if (objectReactors.length > 0 && Math.random() < 0.8) {
+        selectedReactors.push(objectReactors[0]);
+    }
+    
+    // Fill remaining slots with weighted selection
+    for (const reactor of reactorPool) {
+        if (selectedReactors.length >= numReactors) break;
+        if (selectedReactors.find(r => r.id === reactor.id)) continue;
+        
+        // Weighted chance to include
+        const chance = Math.min(0.9, reactor.weight / 12);
+        if (Math.random() < chance) {
+            selectedReactors.push(reactor);
+        }
+    }
+    
+    // Ensure minimum of 2
+    while (selectedReactors.length < 2 && reactorPool.length > selectedReactors.length) {
+        const next = reactorPool.find(r => !selectedReactors.find(s => s.id === r.id));
+        if (next) selectedReactors.push(next);
+        else break;
+    }
+    
+    return selectedReactors.slice(0, 5);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INVESTIGATION GENERATION
 // ═══════════════════════════════════════════════════════════════
 
 export async function investigateSurroundings(options = {}) {
     const { silent = false, source = 'manual' } = options;
     
     if (isInvestigating) {
-        if (!silent) console.log('[Discovery] Already investigating, skipping...');
-        return [];
+        if (!silent) console.log('[Discovery] Already investigating...');
+        return null;
     }
     
-    // Try to ensure we have context before giving up
+    // Ensure we have scene context
     if (!lastSceneContext && getContextRef) {
         ensureSceneContext(getContextRef);
     }
     
     if (!lastSceneContext) {
-        if (!silent) console.warn('[Discovery] No scene context to investigate');
-        updateEmptyState('No scene to investigate yet. Send a message first!');
-        return [];
+        if (!silent) console.warn('[Discovery] No scene context');
+        updateEmptyState('No scene to investigate. Send a message first!');
+        return null;
     }
 
     isInvestigating = true;
     setInvestigateButtonLoading(true);
-    setQuickScanLoading(true);
 
     try {
-        const observations = await generateObservations(lastSceneContext);
+        // 1. Select narrator based on context
+        const narrator = selectNarrator(lastSceneContext);
+        const difficulty = getNarratorDifficulty(narrator);
+        const checkResult = rollSkillCheck(narrator.level, difficulty);
+        checkResult.difficultyName = getDifficultyName(difficulty);
         
-        // Add each observation as a discovery
-        for (const obs of observations) {
-            addDiscovery({
-                type: 'observation',
-                skillId: obs.skillId,
-                skillName: obs.skillName,
-                signature: obs.signature,
-                color: obs.color,
-                content: obs.content,
-                icon: getSkillIcon(obs.skillId),
-                source: source
-            });
+        console.log(`[Discovery] Narrator: ${narrator.skill.signature} (Level ${narrator.level}, ${checkResult.difficultyName}, ${checkResult.success ? 'SUCCESS' : 'FAILURE'})`);
+        
+        // 2. Detect objects in scene
+        const detectedObjects = detectObjects(lastSceneContext);
+        console.log(`[Discovery] Detected objects:`, detectedObjects.map(o => o.name));
+        
+        // 3. Select reactors (skills + objects)
+        const reactors = selectReactors(lastSceneContext, narrator.skillId, detectedObjects);
+        console.log(`[Discovery] Reactors:`, reactors.map(r => r.signature || r.name));
+        
+        // 4. Generate the investigation
+        const investigation = await generateInvestigation(
+            lastSceneContext,
+            narrator,
+            checkResult,
+            reactors
+        );
+        
+        currentInvestigation = investigation;
+        renderInvestigation(investigation);
+        
+        // Pulse the FAB to indicate new content
+        const fab = document.getElementById('ie-thought-fab');
+        if (fab) {
+            fab.classList.add('ie-scan-success');
+            setTimeout(() => fab.classList.remove('ie-scan-success'), 1500);
         }
-
-        if (!silent && observations.length > 0) {
-            // Show a subtle notification
-            const fab = document.getElementById('ie-thought-fab');
-            if (fab) {
-                fab.classList.add('ie-scan-success');
-                setTimeout(() => fab.classList.remove('ie-scan-success'), 1500);
-            }
-        }
-
-        return observations;
+        
+        return investigation;
+        
     } catch (error) {
         console.error('[Discovery] Investigation failed:', error);
         if (!silent) {
             updateEmptyState('Investigation failed. Check API settings.');
         }
-        return [];
+        return null;
     } finally {
         isInvestigating = false;
         setInvestigateButtonLoading(false);
-        setQuickScanLoading(false);
     }
 }
 
-/**
- * Quick scan - called from FAB button, runs silently in background
- */
-export async function quickScan() {
-    return investigateSurroundings({ silent: false, source: 'quick' });
-}
-
-/**
- * Auto scan - called on new messages when enabled
- */
-export async function autoScan(messageText) {
-    if (!extensionSettings.autoScanEnabled) return [];
+async function generateInvestigation(sceneText, narrator, checkResult, reactors) {
+    const checkStatus = checkResult.success ? 'PASSED' : 'FAILED';
+    const checkNote = checkResult.isBoxcars ? ' (CRITICAL SUCCESS!)' :
+                      checkResult.isSnakeEyes ? ' (CRITICAL FAILURE!)' : '';
     
-    // Update context first
-    updateSceneContext(messageText);
-    
-    // Small delay to let things settle
-    await new Promise(r => setTimeout(r, 500));
-    
-    return investigateSurroundings({ silent: true, source: 'auto' });
-}
+    // Build reactor descriptions for the prompt
+    const reactorDescriptions = reactors.map(r => {
+        if (r.isObject) {
+            return `${r.name} (OBJECT in the scene): Speaks as the object itself, in first person. Can tempt, warn, reminisce, or unsettle. Voice is personal and intimate.`;
+        } else {
+            return `${r.signature}: ${r.personality?.substring(0, 120) || 'A skill voice'}`;
+        }
+    }).join('\n');
 
-async function generateObservations(sceneText) {
-    const researchPenalties = getResearchPenalties();
-    
-    // Select skills most likely to notice things
-    const observationSkills = [
-        'perception',      // What you SEE
-        'inlandEmpire',    // What you SENSE
-        'shivers',         // What the CITY tells you
-        'espritDeCorps',   // What other COPS would notice
-        'composure',       // Body language
-        'visualCalculus',  // Spatial details
-        'encyclopedia',    // What you KNOW about objects
-        'drama',           // Deception/staging
-        'halfLight',       // Danger sense
-        'electrochemistry' // Substances
-    ];
+    const systemPrompt = `You are generating a "Slay the Princess" style scene investigation for a Disco Elysium RPG.
 
-    // Weight by skill level and pick 3-5
-    const weighted = observationSkills
-        .map(skillId => ({
-            skillId,
-            skill: SKILLS[skillId],
-            level: getEffectiveSkillLevel(skillId, researchPenalties)
-        }))
-        .filter(s => s.skill && s.level > 0)
-        .sort((a, b) => b.level - a.level);
+THE NARRATOR: ${narrator.skill.signature}
+Narrator's voice: ${narrator.skill.personality?.substring(0, 300)}
 
-    // Pick top skills with some randomness
-    const selectedSkills = [];
-    const numSkills = Math.min(3 + Math.floor(Math.random() * 3), weighted.length);
-    
-    for (let i = 0; i < numSkills && weighted.length > 0; i++) {
-        // Higher skills more likely but not guaranteed
-        const idx = Math.floor(Math.pow(Math.random(), 2) * Math.min(6, weighted.length));
-        selectedSkills.push(weighted.splice(idx, 1)[0]);
-    }
+SKILL CHECK RESULT: ${checkStatus}${checkNote}
+${!checkResult.success ? `
+FAILED CHECK: The narrator's perception is UNRELIABLE. Their description is:
+- Filtered heavily through their obsessions and biases
+- Missing obvious details while fixating on irrelevant ones
+- Colored by their particular neuroses
+- Still evocative, but not trustworthy` : ''}
+${checkResult.isSnakeEyes ? `
+CRITICAL FAILURE: The narrator is SPECTACULARLY WRONG about something important. They confidently misread the situation in a way that's almost poetic in its wrongness.` : ''}
+${checkResult.isBoxcars ? `
+CRITICAL SUCCESS: The narrator perceives something PROFOUND - a deep truth about this place that others would miss entirely. Almost supernatural insight.` : ''}
 
-    if (selectedSkills.length === 0) {
-        return [];
-    }
+THE REACTORS (comment after narration):
+${reactorDescriptions}
 
-    // Build prompt
-    const skillDescriptions = selectedSkills.map(s => 
-        `${s.skill.signature} (Level ${s.level}): ${s.skill.personality}`
-    ).join('\n');
+YOUR TASK:
 
-    const systemPrompt = `You are generating environmental observations for a Disco Elysium-style investigation.
+1. NARRATOR BLOCK: Write ONE paragraph (3-5 sentences) describing the scene ENTIRELY through ${narrator.skill.signature}'s unique perspective and voice. This is NOT neutral description - this is how THIS skill experiences this place. Use their verbal tics, their obsessions, their way of seeing the world. Like "Slay the Princess" - the narrator completely reframes reality through their lens.
 
-OBSERVING SKILLS:
-${skillDescriptions}
+2. REACTOR LINES: Each reactor gets ONE short line (max 15 words) reacting to something specific. They can:
+   - Notice a detail the narrator missed or ignored
+   - Disagree with the narrator's interpretation
+   - Warn about something
+   - Be tempted by something in the scene
+   - Argue with another reactor
+   - OBJECTS speak AS themselves in first person ("Pick me up." "I've seen what happens here.")
 
-RULES:
-1. Each skill notices something DIFFERENT based on their personality
-2. Observations should be 1-2 sentences, evocative and specific
-3. Format EXACTLY as: SKILL_SIGNATURE - observation
-4. Be specific to the scene - what would THIS skill notice HERE?
-5. Include sensory details, emotional residue, hidden meanings
-6. PERCEPTION sees physical details
-7. INLAND EMPIRE senses emotional/psychic impressions
-8. SHIVERS feels the city/place itself speaking
-9. ESPRIT DE CORPS notices cop-relevant details
-10. Other skills notice things relevant to their domain
+FORMAT EXACTLY LIKE THIS:
+[NARRATOR]
+(Your narrator paragraph - evocative, biased, in-character)
 
-Generate ${selectedSkills.length} observations, one per skill.`;
+[REACTORS]
+SIGNATURE - Their one short reaction
+SIGNATURE - Their one short reaction
+OBJECT NAME - Object speaking as itself
+(2-5 total reactor lines)`;
 
     const userPrompt = `Scene to investigate:
-"${sceneText.substring(0, 1000)}"
+"${sceneText.substring(0, 1200)}"
 
-What does each skill notice? Be specific and evocative.`;
+Generate the investigation. Narrator is ${narrator.skill.signature} who ${checkResult.success ? 'PASSED' : 'FAILED'}${checkNote} their check.`;
 
     try {
         const response = await callAPI(systemPrompt, userPrompt);
-        return parseObservations(response, selectedSkills);
+        return parseInvestigation(response, narrator, checkResult, reactors);
     } catch (error) {
         console.error('[Discovery] API call failed:', error);
-        return [];
+        throw error;
     }
 }
 
-function parseObservations(response, selectedSkills) {
-    const lines = response.trim().split('\n').filter(line => line.trim());
-    const observations = [];
-
-    // Build skill map
-    const skillMap = {};
-    selectedSkills.forEach(s => {
-        skillMap[s.skill.signature.toUpperCase()] = s;
-        skillMap[s.skill.name.toUpperCase()] = s;
-    });
-
-    for (const line of lines) {
-        const match = line.match(/^([A-Z][A-Z\s\/]+)\s*[-:–—]\s*(.+)$/i);
-        if (match) {
-            const skillInfo = skillMap[match[1].trim().toUpperCase()];
-            if (skillInfo) {
-                observations.push({
-                    skillId: skillInfo.skillId,
-                    skillName: skillInfo.skill.name,
-                    signature: skillInfo.skill.signature,
-                    color: skillInfo.skill.color,
-                    content: match[2].trim()
+function parseInvestigation(response, narrator, checkResult, reactors) {
+    const investigation = {
+        narrator: {
+            skillId: narrator.skillId,
+            signature: narrator.skill.signature,
+            color: narrator.skill.color,
+            checkResult: checkResult,
+            content: ''
+        },
+        reactors: []
+    };
+    
+    // Parse narrator block
+    const narratorMatch = response.match(/\[NARRATOR\]\s*\n?([\s\S]*?)(?=\[REACTORS\]|$)/i);
+    if (narratorMatch) {
+        // Clean up the narrator content
+        let content = narratorMatch[1].trim();
+        // Remove the skill name if it appears at the start
+        content = content.replace(new RegExp(`^${narrator.skill.signature}\\s*[-–—:]?\\s*`, 'i'), '');
+        investigation.narrator.content = content;
+    } else {
+        // Fallback: take first substantial paragraph
+        const lines = response.split('\n').filter(l => l.trim() && l.trim().length > 50);
+        investigation.narrator.content = lines[0] || 'The scene defies description.';
+    }
+    
+    // Parse reactor lines
+    const reactorMatch = response.match(/\[REACTORS\]\s*\n?([\s\S]*?)$/i);
+    if (reactorMatch) {
+        const reactorLines = reactorMatch[1].trim().split('\n').filter(l => l.trim());
+        
+        for (const line of reactorLines) {
+            // Match "SIGNATURE - content" or "SIGNATURE: content" or "THE OBJECT - content"
+            const match = line.match(/^([A-Z][A-Z\s\/]+|THE [A-Z\s]+)\s*[-–—:]\s*(.+)$/i);
+            if (match) {
+                const name = match[1].trim().toUpperCase();
+                const content = match[2].trim().replace(/^["']|["']$/g, ''); // Remove quotes
+                
+                // Find matching reactor
+                const reactor = reactors.find(r => {
+                    const sig = (r.signature || r.name || '').toUpperCase();
+                    return sig === name || name.includes(sig) || sig.includes(name);
                 });
+                
+                if (reactor) {
+                    investigation.reactors.push({
+                        id: reactor.id,
+                        signature: reactor.signature || reactor.name,
+                        color: reactor.color,
+                        icon: reactor.icon,
+                        isObject: reactor.isObject,
+                        content: content
+                    });
+                } else {
+                    // Try to match any skill by signature
+                    const skill = Object.values(SKILLS).find(s => 
+                        s.signature.toUpperCase() === name || 
+                        s.name.toUpperCase() === name
+                    );
+                    if (skill) {
+                        investigation.reactors.push({
+                            id: skill.id,
+                            signature: skill.signature,
+                            color: skill.color,
+                            isObject: false,
+                            content: content
+                        });
+                    }
+                }
             }
         }
     }
-
-    return observations;
-}
-
-function getSkillIcon(skillId) {
-    const iconMap = {
-        perception: '👁️',
-        inlandEmpire: '🔮',
-        shivers: '❄️',
-        espritDeCorps: '👮',
-        composure: '😐',
-        visualCalculus: '📐',
-        encyclopedia: '📚',
-        drama: '🎭',
-        halfLight: '⚡',
-        electrochemistry: '💊',
-        logic: '🧩',
-        rhetoric: '💬',
-        empathy: '💜',
-        authority: '👊',
-        suggestion: '🎯',
-        volition: '💪',
-        endurance: '🏋️',
-        painThreshold: '🩸',
-        physicalInstrument: '💪',
-        interfacing: '🔧',
-        savoirFaire: '🎪',
-        reactionSpeed: '⚡',
-        handEyeCoordination: '🎯',
-        conceptualization: '🎨'
-    };
-    return iconMap[skillId] || '💭';
+    
+    // Fallback: if we got no reactors, try to parse any skill-like lines from the response
+    if (investigation.reactors.length === 0 && reactors.length > 0) {
+        const allLines = response.split('\n');
+        for (const line of allLines) {
+            if (investigation.reactors.length >= 5) break;
+            const match = line.match(/^([A-Z][A-Z\s\/]+)\s*[-–—:]\s*(.+)$/i);
+            if (match) {
+                const name = match[1].trim().toUpperCase();
+                // Skip if it's the narrator
+                if (name === narrator.skill.signature.toUpperCase()) continue;
+                
+                const reactor = reactors.find(r => 
+                    (r.signature || r.name || '').toUpperCase().includes(name) ||
+                    name.includes((r.signature || r.name || '').toUpperCase())
+                );
+                if (reactor) {
+                    investigation.reactors.push({
+                        id: reactor.id,
+                        signature: reactor.signature || reactor.name,
+                        color: reactor.color,
+                        icon: reactor.icon,
+                        isObject: reactor.isObject,
+                        content: match[2].trim()
+                    });
+                }
+            }
+        }
+    }
+    
+    return investigation;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -343,30 +659,25 @@ function getSkillIcon(skillId) {
 // ═══════════════════════════════════════════════════════════════
 
 export function createThoughtBubbleFAB(getContext) {
-    // Store context getter reference
     getContextRef = getContext;
     
     const fab = document.createElement('div');
     fab.id = 'ie-thought-fab';
     fab.className = 'ie-thought-fab';
-    fab.title = 'Environmental Awareness';
+    fab.title = 'Investigate Surroundings';
     
-    // CHANGED: Magnifying glass icon instead of eye
     fab.innerHTML = `
         <span class="ie-thought-fab-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
-        <div class="ie-thought-fab-badge" data-count="0"></div>
-        <button class="ie-quick-scan-btn" id="ie-quick-scan" title="Quick Scan">
+        <button class="ie-quick-scan-btn" id="ie-quick-scan" title="Quick Investigate">
             <i class="fa-solid fa-rotate"></i>
         </button>
     `;
 
-    // Position below the brain FAB
     fab.style.top = `${(extensionSettings.discoveryFabTop ?? extensionSettings.fabPositionTop ?? 140) + 60}px`;
     fab.style.left = `${extensionSettings.discoveryFabLeft ?? extensionSettings.fabPositionLeft ?? 10}px`;
 
     // Main FAB click opens modal
     fab.addEventListener('click', (e) => {
-        // Don't toggle if clicking the quick scan button
         if (e.target.closest('.ie-quick-scan-btn')) return;
         if (fab.dataset.justDragged === 'true') {
             fab.dataset.justDragged = 'false';
@@ -375,16 +686,14 @@ export function createThoughtBubbleFAB(getContext) {
         toggleDiscoveryModal();
     });
 
-    // Quick scan button
+    // Quick scan button - investigate immediately
     const quickScanBtn = fab.querySelector('#ie-quick-scan');
     quickScanBtn?.addEventListener('click', (e) => {
         e.stopPropagation();
-        quickScan();
+        investigateSurroundings({ silent: false, source: 'quick' });
     });
 
-    // Make FAB draggable
     setupFabDragging(fab);
-
     return fab;
 }
 
@@ -394,9 +703,7 @@ function setupFabDragging(fab) {
     let hasMoved = false;
 
     function startDrag(e) {
-        // Don't drag if clicking buttons
         if (e.target.closest('button')) return;
-        
         isDragging = true;
         hasMoved = false;
         const touch = e.touches ? e.touches[0] : e;
@@ -448,13 +755,12 @@ export function createDiscoveryModal() {
     overlay.id = 'ie-discovery-overlay';
     overlay.className = 'ie-discovery-overlay';
 
-    // CHANGED: Magnifying glass icon instead of eye
     overlay.innerHTML = `
         <div class="ie-discovery-modal">
             <div class="ie-discovery-header">
                 <div class="ie-discovery-title">
-                    <span class="ie-discovery-title-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
-                    <span>Environmental Awareness</span>
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span>Investigation</span>
                 </div>
                 <button class="ie-discovery-close" title="Close">
                     <i class="fa-solid fa-times"></i>
@@ -467,63 +773,58 @@ export function createDiscoveryModal() {
                     <span>Current Scene:</span>
                 </div>
                 <div class="ie-scene-preview" id="ie-scene-preview">
-                    No scene loaded yet...
+                    No scene loaded...
                 </div>
             </div>
             
             <div class="ie-discovery-actions">
-                <button class="ie-discovery-investigate" id="ie-investigate-btn" title="Full investigation with multiple skills">
+                <button class="ie-btn ie-btn-primary ie-discovery-investigate" id="ie-investigate-btn">
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <span>Investigate</span>
                 </button>
-                <button class="ie-discovery-rescan" id="ie-rescan-btn" title="Quick rescan of the scene">
+                <button class="ie-btn ie-discovery-rescan" id="ie-rescan-btn" title="Re-investigate with potentially different narrator">
                     <i class="fa-solid fa-rotate"></i>
                     <span>Rescan</span>
                 </button>
             </div>
             
-            <div class="ie-discovery-list" id="ie-discovery-list">
+            <div class="ie-investigation-results" id="ie-investigation-results">
                 <div class="ie-discovery-empty">
-                    <i class="fa-solid fa-search"></i>
-                    <span>Nothing has caught your attention... yet.</span>
+                    <i class="fa-solid fa-eye-slash"></i>
+                    <span>Click Investigate to examine your surroundings...</span>
                 </div>
             </div>
-            
-            <button class="ie-discovery-clear" id="ie-discovery-clear" style="display: none;">
-                Clear All
-            </button>
         </div>
     `;
 
     // Event listeners
     overlay.querySelector('.ie-discovery-close').addEventListener('click', toggleDiscoveryModal);
+    
     overlay.querySelector('#ie-investigate-btn').addEventListener('click', () => {
-        // Ensure we have context before investigating
         if (getContextRef) ensureSceneContext(getContextRef);
         investigateSurroundings({ silent: false, source: 'modal' });
     });
+    
     overlay.querySelector('#ie-rescan-btn').addEventListener('click', () => {
-        // Ensure we have context before rescanning
         if (getContextRef) ensureSceneContext(getContextRef);
-        // Clear existing observations before rescanning
-        pendingDiscoveries = pendingDiscoveries.filter(d => d.type !== 'observation');
-        updateBadge();
-        renderDiscoveryList();
+        currentInvestigation = null;
         investigateSurroundings({ silent: false, source: 'rescan' });
     });
-    overlay.querySelector('#ie-discovery-clear').addEventListener('click', clearAllDiscoveries);
     
-    // Close on overlay click
+    // Close on overlay background click
     overlay.addEventListener('click', (e) => {
         if (e.target === overlay) toggleDiscoveryModal();
     });
 
+    // ESC to close
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && overlay.classList.contains('ie-discovery-open')) {
+            toggleDiscoveryModal();
+        }
+    });
+
     return overlay;
 }
-
-// ═══════════════════════════════════════════════════════════════
-// UI UPDATES
-// ═══════════════════════════════════════════════════════════════
 
 export function toggleDiscoveryModal() {
     const overlay = document.getElementById('ie-discovery-overlay');
@@ -534,174 +835,144 @@ export function toggleDiscoveryModal() {
     if (isOpen) {
         overlay.classList.remove('ie-discovery-open');
     } else {
-        // Try to ensure we have context when opening
         if (getContextRef) ensureSceneContext(getContextRef);
         overlay.classList.add('ie-discovery-open');
-        renderDiscoveryList();
         updateScenePreview();
+        
+        // Render existing investigation if any
+        if (currentInvestigation) {
+            renderInvestigation(currentInvestigation);
+        }
     }
 }
 
-function updateBadge() {
-    const badge = document.querySelector('.ie-thought-fab-badge');
-    if (badge) {
-        const count = pendingDiscoveries.length;
-        badge.textContent = count > 9 ? '9+' : count;
-        badge.dataset.count = count;
-    }
-}
+// ═══════════════════════════════════════════════════════════════
+// INVESTIGATION RENDERING
+// ═══════════════════════════════════════════════════════════════
 
-function pulseThoughtBubble() {
-    const fab = document.getElementById('ie-thought-fab');
-    if (fab) {
-        fab.classList.add('ie-thought-fab-pulse');
-        setTimeout(() => fab.classList.remove('ie-thought-fab-pulse'), 3000);
+function renderInvestigation(investigation) {
+    const container = document.getElementById('ie-investigation-results');
+    if (!container) return;
+    
+    const check = investigation.narrator.checkResult;
+    
+    // Build check result badge
+    let checkBadge = '';
+    if (check) {
+        if (check.isBoxcars) {
+            checkBadge = `<span class="ie-check-badge ie-critical-success">⚡ Critical Success</span>`;
+        } else if (check.isSnakeEyes) {
+            checkBadge = `<span class="ie-check-badge ie-critical-failure">💀 Critical Failure</span>`;
+        } else if (check.success) {
+            checkBadge = `<span class="ie-check-badge ie-success">${check.difficultyName} [Success]</span>`;
+        } else {
+            checkBadge = `<span class="ie-check-badge ie-failure">${check.difficultyName} [Failure]</span>`;
+        }
     }
+    
+    // Narrator block
+    const narratorHtml = `
+        <div class="ie-narrator-block" style="border-left-color: ${investigation.narrator.color}">
+            <div class="ie-narrator-header">
+                <span class="ie-narrator-name" style="color: ${investigation.narrator.color}">
+                    ${investigation.narrator.signature}
+                </span>
+                ${checkBadge}
+                <span class="ie-narrator-label">NARRATOR</span>
+            </div>
+            <div class="ie-narrator-content">
+                "${investigation.narrator.content}"
+            </div>
+        </div>
+    `;
+    
+    // Reactor lines
+    const reactorsHtml = investigation.reactors.map(reactor => {
+        const icon = reactor.isObject ? (reactor.icon || '📦') : '';
+        const objectClass = reactor.isObject ? 'ie-reactor-object' : '';
+        const typeLabel = reactor.isObject ? '<span class="ie-reactor-type">OBJECT</span>' : '';
+        
+        return `
+            <div class="ie-reactor-line ${objectClass}" style="border-left-color: ${reactor.color}">
+                ${icon ? `<span class="ie-reactor-icon">${icon}</span>` : ''}
+                <span class="ie-reactor-name" style="color: ${reactor.color}">
+                    ${reactor.signature}
+                </span>
+                ${typeLabel}
+                <span class="ie-reactor-dash">—</span>
+                <span class="ie-reactor-content">${reactor.content}</span>
+            </div>
+        `;
+    }).join('');
+    
+    container.innerHTML = `
+        ${narratorHtml}
+        ${investigation.reactors.length > 0 ? `
+            <div class="ie-reactors-section">
+                <div class="ie-reactors-divider"></div>
+                ${reactorsHtml}
+            </div>
+        ` : ''}
+    `;
 }
 
 function setInvestigateButtonLoading(loading) {
     const btn = document.getElementById('ie-investigate-btn');
-    if (!btn) return;
-
-    if (loading) {
-        btn.disabled = true;
-        btn.innerHTML = `
-            <i class="fa-solid fa-spinner fa-spin"></i>
-            <span>Scanning...</span>
-        `;
-    } else {
-        btn.disabled = false;
-        btn.innerHTML = `
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <span>Investigate</span>
-        `;
-    }
-    
-    // Also update rescan button
     const rescanBtn = document.getElementById('ie-rescan-btn');
+    
+    if (btn) {
+        btn.disabled = loading;
+        btn.innerHTML = loading 
+            ? `<i class="fa-solid fa-spinner fa-spin"></i><span>Investigating...</span>`
+            : `<i class="fa-solid fa-magnifying-glass"></i><span>Investigate</span>`;
+    }
     if (rescanBtn) {
         rescanBtn.disabled = loading;
     }
 }
 
-function setQuickScanLoading(loading) {
-    const btn = document.getElementById('ie-quick-scan');
-    if (!btn) return;
-    
-    if (loading) {
-        btn.classList.add('ie-scanning');
-        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
-    } else {
-        btn.classList.remove('ie-scanning');
-        btn.innerHTML = `<i class="fa-solid fa-rotate"></i>`;
-    }
-}
-
 function updateEmptyState(message) {
-    const container = document.getElementById('ie-discovery-list');
-    if (container && pendingDiscoveries.length === 0) {
+    const container = document.getElementById('ie-investigation-results');
+    if (container) {
         container.innerHTML = `
             <div class="ie-discovery-empty">
-                <i class="fa-solid fa-search"></i>
+                <i class="fa-solid fa-eye-slash"></i>
                 <span>${message}</span>
             </div>
         `;
     }
 }
 
-export function renderDiscoveryList() {
-    const container = document.getElementById('ie-discovery-list');
-    const clearBtn = document.getElementById('ie-discovery-clear');
-    if (!container) return;
+// ═══════════════════════════════════════════════════════════════
+// AUTO-SCAN (triggered on new messages if enabled)
+// ═══════════════════════════════════════════════════════════════
 
-    if (pendingDiscoveries.length === 0) {
-        container.innerHTML = `
-            <div class="ie-discovery-empty">
-                <i class="fa-solid fa-search"></i>
-                <span>Nothing has caught your attention... yet.</span>
-            </div>
-        `;
-        if (clearBtn) clearBtn.style.display = 'none';
-        return;
-    }
-
-    if (clearBtn) clearBtn.style.display = 'block';
-
-    container.innerHTML = pendingDiscoveries.map(discovery => `
-        <div class="ie-discovery-item" 
-             data-id="${discovery.id}" 
-             data-type="${discovery.type}"
-             style="--item-color: ${discovery.color}">
-            <div class="ie-discovery-item-header">
-                <span class="ie-discovery-item-icon">${discovery.icon || '💭'}</span>
-                <span class="ie-discovery-item-skill" style="color: ${discovery.color}">
-                    ${discovery.signature || discovery.name || 'Unknown'}
-                </span>
-                <span class="ie-discovery-item-type">${getTypeLabel(discovery.type)}</span>
-            </div>
-            <div class="ie-discovery-item-content">"${discovery.content}"</div>
-            <button class="ie-discovery-item-dismiss" data-id="${discovery.id}" title="Dismiss">
-                <i class="fa-solid fa-times"></i>
-            </button>
-        </div>
-    `).join('');
-
-    // Bind dismiss buttons
-    container.querySelectorAll('.ie-discovery-item-dismiss').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            removeDiscovery(btn.dataset.id);
-        });
-    });
-}
-
-function getTypeLabel(type) {
-    const labels = {
-        intrusive: 'Intrusive',
-        object: 'Object',
-        observation: 'Observed'
-    };
-    return labels[type] || 'Discovery';
+export async function autoScan(messageText) {
+    if (!extensionSettings.autoScanEnabled) return null;
+    
+    updateSceneContext(messageText);
+    await new Promise(r => setTimeout(r, 500));
+    
+    return investigateSurroundings({ silent: true, source: 'auto' });
 }
 
 // ═══════════════════════════════════════════════════════════════
-// INTEGRATION HELPERS
+// LEGACY EXPORTS (for compatibility during transition)
+// These can be removed once index.js is updated
 // ═══════════════════════════════════════════════════════════════
 
-/**
- * Add an intrusive thought to discoveries
- */
 export function addIntrusiveDiscovery(thought) {
-    addDiscovery({
-        type: 'intrusive',
-        skillId: thought.skillId,
-        skillName: thought.skillName,
-        signature: thought.signature,
-        color: thought.color,
-        content: thought.content,
-        icon: '🧠'
-    });
+    // No longer used - intrusive thoughts now come through reactors
+    console.log('[Discovery] addIntrusiveDiscovery is deprecated');
 }
 
-/**
- * Add an object voice to discoveries
- */
 export function addObjectDiscovery(objectVoice) {
-    addDiscovery({
-        type: 'object',
-        skillId: objectVoice.objectId,
-        name: objectVoice.name,
-        signature: objectVoice.name,
-        color: objectVoice.color,
-        content: objectVoice.content,
-        icon: objectVoice.icon
-    });
+    // No longer used - objects now come through reactors
+    console.log('[Discovery] addObjectDiscovery is deprecated');
 }
 
 // ═══════════════════════════════════════════════════════════════
 // EXPORTS
 // ═══════════════════════════════════════════════════════════════
 
-export {
-    isInvestigating
-};
+export { isInvestigating };
