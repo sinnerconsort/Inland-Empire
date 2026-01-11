@@ -2561,6 +2561,375 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   THOUGHT BUBBLE FAB - Environmental Awareness
+   ═══════════════════════════════════════════════════════════════ */
+
+.ie-thought-fab {
+    position: fixed;
+    z-index: 9997;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #5bc48a 0%, #47b67c 50%, #3a9468 100%);
+    border: 3px solid #d0bd61;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.2s ease;
+    font-size: 20px;
+}
+
+.ie-thought-fab:hover {
+    transform: scale(1.1);
+    box-shadow: 
+        0 6px 20px rgba(71, 182, 124, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    border-color: #e0d080;
+}
+
+.ie-thought-fab:active {
+    transform: scale(0.95);
+}
+
+/* Notification badge */
+.ie-thought-fab-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 18px;
+    height: 18px;
+    background: #d0bd61;
+    border-radius: 50%;
+    color: #1a1a20;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    animation: ie-badge-pulse 2s infinite;
+}
+
+.ie-thought-fab-badge:empty,
+.ie-thought-fab-badge[data-count="0"] {
+    display: none;
+}
+
+@keyframes ie-badge-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Pulse animation when new discoveries */
+.ie-thought-fab-pulse {
+    animation: ie-fab-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes ie-fab-glow {
+    0%, 100% { 
+        box-shadow: 
+            0 4px 12px rgba(0, 0, 0, 0.4),
+            0 0 0 0 rgba(208, 189, 97, 0);
+    }
+    50% { 
+        box-shadow: 
+            0 4px 12px rgba(0, 0, 0, 0.4),
+            0 0 0 8px rgba(208, 189, 97, 0.3);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DISCOVERY MODAL
+   ═══════════════════════════════════════════════════════════════ */
+
+.ie-discovery-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 10010;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.ie-discovery-overlay.ie-discovery-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.ie-discovery-modal {
+    width: 90%;
+    max-width: 420px;
+    max-height: 80vh;
+    background: linear-gradient(135deg, #2a2318 0%, #1f1a14 50%, #2a2318 100%);
+    border: 3px solid #d0bd61;
+    border-radius: 12px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.ie-discovery-overlay.ie-discovery-open .ie-discovery-modal {
+    transform: scale(1);
+}
+
+/* Modal Header */
+.ie-discovery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: linear-gradient(180deg, rgba(208, 189, 97, 0.15) 0%, transparent 100%);
+    border-bottom: 1px solid rgba(208, 189, 97, 0.3);
+}
+
+.ie-discovery-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--ie-font-header);
+    font-size: 16px;
+    font-weight: 700;
+    color: #d0bd61;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+.ie-discovery-title-icon {
+    font-size: 20px;
+}
+
+.ie-discovery-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #d0bd61;
+    border: none;
+    color: #1a1a20;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.ie-discovery-close:hover {
+    background: #e0d080;
+    transform: scale(1.1);
+}
+
+/* Investigate Button */
+.ie-discovery-investigate {
+    margin: 16px 20px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #47b67c 0%, #3a9468 100%);
+    border: 2px solid #d0bd61;
+    border-radius: 8px;
+    color: #ffffff;
+    font-family: var(--ie-font-header);
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.ie-discovery-investigate:hover:not(:disabled) {
+    background: linear-gradient(135deg, #5bc48a 0%, #47b67c 100%);
+    box-shadow: 0 4px 16px rgba(71, 182, 124, 0.3);
+}
+
+.ie-discovery-investigate:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.ie-discovery-investigate i {
+    font-size: 16px;
+}
+
+/* Discovery List */
+.ie-discovery-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ie-discovery-empty {
+    text-align: center;
+    padding: 30px 20px;
+    color: #6a6a5a;
+    font-style: italic;
+}
+
+.ie-discovery-empty i {
+    display: block;
+    font-size: 32px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+/* Individual Discovery Item */
+.ie-discovery-item {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    padding: 12px;
+    border-left: 4px solid var(--item-color, #888);
+    position: relative;
+    animation: ie-discovery-slide-in 0.3s ease;
+}
+
+@keyframes ie-discovery-slide-in {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.ie-discovery-item-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.ie-discovery-item-icon {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+}
+
+.ie-discovery-item-skill {
+    font-family: var(--ie-font-header);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--item-color, #888);
+}
+
+.ie-discovery-item-type {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #9a958c;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: auto;
+}
+
+.ie-discovery-item-content {
+    color: #e8e4de;
+    font-size: 14px;
+    font-style: italic;
+    line-height: 1.5;
+    padding-left: 32px;
+}
+
+.ie-discovery-item-dismiss {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: transparent;
+    border: none;
+    color: #6a6a5a;
+    cursor: pointer;
+    padding: 4px;
+    font-size: 12px;
+    opacity: 0;
+    transition: all 0.2s;
+}
+
+.ie-discovery-item:hover .ie-discovery-item-dismiss {
+    opacity: 1;
+}
+
+.ie-discovery-item-dismiss:hover {
+    color: #d0bd61;
+}
+
+/* Discovery type colors */
+.ie-discovery-item[data-type="intrusive"] {
+    background: rgba(138, 43, 226, 0.1);
+}
+
+.ie-discovery-item[data-type="object"] {
+    background: rgba(70, 130, 180, 0.1);
+}
+
+.ie-discovery-item[data-type="observation"] {
+    background: rgba(71, 182, 124, 0.1);
+}
+
+/* Clear all button */
+.ie-discovery-clear {
+    margin: 0 20px 16px;
+    padding: 8px;
+    background: transparent;
+    border: 1px dashed #4a4a3a;
+    border-radius: 6px;
+    color: #6a6a5a;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ie-discovery-clear:hover {
+    border-color: #d0bd61;
+    color: #d0bd61;
+}
+
+/* Modal scrollbar */
+.ie-discovery-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.ie-discovery-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+.ie-discovery-list::-webkit-scrollbar-thumb {
+    background: #4a4a3a;
+    border-radius: 3px;
+}
+
+.ie-discovery-list::-webkit-scrollbar-thumb:hover {
+    background: #d0bd61;
+}
+
+/* ═══════════════════════════════════════════════════════════════
    RESPONSIVE / MOBILE
    ═══════════════════════════════════════════════════════════════ */
 
@@ -2580,5 +2949,10 @@
 
     .ie-status-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .ie-discovery-modal {
+        width: 95%;
+        max-height: 85vh;
     }
 }
