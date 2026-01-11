@@ -268,33 +268,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 [data-tab-content="skills"] {
-    background: linear-gradient(
-        to right,
-        #62716f 0px,
-        #62716f 6px,
-        #0d3628 6px,
-        #0d3628 8%,
-        #112d2a 30%,
-        #14292b 60%,
-        #17252e 92%,
-        #62716f 92%,
-        #62716f 100%
-    );
-    background-attachment: local;
-    position: relative;
-    padding-right: 12px;
-    padding-left: 10px;
-}
-
-/* Film grain/noise texture overlay */
-[data-tab-content="skills"]::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 6px;
-    height: 9999px;
-    background-image: 
+    background:
         /* Left film strip holes */
         repeating-linear-gradient(
             to bottom,
@@ -304,22 +278,8 @@
             rgba(0, 0, 0, 0.3) 23px,
             transparent 23px,
             transparent 43px
-        );
-    background-size: 6px 43px;
-    background-repeat: repeat-y;
-    pointer-events: none;
-    z-index: 0;
-}
-
-/* Right side film strip holes */
-[data-tab-content="skills"]::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 10px;
-    height: 9999px;
-    background: 
+        ),
+        /* Right film strip holes */
         repeating-linear-gradient(
             to bottom,
             transparent 0px,
@@ -328,10 +288,36 @@
             rgba(0, 0, 0, 0.3) 23px,
             transparent 23px,
             transparent 43px
+        ),
+        /* Main gradient */
+        linear-gradient(
+            to right,
+            #62716f 0px,
+            #62716f 6px,
+            #0d3628 6px,
+            #0d3628 8%,
+            #112d2a 30%,
+            #14292b 60%,
+            #17252e 92%,
+            #62716f 92%,
+            #62716f 100%
         );
-    border-left: 1px solid rgba(0, 0, 0, 0.2);
-    pointer-events: none;
-    z-index: 3;
+    background-size: 6px 43px, 10px 43px, 100% 100%;
+    background-position: left top, right top, left top;
+    background-repeat: repeat-y, repeat-y, repeat;
+    background-attachment: local, local, local;
+    position: relative;
+    padding-right: 12px;
+    padding-left: 10px;
+}
+
+/* Remove the pseudo-elements since holes are now in background */
+[data-tab-content="skills"]::before {
+    display: none;
+}
+
+[data-tab-content="skills"]::after {
+    display: none;
 }
 
 /* Content needs to be above the overlays */
