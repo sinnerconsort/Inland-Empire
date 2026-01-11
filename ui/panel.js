@@ -199,48 +199,14 @@ export function createPsychePanel() {
                 </div>
 
                 <div class="ie-section">
-                    <div class="ie-section-header"><span>Intrusive Thoughts</span></div>
-                    <div class="ie-form-group">
-                        <label class="ie-checkbox">
-                            <input type="checkbox" id="ie-intrusive-enabled" checked />
-                            <span>Enable intrusive thoughts</span>
-                        </label>
-                    </div>
-                    <div class="ie-form-group">
-                        <label class="ie-checkbox">
-                            <input type="checkbox" id="ie-intrusive-in-chat" checked />
-                            <span>Show in chat (not just toasts)</span>
-                        </label>
-                    </div>
-                    <div class="ie-form-group">
-                        <label>Intrusive Chance (%)</label>
-                        <input type="number" id="ie-intrusive-chance" min="0" max="100" value="15" />
-                    </div>
-                </div>
-
-                <div class="ie-section">
-                    <div class="ie-section-header"><span>Object Voices</span></div>
-                    <div class="ie-form-group">
-                        <label class="ie-checkbox">
-                            <input type="checkbox" id="ie-object-voices-enabled" checked />
-                            <span>Enable object voices</span>
-                        </label>
-                    </div>
-                    <div class="ie-form-group">
-                        <label>Object Voice Chance (%)</label>
-                        <input type="number" id="ie-object-chance" min="0" max="100" value="40" />
-                    </div>
-                </div>
-
-                <div class="ie-section">
-                    <div class="ie-section-header"><span>Environmental Scan</span></div>
+                    <div class="ie-section-header"><span>Investigation</span></div>
                     <div class="ie-form-group">
                         <label class="ie-checkbox">
                             <input type="checkbox" id="ie-auto-scan-enabled" />
-                            <span>Auto-scan on new messages</span>
+                            <span>Auto-investigate on new messages</span>
                         </label>
                     </div>
-                    <small class="ie-form-hint">Automatically investigates the environment when AI responds. Use the 👁️ button or modal to manually scan.</small>
+                    <small class="ie-form-hint">Automatically investigates the environment when AI responds. Objects and intrusive thoughts appear as part of investigation results. Use the 🔍 button to manually investigate.</small>
                 </div>
 
                 <div class="ie-section">
@@ -311,8 +277,8 @@ export function createPsychePanel() {
                     </div>
                     <div class="ie-form-group">
                         <label>Character Context</label>
-                        <textarea id="ie-character-context" rows="4" placeholder="Describe who YOU are (the character whose head these voices are in). For scenes with multiple characters, clarify who is who. Example: 'I am Harry, a detective. These voices are in MY head. Kim is my partner (he/him).'"></textarea>
-                        <small class="ie-form-hint">Tip: Specify NPC names &amp; pronouns to help voices distinguish "you" from others in the scene.</small>
+                        <textarea id="ie-character-context" rows="4" placeholder="Describe who YOU are (the character whose head these voices are in). Example: 'I am Harry, a detective. Kim is my partner.'"></textarea>
+                        <small class="ie-form-hint">Tip: Specify NPC names &amp; pronouns to help voices distinguish "you" from others.</small>
                     </div>
                     <button class="ie-btn ie-btn-primary ie-btn-save-settings" style="width: 100%; margin-top: 10px;">
                         <i class="fa-solid fa-save"></i>
