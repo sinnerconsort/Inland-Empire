@@ -3,10 +3,12 @@
  * Environmental awareness, investigation, and discovery modal
  * 
  * Consolidates: Object Voices, Intrusive Thoughts, Scene Investigation
+ * 
+ * NEW: Auto-scan on messages, Quick-scan FAB button, Draggable FAB
  */
 
 import { SKILLS } from '../data/skills.js';
-import { extensionSettings, getEffectiveSkillLevel } from './state.js';
+import { extensionSettings, saveState, getEffectiveSkillLevel } from './state.js';
 import { callAPI } from './generation.js';
 import { getResearchPenalties } from './cabinet.js';
 
@@ -22,6 +24,9 @@ let lastSceneContext = '';
 
 // Is investigation in progress?
 let isInvestigating = false;
+
+// Context getter reference (set during init)
+let getContextRef = null;
 
 // ═══════════════════════════════════════════════════════════════
 // DISCOVERY MANAGEMENT
@@ -63,25 +68,45 @@ export function getDiscoveryCount() {
 
 export function updateSceneContext(text) {
     lastSceneContext = text;
+    updateScenePreview();
 }
 
 export function getSceneContext() {
     return lastSceneContext;
 }
 
+function updateScenePreview() {
+    const preview = document.getElementById('ie-scene-preview');
+    if (preview && lastSceneContext) {
+        const truncated = lastSceneContext.length > 80 
+            ? lastSceneContext.substring(0, 80) + '...' 
+            : lastSceneContext;
+        preview.textContent = truncated;
+        preview.title = lastSceneContext.substring(0, 300);
+    }
+}
+
 // ═══════════════════════════════════════════════════════════════
 // INVESTIGATION
 // ═══════════════════════════════════════════════════════════════
 
-export async function investigateSurroundings() {
-    if (isInvestigating) return;
+export async function investigateSurroundings(options = {}) {
+    const { silent = false, source = 'manual' } = options;
+    
+    if (isInvestigating) {
+        if (!silent) console.log('[Discovery] Already investigating, skipping...');
+        return [];
+    }
+    
     if (!lastSceneContext) {
-        console.warn('[Discovery] No scene context to investigate');
+        if (!silent) console.warn('[Discovery] No scene context to investigate');
+        updateEmptyState('No scene to investigate yet. Send a message first!');
         return [];
     }
 
     isInvestigating = true;
     setInvestigateButtonLoading(true);
+    setQuickScanLoading(true);
 
     try {
         const observations = await generateObservations(lastSceneContext);
@@ -95,18 +120,54 @@ export async function investigateSurroundings() {
                 signature: obs.signature,
                 color: obs.color,
                 content: obs.content,
-                icon: getSkillIcon(obs.skillId)
+                icon: getSkillIcon(obs.skillId),
+                source: source
             });
+        }
+
+        if (!silent && observations.length > 0) {
+            // Show a subtle notification
+            const fab = document.getElementById('ie-thought-fab');
+            if (fab) {
+                fab.classList.add('ie-scan-success');
+                setTimeout(() => fab.classList.remove('ie-scan-success'), 1500);
+            }
         }
 
         return observations;
     } catch (error) {
         console.error('[Discovery] Investigation failed:', error);
+        if (!silent) {
+            updateEmptyState('Investigation failed. Check API settings.');
+        }
         return [];
     } finally {
         isInvestigating = false;
         setInvestigateButtonLoading(false);
+        setQuickScanLoading(false);
     }
+}
+
+/**
+ * Quick scan - called from FAB button, runs silently in background
+ */
+export async function quickScan() {
+    return investigateSurroundings({ silent: false, source: 'quick' });
+}
+
+/**
+ * Auto scan - called on new messages when enabled
+ */
+export async function autoScan(messageText) {
+    if (!extensionSettings.autoScanEnabled) return [];
+    
+    // Update context first
+    updateSceneContext(messageText);
+    
+    // Small delay to let things settle
+    await new Promise(r => setTimeout(r, 500));
+    
+    return investigateSurroundings({ silent: true, source: 'auto' });
 }
 
 async function generateObservations(sceneText) {
@@ -252,23 +313,105 @@ function getSkillIcon(skillId) {
 // UI CREATION
 // ═══════════════════════════════════════════════════════════════
 
-export function createThoughtBubbleFAB() {
+export function createThoughtBubbleFAB(getContext) {
+    // Store context getter reference
+    getContextRef = getContext;
+    
     const fab = document.createElement('div');
     fab.id = 'ie-thought-fab';
     fab.className = 'ie-thought-fab';
     fab.title = 'Environmental Awareness';
+    
+    // More DE-styled icon - eye with magnifier feel
     fab.innerHTML = `
-        <span style="font-size: 22px;">💭</span>
+        <span class="ie-thought-fab-icon">👁️</span>
         <div class="ie-thought-fab-badge" data-count="0"></div>
+        <button class="ie-quick-scan-btn" id="ie-quick-scan" title="Quick Scan (🔎)">
+            <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
     `;
 
     // Position below the brain FAB
-    fab.style.top = `${(extensionSettings.fabPositionTop ?? 140) + 60}px`;
-    fab.style.left = `${extensionSettings.fabPositionLeft ?? 10}px`;
+    fab.style.top = `${(extensionSettings.discoveryFabTop ?? extensionSettings.fabPositionTop ?? 140) + 60}px`;
+    fab.style.left = `${extensionSettings.discoveryFabLeft ?? extensionSettings.fabPositionLeft ?? 10}px`;
 
-    fab.addEventListener('click', toggleDiscoveryModal);
+    // Main FAB click opens modal
+    fab.addEventListener('click', (e) => {
+        // Don't toggle if clicking the quick scan button
+        if (e.target.closest('.ie-quick-scan-btn')) return;
+        if (fab.dataset.justDragged === 'true') {
+            fab.dataset.justDragged = 'false';
+            return;
+        }
+        toggleDiscoveryModal();
+    });
+
+    // Quick scan button
+    const quickScanBtn = fab.querySelector('#ie-quick-scan');
+    quickScanBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        quickScan();
+    });
+
+    // Make FAB draggable
+    setupFabDragging(fab);
 
     return fab;
+}
+
+function setupFabDragging(fab) {
+    let isDragging = false;
+    let dragStartX, dragStartY, fabStartX, fabStartY;
+    let hasMoved = false;
+
+    function startDrag(e) {
+        // Don't drag if clicking buttons
+        if (e.target.closest('button')) return;
+        
+        isDragging = true;
+        hasMoved = false;
+        const touch = e.touches ? e.touches[0] : e;
+        dragStartX = touch.clientX;
+        dragStartY = touch.clientY;
+        fabStartX = fab.offsetLeft;
+        fabStartY = fab.offsetTop;
+        fab.style.transition = 'none';
+        document.addEventListener('mousemove', doDrag);
+        document.addEventListener('touchmove', doDrag, { passive: false });
+        document.addEventListener('mouseup', endDrag);
+        document.addEventListener('touchend', endDrag);
+    }
+
+    function doDrag(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+        const touch = e.touches ? e.touches[0] : e;
+        const deltaX = touch.clientX - dragStartX;
+        const deltaY = touch.clientY - dragStartY;
+        if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) hasMoved = true;
+        fab.style.left = `${Math.max(0, Math.min(window.innerWidth - fab.offsetWidth, fabStartX + deltaX))}px`;
+        fab.style.top = `${Math.max(0, Math.min(window.innerHeight - fab.offsetHeight, fabStartY + deltaY))}px`;
+    }
+
+    function endDrag() {
+        if (!isDragging) return;
+        isDragging = false;
+        fab.style.transition = 'all 0.2s ease';
+        document.removeEventListener('mousemove', doDrag);
+        document.removeEventListener('touchmove', doDrag);
+        document.removeEventListener('mouseup', endDrag);
+        document.removeEventListener('touchend', endDrag);
+
+        if (hasMoved) {
+            fab.dataset.justDragged = 'true';
+            extensionSettings.discoveryFabTop = fab.offsetTop;
+            extensionSettings.discoveryFabLeft = fab.offsetLeft;
+            if (getContextRef) saveState(getContextRef());
+        }
+    }
+
+    fab.addEventListener('mousedown', startDrag);
+    fab.addEventListener('touchstart', startDrag, { passive: false });
 }
 
 export function createDiscoveryModal() {
@@ -280,7 +423,7 @@ export function createDiscoveryModal() {
         <div class="ie-discovery-modal">
             <div class="ie-discovery-header">
                 <div class="ie-discovery-title">
-                    <span class="ie-discovery-title-icon">💭</span>
+                    <span class="ie-discovery-title-icon">👁️</span>
                     <span>Environmental Awareness</span>
                 </div>
                 <button class="ie-discovery-close" title="Close">
@@ -288,10 +431,26 @@ export function createDiscoveryModal() {
                 </button>
             </div>
             
-            <button class="ie-discovery-investigate" id="ie-investigate-btn">
-                <i class="fa-solid fa-search"></i>
-                <span>Investigate Surroundings</span>
-            </button>
+            <div class="ie-scene-context">
+                <div class="ie-scene-label">
+                    <i class="fa-solid fa-map-marker-alt"></i>
+                    <span>Current Scene:</span>
+                </div>
+                <div class="ie-scene-preview" id="ie-scene-preview">
+                    No scene loaded yet...
+                </div>
+            </div>
+            
+            <div class="ie-discovery-actions">
+                <button class="ie-discovery-investigate" id="ie-investigate-btn" title="Full investigation with multiple skills">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span>Investigate</span>
+                </button>
+                <button class="ie-discovery-rescan" id="ie-rescan-btn" title="Quick rescan of the scene">
+                    <i class="fa-solid fa-rotate"></i>
+                    <span>Rescan</span>
+                </button>
+            </div>
             
             <div class="ie-discovery-list" id="ie-discovery-list">
                 <div class="ie-discovery-empty">
@@ -308,7 +467,16 @@ export function createDiscoveryModal() {
 
     // Event listeners
     overlay.querySelector('.ie-discovery-close').addEventListener('click', toggleDiscoveryModal);
-    overlay.querySelector('#ie-investigate-btn').addEventListener('click', investigateSurroundings);
+    overlay.querySelector('#ie-investigate-btn').addEventListener('click', () => {
+        investigateSurroundings({ silent: false, source: 'modal' });
+    });
+    overlay.querySelector('#ie-rescan-btn').addEventListener('click', () => {
+        // Clear existing observations before rescanning
+        pendingDiscoveries = pendingDiscoveries.filter(d => d.type !== 'observation');
+        updateBadge();
+        renderDiscoveryList();
+        investigateSurroundings({ silent: false, source: 'rescan' });
+    });
     overlay.querySelector('#ie-discovery-clear').addEventListener('click', clearAllDiscoveries);
     
     // Close on overlay click
@@ -334,6 +502,7 @@ export function toggleDiscoveryModal() {
     } else {
         overlay.classList.add('ie-discovery-open');
         renderDiscoveryList();
+        updateScenePreview();
     }
 }
 
@@ -362,13 +531,44 @@ function setInvestigateButtonLoading(loading) {
         btn.disabled = true;
         btn.innerHTML = `
             <i class="fa-solid fa-spinner fa-spin"></i>
-            <span>Investigating...</span>
+            <span>Scanning...</span>
         `;
     } else {
         btn.disabled = false;
         btn.innerHTML = `
-            <i class="fa-solid fa-search"></i>
-            <span>Investigate Surroundings</span>
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>Investigate</span>
+        `;
+    }
+    
+    // Also update rescan button
+    const rescanBtn = document.getElementById('ie-rescan-btn');
+    if (rescanBtn) {
+        rescanBtn.disabled = loading;
+    }
+}
+
+function setQuickScanLoading(loading) {
+    const btn = document.getElementById('ie-quick-scan');
+    if (!btn) return;
+    
+    if (loading) {
+        btn.classList.add('ie-scanning');
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+    } else {
+        btn.classList.remove('ie-scanning');
+        btn.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i>`;
+    }
+}
+
+function updateEmptyState(message) {
+    const container = document.getElementById('ie-discovery-list');
+    if (container && pendingDiscoveries.length === 0) {
+        container.innerHTML = `
+            <div class="ie-discovery-empty">
+                <i class="fa-solid fa-eye-slash"></i>
+                <span>${message}</span>
+            </div>
         `;
     }
 }
