@@ -321,12 +321,12 @@
             transparent 23px,
             transparent 43px
         ),
-        /* Main gradient - 16px dark gray on left (extends past 12px ruler), 10px gray on right */
+        /* Main gradient - 24px light gray on left (ruler stays 12px), 10px gray on right */
         linear-gradient(
             to right,
             #62716f 0px,
-            #62716f 16px,
-            #0d3628 16px,
+            #62716f 24px,
+            #0d3628 24px,
             #0d3628 10%,
             #112d2a 30%,
             #14292b 60%,
