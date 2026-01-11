@@ -1,16 +1,16 @@
 /**
- * Inland Empire - Discovery System v2
+ * Inland Empire - Discovery System v3
  * "Slay the Princess" style narrated investigations
  * 
- * CONSOLIDATED SYSTEM:
+ * FEATURES:
  * - One narrator skill describes the scene through their lens
- * - 2-5 reactors (skills + objects) comment beneath
- * - Objects speak as part of the chorus, not separate
+ * - 2-4 skill reactors comment beneath
+ * - RNG chance for ONE dynamic object voice (AI-generated, context-aware)
+ * - POV support (second/third/first person from settings)
  * - Skill checks affect narrator reliability
  */
 
 import { SKILLS } from '../data/skills.js';
-import { OBJECT_VOICES } from '../data/voices.js';
 import { extensionSettings, saveState, getEffectiveSkillLevel } from './state.js';
 import { callAPI } from './generation.js';
 import { rollSkillCheck } from './dice.js';
@@ -275,7 +275,6 @@ function selectNarrator(sceneText) {
 }
 
 function getNarratorDifficulty(narrator) {
-    // Primary context = easier check, secondary = medium, neutral = harder
     switch (narrator.relevance) {
         case 'primary':
             return Math.random() < 0.6 ? 8 : 10; // Easy or Medium
@@ -297,33 +296,10 @@ function getDifficultyName(difficulty) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// OBJECT DETECTION
+// REACTOR SELECTION (Skills only - objects are AI-generated)
 // ═══════════════════════════════════════════════════════════════
 
-function detectObjects(sceneText) {
-    const detectedObjects = [];
-    
-    for (const [objectId, object] of Object.entries(OBJECT_VOICES)) {
-        for (const pattern of object.patterns) {
-            if (pattern.test(sceneText)) {
-                detectedObjects.push({
-                    id: objectId,
-                    ...object,
-                    isObject: true
-                });
-                break; // Only add once per object type
-            }
-        }
-    }
-    
-    return detectedObjects;
-}
-
-// ═══════════════════════════════════════════════════════════════
-// REACTOR SELECTION
-// ═══════════════════════════════════════════════════════════════
-
-function selectReactors(sceneText, narratorSkillId, detectedObjects) {
+function selectReactors(sceneText, narratorSkillId) {
     const researchPenalties = getResearchPenalties();
     const reactorPool = [];
     const lowerScene = sceneText.toLowerCase();
@@ -354,41 +330,17 @@ function selectReactors(sceneText, narratorSkillId, detectedObjects) {
         }
     }
     
-    // Add detected objects with high priority - they WANT to speak
-    for (const obj of detectedObjects) {
-        reactorPool.push({
-            id: obj.id,
-            name: obj.name,
-            signature: obj.name,
-            color: obj.color,
-            icon: obj.icon,
-            weight: 12 + Math.random() * 5, // High priority - objects are exciting!
-            isObject: true,
-            lines: obj.lines,
-            affinitySkill: obj.affinitySkill
-        });
-    }
-    
     // Sort by weight
     reactorPool.sort((a, b) => b.weight - a.weight);
     
-    // Select 2-5 reactors
-    const numReactors = 2 + Math.floor(Math.random() * 4);
+    // Select 2-4 skill reactors (leave room for potential object)
+    const numReactors = 2 + Math.floor(Math.random() * 3);
     const selectedReactors = [];
     
-    // Ensure at least one object if any were detected (80% chance)
-    const objectReactors = reactorPool.filter(r => r.isObject);
-    if (objectReactors.length > 0 && Math.random() < 0.8) {
-        selectedReactors.push(objectReactors[0]);
-    }
-    
-    // Fill remaining slots with weighted selection
     for (const reactor of reactorPool) {
         if (selectedReactors.length >= numReactors) break;
-        if (selectedReactors.find(r => r.id === reactor.id)) continue;
         
-        // Weighted chance to include
-        const chance = Math.min(0.9, reactor.weight / 12);
+        const chance = Math.min(0.85, reactor.weight / 15);
         if (Math.random() < chance) {
             selectedReactors.push(reactor);
         }
@@ -401,7 +353,7 @@ function selectReactors(sceneText, narratorSkillId, detectedObjects) {
         else break;
     }
     
-    return selectedReactors.slice(0, 5);
+    return selectedReactors.slice(0, 4);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -416,7 +368,6 @@ export async function investigateSurroundings(options = {}) {
         return null;
     }
     
-    // Ensure we have scene context
     if (!lastSceneContext && getContextRef) {
         ensureSceneContext(getContextRef);
     }
@@ -431,34 +382,35 @@ export async function investigateSurroundings(options = {}) {
     setInvestigateButtonLoading(true);
 
     try {
-        // 1. Select narrator based on context
+        // Select narrator
         const narrator = selectNarrator(lastSceneContext);
         const difficulty = getNarratorDifficulty(narrator);
         const checkResult = rollSkillCheck(narrator.level, difficulty);
         checkResult.difficultyName = getDifficultyName(difficulty);
         
-        console.log(`[Discovery] Narrator: ${narrator.skill.signature} (Level ${narrator.level}, ${checkResult.difficultyName}, ${checkResult.success ? 'SUCCESS' : 'FAILURE'})`);
+        console.log(`[Discovery] Narrator: ${narrator.skill.signature} (${checkResult.difficultyName}, ${checkResult.success ? 'SUCCESS' : 'FAILURE'})`);
         
-        // 2. Detect objects in scene
-        const detectedObjects = detectObjects(lastSceneContext);
-        console.log(`[Discovery] Detected objects:`, detectedObjects.map(o => o.name));
+        // Select skill reactors
+        const reactors = selectReactors(lastSceneContext, narrator.skillId);
+        console.log(`[Discovery] Skill reactors:`, reactors.map(r => r.signature));
         
-        // 3. Select reactors (skills + objects)
-        const reactors = selectReactors(lastSceneContext, narrator.skillId, detectedObjects);
-        console.log(`[Discovery] Reactors:`, reactors.map(r => r.signature || r.name));
+        // RNG: Should an object speak? (default 35% chance)
+        const objectChance = extensionSettings.objectVoiceChance ?? 0.35;
+        const includeObject = Math.random() < objectChance;
+        console.log(`[Discovery] Object voice: ${includeObject ? 'YES' : 'NO'} (${Math.round(objectChance * 100)}% chance)`);
         
-        // 4. Generate the investigation
+        // Generate investigation
         const investigation = await generateInvestigation(
             lastSceneContext,
             narrator,
             checkResult,
-            reactors
+            reactors,
+            includeObject
         );
         
         currentInvestigation = investigation;
         renderInvestigation(investigation);
         
-        // Pulse the FAB to indicate new content
         const fab = document.getElementById('ie-thought-fab');
         if (fab) {
             fab.classList.add('ie-scan-success');
@@ -479,66 +431,119 @@ export async function investigateSurroundings(options = {}) {
     }
 }
 
-async function generateInvestigation(sceneText, narrator, checkResult, reactors) {
+async function generateInvestigation(sceneText, narrator, checkResult, reactors, includeObject = false) {
     const checkStatus = checkResult.success ? 'PASSED' : 'FAILED';
     const checkNote = checkResult.isBoxcars ? ' (CRITICAL SUCCESS!)' :
                       checkResult.isSnakeEyes ? ' (CRITICAL FAILURE!)' : '';
     
-    // Build reactor descriptions for the prompt
-    const reactorDescriptions = reactors.map(r => {
-        if (r.isObject) {
-            return `${r.name} (OBJECT in the scene): Speaks as the object itself, in first person. Can tempt, warn, reminisce, or unsettle. Voice is personal and intimate.`;
-        } else {
-            return `${r.signature}: ${r.personality?.substring(0, 120) || 'A skill voice'}`;
-        }
-    }).join('\n');
+    // ═══════════════════════════════════════════════════════════════
+    // POV CONTEXT from settings
+    // ═══════════════════════════════════════════════════════════════
+    let povContext = '';
+    const povStyle = extensionSettings.povStyle || 'second';
+    const charName = extensionSettings.characterName || '';
+    const charPronouns = extensionSettings.characterPronouns || 'they';
+    const charContext = extensionSettings.characterContext || '';
+    
+    if (povStyle === 'second') {
+        povContext = `ADDRESS: Second person ("you/your"). Voices speak to the player character directly.`;
+    } else if (povStyle === 'third' && charName) {
+        const pronounMap = {
+            'they': 'they/them/their',
+            'he': 'he/him/his', 
+            'she': 'she/her/her',
+            'it': 'it/it/its'
+        };
+        povContext = `ADDRESS: Third person. Character is "${charName}" (${pronounMap[charPronouns]}). Use name or pronouns, NOT "you".`;
+    } else if (povStyle === 'first') {
+        povContext = `ADDRESS: First person ("I/me/my"). Internal monologue style.`;
+    }
+    
+    if (charContext) {
+        povContext += `\nCHARACTER: ${charContext}`;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // SKILL REACTOR DESCRIPTIONS
+    // ═══════════════════════════════════════════════════════════════
+    const skillDescriptions = reactors.map(r => 
+        `${r.signature}: ${r.personality?.substring(0, 150) || 'A skill voice'}`
+    ).join('\n');
+    
+    // ═══════════════════════════════════════════════════════════════
+    // OBJECT VOICE INSTRUCTIONS (RNG-gated)
+    // ═══════════════════════════════════════════════════════════════
+    const objectInstructions = includeObject ? `
+
+OBJECT VOICE (INCLUDE ONE):
+Find ONE interesting, specific object in the scene to give a voice. Look for:
+- Something obviously important (a weapon, a key item, evidence)
+- Something pathetically mundane (a crushed beer can, a broken chair, a flickering light)
+- Something gross or absurd (moldy food, a stained mattress, a suspiciously wet newspaper)
+- Something with history (an old photo, a child's toy in a bad place, a faded poster)
+- Something the character might interact with
+
+The object speaks AS ITSELF in first person. Give it personality based on what it IS and the scene context:
+- A knife might be eager, hungry, or tired of waiting
+- A broken bottle might be bitter, defeated, dangerous, or nostalgic
+- Old food might be desperate, pathetic, taunting, or philosophical about decay
+- A door might be weary, secretive, warning, or lonely
+- A photograph might be accusatory, sad, or cryptic
+
+Be SPECIFIC to THIS scene. The object should feel like it belongs HERE and has something to say about what's happening.
+Format the object as: "THE [OBJECT NAME] — Their line"
+Example: "THE MOLDY PIZZA SLICE — Just one bite. I dare you. What's the worst that could happen?"
+Example: "THE FLICKERING STREETLIGHT — I've seen this before. It never ends well. Click. Click. Click."` 
+    : '';
 
     const systemPrompt = `You are generating a "Slay the Princess" style scene investigation for a Disco Elysium RPG.
 
-THE NARRATOR: ${narrator.skill.signature}
-Narrator's voice: ${narrator.skill.personality?.substring(0, 300)}
+${povContext}
 
-SKILL CHECK RESULT: ${checkStatus}${checkNote}
+THE NARRATOR: ${narrator.skill.signature}
+Narrator's voice: ${narrator.skill.personality?.substring(0, 350)}
+
+SKILL CHECK: ${checkStatus}${checkNote}
 ${!checkResult.success ? `
-FAILED CHECK: The narrator's perception is UNRELIABLE. Their description is:
+FAILED CHECK: Narrator's perception is UNRELIABLE:
 - Filtered heavily through their obsessions and biases
 - Missing obvious details while fixating on irrelevant ones
 - Colored by their particular neuroses
-- Still evocative, but not trustworthy` : ''}
+- Still evocative, but not entirely trustworthy` : ''}
 ${checkResult.isSnakeEyes ? `
-CRITICAL FAILURE: The narrator is SPECTACULARLY WRONG about something important. They confidently misread the situation in a way that's almost poetic in its wrongness.` : ''}
+CRITICAL FAILURE: Narrator is SPECTACULARLY WRONG about something important. They confidently misread the situation in a way that's almost poetic in its wrongness.` : ''}
 ${checkResult.isBoxcars ? `
-CRITICAL SUCCESS: The narrator perceives something PROFOUND - a deep truth about this place that others would miss entirely. Almost supernatural insight.` : ''}
+CRITICAL SUCCESS: Narrator perceives something PROFOUND - a deep truth about this place that others would miss entirely. Almost supernatural insight.` : ''}
 
-THE REACTORS (comment after narration):
-${reactorDescriptions}
+SKILL REACTORS:
+${skillDescriptions}
+${objectInstructions}
 
-YOUR TASK:
+RULES:
+- Respect POV setting: ${povStyle} person${charName ? `, character is "${charName}"` : ''}
+- Narrator: 3-5 sentences through their unique lens, NOT neutral description
+- Skill reactors: ONE short line each (max 15 words), can disagree/warn/notice things
+${includeObject ? '- Include exactly ONE contextual object voice at the end - must be something actually in the scene' : '- No object voice this time, only skill reactors'}
+- NO generic lines - everything must be specific to THIS scene
+- Reactors can argue with each other or the narrator
 
-1. NARRATOR BLOCK: Write ONE paragraph (3-5 sentences) describing the scene ENTIRELY through ${narrator.skill.signature}'s unique perspective and voice. This is NOT neutral description - this is how THIS skill experiences this place. Use their verbal tics, their obsessions, their way of seeing the world. Like "Slay the Princess" - the narrator completely reframes reality through their lens.
-
-2. REACTOR LINES: Each reactor gets ONE short line (max 15 words) reacting to something specific. They can:
-   - Notice a detail the narrator missed or ignored
-   - Disagree with the narrator's interpretation
-   - Warn about something
-   - Be tempted by something in the scene
-   - Argue with another reactor
-   - OBJECTS speak AS themselves in first person ("Pick me up." "I've seen what happens here.")
-
-FORMAT EXACTLY LIKE THIS:
+FORMAT:
 [NARRATOR]
-(Your narrator paragraph - evocative, biased, in-character)
+(Narrator's evocative, biased paragraph)
 
 [REACTORS]
-SIGNATURE - Their one short reaction
-SIGNATURE - Their one short reaction
-OBJECT NAME - Object speaking as itself
-(2-5 total reactor lines)`;
+SKILL SIGNATURE — Short reaction
+SKILL SIGNATURE — Short reaction
+${includeObject ? 'THE OBJECT NAME — Object speaking as itself (first person)' : ''}`;
 
     const userPrompt = `Scene to investigate:
-"${sceneText.substring(0, 1200)}"
+"${sceneText.substring(0, 1500)}"
 
-Generate the investigation. Narrator is ${narrator.skill.signature} who ${checkResult.success ? 'PASSED' : 'FAILED'}${checkNote} their check.`;
+Generate the investigation.
+- Narrator: ${narrator.skill.signature} (${checkResult.success ? 'PASSED' : 'FAILED'}${checkNote})
+- POV: ${povStyle} person${charName ? ` - character is "${charName}"` : ''}
+- Skill reactors: ${reactors.map(r => r.signature).join(', ')}
+${includeObject ? '- Find ONE interesting object in the scene to give a voice' : '- No object voice this time'}`;
 
     try {
         const response = await callAPI(systemPrompt, userPrompt);
@@ -564,9 +569,8 @@ function parseInvestigation(response, narrator, checkResult, reactors) {
     // Parse narrator block
     const narratorMatch = response.match(/\[NARRATOR\]\s*\n?([\s\S]*?)(?=\[REACTORS\]|$)/i);
     if (narratorMatch) {
-        // Clean up the narrator content
         let content = narratorMatch[1].trim();
-        // Remove the skill name if it appears at the start
+        // Remove skill name if it appears at the start
         content = content.replace(new RegExp(`^${narrator.skill.signature}\\s*[-–—:]?\\s*`, 'i'), '');
         investigation.narrator.content = content;
     } else {
@@ -581,77 +585,127 @@ function parseInvestigation(response, narrator, checkResult, reactors) {
         const reactorLines = reactorMatch[1].trim().split('\n').filter(l => l.trim());
         
         for (const line of reactorLines) {
-            // Match "SIGNATURE - content" or "SIGNATURE: content" or "THE OBJECT - content"
-            const match = line.match(/^([A-Z][A-Z\s\/]+|THE [A-Z\s]+)\s*[-–—:]\s*(.+)$/i);
+            // Match "SIGNATURE — content" or "THE OBJECT — content"
+            const match = line.match(/^(THE [A-Z][A-Z\s']+|[A-Z][A-Z\s\/]+)\s*[-–—:]\s*(.+)$/i);
             if (match) {
                 const name = match[1].trim().toUpperCase();
-                const content = match[2].trim().replace(/^["']|["']$/g, ''); // Remove quotes
+                const content = match[2].trim().replace(/^["']|["']$/g, '');
                 
-                // Find matching reactor
-                const reactor = reactors.find(r => {
-                    const sig = (r.signature || r.name || '').toUpperCase();
-                    return sig === name || name.includes(sig) || sig.includes(name);
-                });
+                // Check if it's a dynamic object (starts with "THE " and isn't a known skill)
+                const isObject = name.startsWith('THE ') && !Object.values(SKILLS).some(s => 
+                    s.signature.toUpperCase() === name
+                );
                 
-                if (reactor) {
+                if (isObject) {
+                    // Dynamic object - generate color based on name hash
+                    const hash = name.split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0);
+                    const hue = Math.abs(hash) % 360;
+                    
                     investigation.reactors.push({
-                        id: reactor.id,
-                        signature: reactor.signature || reactor.name,
-                        color: reactor.color,
-                        icon: reactor.icon,
-                        isObject: reactor.isObject,
+                        id: name.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
+                        signature: name,
+                        color: `hsl(${hue}, 40%, 55%)`,
+                        icon: getObjectIcon(name),
+                        isObject: true,
                         content: content
                     });
                 } else {
-                    // Try to match any skill by signature
-                    const skill = Object.values(SKILLS).find(s => 
-                        s.signature.toUpperCase() === name || 
-                        s.name.toUpperCase() === name
-                    );
-                    if (skill) {
+                    // Skill reactor - find matching skill
+                    const reactor = reactors.find(r => {
+                        const sig = (r.signature || r.name || '').toUpperCase();
+                        return sig === name || name.includes(sig) || sig.includes(name);
+                    });
+                    
+                    if (reactor) {
                         investigation.reactors.push({
-                            id: skill.id,
-                            signature: skill.signature,
-                            color: skill.color,
+                            id: reactor.id,
+                            signature: reactor.signature,
+                            color: reactor.color,
                             isObject: false,
                             content: content
                         });
+                    } else {
+                        // Try to find by skill name/signature directly
+                        const skill = Object.values(SKILLS).find(s => 
+                            s.signature.toUpperCase() === name ||
+                            s.name.toUpperCase() === name
+                        );
+                        if (skill) {
+                            investigation.reactors.push({
+                                id: skill.id,
+                                signature: skill.signature,
+                                color: skill.color,
+                                isObject: false,
+                                content: content
+                            });
+                        }
                     }
                 }
             }
         }
     }
     
-    // Fallback: if we got no reactors, try to parse any skill-like lines from the response
-    if (investigation.reactors.length === 0 && reactors.length > 0) {
-        const allLines = response.split('\n');
-        for (const line of allLines) {
-            if (investigation.reactors.length >= 5) break;
-            const match = line.match(/^([A-Z][A-Z\s\/]+)\s*[-–—:]\s*(.+)$/i);
-            if (match) {
-                const name = match[1].trim().toUpperCase();
-                // Skip if it's the narrator
-                if (name === narrator.skill.signature.toUpperCase()) continue;
-                
-                const reactor = reactors.find(r => 
-                    (r.signature || r.name || '').toUpperCase().includes(name) ||
-                    name.includes((r.signature || r.name || '').toUpperCase())
-                );
-                if (reactor) {
-                    investigation.reactors.push({
-                        id: reactor.id,
-                        signature: reactor.signature || reactor.name,
-                        color: reactor.color,
-                        icon: reactor.icon,
-                        isObject: reactor.isObject,
-                        content: match[2].trim()
-                    });
-                }
-            }
-        }
-    }
-    
     return investigation;
+}
+
+// Get a contextual icon for dynamic objects
+function getObjectIcon(objectName) {
+    const name = objectName.toLowerCase();
+    
+    // Food & drink
+    if (name.includes('pizza') || name.includes('food') || name.includes('sandwich')) return '🍕';
+    if (name.includes('bottle') || name.includes('beer') || name.includes('wine') || name.includes('whiskey')) return '🍾';
+    if (name.includes('coffee') || name.includes('cup') || name.includes('mug')) return '☕';
+    
+    // Weapons & danger
+    if (name.includes('knife') || name.includes('blade')) return '🔪';
+    if (name.includes('gun') || name.includes('pistol') || name.includes('revolver')) return '🔫';
+    if (name.includes('needle') || name.includes('syringe')) return '💉';
+    
+    // Furniture & places
+    if (name.includes('door')) return '🚪';
+    if (name.includes('chair') || name.includes('seat')) return '🪑';
+    if (name.includes('bed') || name.includes('mattress')) return '🛏️';
+    if (name.includes('mirror')) return '🪞';
+    if (name.includes('window')) return '🪟';
+    
+    // Light sources
+    if (name.includes('light') || name.includes('lamp') || name.includes('bulb')) return '💡';
+    if (name.includes('candle')) return '🕯️';
+    if (name.includes('neon') || name.includes('sign')) return '🔆';
+    
+    // Personal items
+    if (name.includes('photo') || name.includes('picture') || name.includes('polaroid')) return '📷';
+    if (name.includes('phone') || name.includes('telephone')) return '📞';
+    if (name.includes('letter') || name.includes('note') || name.includes('paper')) return '📝';
+    if (name.includes('book')) return '📖';
+    if (name.includes('wallet') || name.includes('money') || name.includes('cash')) return '💵';
+    if (name.includes('key')) return '🔑';
+    if (name.includes('clock') || name.includes('watch')) return '🕐';
+    if (name.includes('tie') || name.includes('necktie')) return '👔';
+    if (name.includes('cigarette') || name.includes('ashtray')) return '🚬';
+    
+    // Trash & debris
+    if (name.includes('trash') || name.includes('garbage') || name.includes('can')) return '🗑️';
+    if (name.includes('newspaper')) return '📰';
+    if (name.includes('box') || name.includes('cardboard')) return '📦';
+    
+    // Body parts (creepy)
+    if (name.includes('skull') || name.includes('bone')) return '💀';
+    if (name.includes('eye')) return '👁️';
+    if (name.includes('hand')) return '✋';
+    
+    // Nature
+    if (name.includes('tree') || name.includes('plant')) return '🌳';
+    if (name.includes('flower')) return '🌸';
+    if (name.includes('rock') || name.includes('stone')) return '🪨';
+    
+    // Vehicles
+    if (name.includes('car') || name.includes('vehicle')) return '🚗';
+    if (name.includes('boat') || name.includes('ship')) return '⛵';
+    
+    // Default
+    return '📦';
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -954,21 +1008,6 @@ export async function autoScan(messageText) {
     await new Promise(r => setTimeout(r, 500));
     
     return investigateSurroundings({ silent: true, source: 'auto' });
-}
-
-// ═══════════════════════════════════════════════════════════════
-// LEGACY EXPORTS (for compatibility during transition)
-// These can be removed once index.js is updated
-// ═══════════════════════════════════════════════════════════════
-
-export function addIntrusiveDiscovery(thought) {
-    // No longer used - intrusive thoughts now come through reactors
-    console.log('[Discovery] addIntrusiveDiscovery is deprecated');
-}
-
-export function addObjectDiscovery(objectVoice) {
-    // No longer used - objects now come through reactors
-    console.log('[Discovery] addObjectDiscovery is deprecated');
 }
 
 // ═══════════════════════════════════════════════════════════════
