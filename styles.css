@@ -176,6 +176,36 @@
     pointer-events: none;
 }
 
+/* Ruler edge on the left side of panel (thinner, 8px) */
+.inland-empire-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 8px;
+    height: 100%;
+    background: 
+        linear-gradient(to left, var(--ie-bg-tertiary) 0%, var(--ie-ruler) 100%);
+    border-right: 1px solid var(--ie-border);
+    background-image: 
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 18px,
+            var(--ie-ruler-mark) 18px,
+            var(--ie-ruler-mark) 20px
+        ),
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 98px,
+            var(--ie-text-muted) 98px,
+            var(--ie-text-muted) 100px
+        );
+    pointer-events: none;
+    z-index: 1;
+}
+
 .ie-panel-open {
     left: 0;
 }
@@ -184,7 +214,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 40px 16px 16px;
+    padding: 16px 40px 16px 20px;
     background: linear-gradient(180deg, var(--ie-bg-tertiary) 0%, var(--ie-bg-secondary) 100%);
     border-bottom: 2px solid var(--ie-accent-orange);
 }
@@ -218,7 +248,8 @@
     display: flex;
     background: var(--ie-bg-secondary);
     border-bottom: 1px solid var(--ie-border);
-    padding-right: 24px; /* Account for ruler edge */
+    padding-right: 24px; /* Account for right ruler edge */
+    padding-left: 8px; /* Account for left ruler edge */
 }
 
 .ie-tab {
@@ -253,7 +284,8 @@
     overflow-y: auto;
     overflow-x: hidden;
     padding: 12px;
-    padding-right: 36px; /* Account for ruler edge */
+    padding-right: 36px; /* Account for right ruler edge */
+    padding-left: 20px; /* Account for left ruler edge */
     min-height: 0;
     -webkit-overflow-scrolling: touch;
 }
@@ -269,22 +301,6 @@
 
 [data-tab-content="skills"] {
     background:
-        /* Left ruler tick marks (small) */
-        repeating-linear-gradient(
-            to bottom,
-            transparent 0px,
-            transparent 18px,
-            var(--ie-ruler-mark) 18px,
-            var(--ie-ruler-mark) 20px
-        ),
-        /* Left ruler tick marks (large every 100px) */
-        repeating-linear-gradient(
-            to bottom,
-            transparent 0px,
-            transparent 98px,
-            var(--ie-text-muted) 98px,
-            var(--ie-text-muted) 100px
-        ),
         /* Left film strip holes */
         repeating-linear-gradient(
             to bottom,
@@ -305,27 +321,25 @@
             transparent 23px,
             transparent 43px
         ),
-        /* Main gradient - left gray is 12px, then 8px ruler area */
+        /* Main gradient - 12px gray on left, 10px gray on right */
         linear-gradient(
             to right,
             #62716f 0px,
             #62716f 12px,
-            var(--ie-ruler) 12px,
-            var(--ie-ruler) 20px,
-            #0d3628 20px,
-            #0d3628 12%,
+            #0d3628 12px,
+            #0d3628 10%,
             #112d2a 30%,
             #14292b 60%,
-            #17252e 92%,
-            #62716f 92%,
+            #17252e 90%,
+            #62716f 90%,
             #62716f 100%
         );
-    background-size: 8px 20px, 8px 100px, 12px 43px, 10px 43px, 100% 100%;
-    background-position: 12px top, 12px top, left top, right top, left top;
-    background-repeat: repeat-y, repeat-y, repeat-y, repeat-y, repeat;
-    background-attachment: local, local, local, local, local;
+    background-size: 12px 43px, 10px 43px, 100% 100%;
+    background-position: left top, right top, left top;
+    background-repeat: repeat-y, repeat-y, repeat;
+    background-attachment: local, local, local;
     position: relative;
-    padding-right: 12px;
+    padding-right: 36px;
     padding-left: 24px;
 }
 
