@@ -264,6 +264,122 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   SKILLS TAB - DE Character Screen Style
+   ═══════════════════════════════════════════════════════════════ */
+
+[data-tab-content="skills"] {
+    background: linear-gradient(
+        to right,
+        #0d3628 0%,
+        #112d2a 30%,
+        #14292b 60%,
+        #17252e 100%
+    );
+    position: relative;
+}
+
+/* Film grain/noise texture overlay */
+[data-tab-content="skills"]::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        /* Subtle scanlines */
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 0, 0, 0.03) 2px,
+            rgba(0, 0, 0, 0.03) 4px
+        ),
+        /* Noise texture */
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    opacity: 0.05;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Film reel sprocket holes - left side */
+[data-tab-content="skills"]::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 8px;
+    height: 100%;
+    background: 
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 8px,
+            rgba(0, 0, 0, 0.6) 8px,
+            rgba(0, 0, 0, 0.6) 12px,
+            transparent 12px,
+            transparent 24px
+        );
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Content needs to be above the overlays */
+[data-tab-content="skills"] > * {
+    position: relative;
+    z-index: 2;
+}
+
+/* Film reel border on the right - using the skills overview section */
+[data-tab-content="skills"] .ie-skills-overview {
+    position: relative;
+}
+
+/* Right side film reel */
+[data-tab-content="skills"] .ie-skills-overview::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -12px;
+    width: 8px;
+    height: 100%;
+    background: 
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 8px,
+            rgba(0, 0, 0, 0.5) 8px,
+            rgba(0, 0, 0, 0.5) 12px,
+            transparent 12px,
+            transparent 24px
+        );
+    pointer-events: none;
+}
+
+/* Adjust attribute cards for the new background */
+[data-tab-content="skills"] .ie-attribute-card {
+    background: rgba(13, 13, 18, 0.5);
+    backdrop-filter: blur(2px);
+}
+
+/* Inner voices section in skills tab */
+[data-tab-content="skills"] .ie-section {
+    background: rgba(13, 13, 18, 0.4);
+    border-left-color: rgba(155, 158, 153, 0.5);
+}
+
+/* Section headers in skills tab */
+[data-tab-content="skills"] .ie-section-header span::before {
+    color: rgba(155, 158, 153, 0.6);
+}
+
+/* Skills tab button when active - teal accent */
+.ie-tab[data-tab="skills"].ie-tab-active {
+    color: #53a4b5;
+    border-bottom-color: #53a4b5;
+}
+
+/* ═══════════════════════════════════════════════════════════════
    SETTINGS TAB - DE Main Menu Style
    ═══════════════════════════════════════════════════════════════ */
 
