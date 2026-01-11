@@ -269,6 +269,22 @@
 
 [data-tab-content="skills"] {
     background:
+        /* Left ruler tick marks (small) */
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 18px,
+            var(--ie-ruler-mark) 18px,
+            var(--ie-ruler-mark) 20px
+        ),
+        /* Left ruler tick marks (large every 100px) */
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 98px,
+            var(--ie-text-muted) 98px,
+            var(--ie-text-muted) 100px
+        ),
         /* Left film strip holes */
         repeating-linear-gradient(
             to bottom,
@@ -289,29 +305,31 @@
             transparent 23px,
             transparent 43px
         ),
-        /* Main gradient */
+        /* Main gradient - left gray is 12px, then 8px ruler area */
         linear-gradient(
             to right,
             #62716f 0px,
-            #62716f 6px,
-            #0d3628 6px,
-            #0d3628 8%,
+            #62716f 12px,
+            var(--ie-ruler) 12px,
+            var(--ie-ruler) 20px,
+            #0d3628 20px,
+            #0d3628 12%,
             #112d2a 30%,
             #14292b 60%,
             #17252e 92%,
             #62716f 92%,
             #62716f 100%
         );
-    background-size: 6px 43px, 10px 43px, 100% 100%;
-    background-position: left top, right top, left top;
-    background-repeat: repeat-y, repeat-y, repeat;
-    background-attachment: local, local, local;
+    background-size: 8px 20px, 8px 100px, 12px 43px, 10px 43px, 100% 100%;
+    background-position: 12px top, 12px top, left top, right top, left top;
+    background-repeat: repeat-y, repeat-y, repeat-y, repeat-y, repeat;
+    background-attachment: local, local, local, local, local;
     position: relative;
     padding-right: 12px;
-    padding-left: 10px;
+    padding-left: 24px;
 }
 
-/* Remove the pseudo-elements since holes are now in background */
+/* Remove the pseudo-elements since everything is in background */
 [data-tab-content="skills"]::before {
     display: none;
 }
