@@ -649,6 +649,87 @@
     border-bottom-color: #402e1d;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   STATUS TAB - Harry's Portrait Style (Yellow-Blue-Yellow)
+   ═══════════════════════════════════════════════════════════════ */
+
+[data-tab-content="status"] {
+    background: linear-gradient(
+        to bottom,
+        #cb8b31 0%,
+        #cb8b31 15%,
+        #50808d 35%,
+        #50808d 65%,
+        #cb8b31 85%,
+        #cb8b31 100%
+    );
+}
+
+[data-tab-content="status"] .ie-section {
+    background: rgba(13, 13, 18, 0.6);
+    border-left: 3px solid #cb8b31;
+    backdrop-filter: blur(4px);
+}
+
+[data-tab-content="status"] .ie-section-header {
+    color: #e8e4de;
+    border-bottom-color: rgba(203, 139, 49, 0.4);
+}
+
+[data-tab-content="status"] .ie-section-header span::before {
+    color: #cb8b31;
+}
+
+/* Status toggle cards - OFF state (teal) */
+[data-tab-content="status"] .ie-status-card {
+    background: #1f7981;
+    border-color: #1f7981;
+    color: #ffffff;
+}
+
+[data-tab-content="status"] .ie-status-card:hover {
+    background: #267a82;
+    border-color: #267a82;
+}
+
+[data-tab-content="status"] .ie-status-card .ie-status-name {
+    color: #ffffff;
+}
+
+/* Status toggle cards - ON state (orange) */
+[data-tab-content="status"] .ie-status-card.ie-status-active {
+    background: #f2610e;
+    border-color: #f2610e;
+    color: #ffffff;
+}
+
+[data-tab-content="status"] .ie-status-card.ie-status-active:hover {
+    background: #ff7020;
+    border-color: #ff7020;
+}
+
+[data-tab-content="status"] .ie-status-card.ie-status-active .ie-status-name {
+    color: #ffffff;
+}
+
+/* Archetype cards same treatment */
+[data-tab-content="status"] .ie-archetype-card {
+    background: #1f7981;
+    border-color: #1f7981;
+}
+
+[data-tab-content="status"] .ie-archetype-card.ie-status-active {
+    background: #f2610e;
+    border-color: #f2610e;
+    box-shadow: 0 0 10px rgba(242, 97, 14, 0.4);
+}
+
+/* Status tab button when active */
+.ie-tab[data-tab="status"].ie-tab-active {
+    color: #cb8b31;
+    border-bottom-color: #cb8b31;
+}
+
 [data-tab-content="cabinet"] .ie-theme-tag {
     background: rgba(182, 154, 89, 0.2);
     border: 1px solid rgba(182, 154, 89, 0.3);
