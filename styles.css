@@ -133,8 +133,8 @@
 .inland-empire-panel {
     position: fixed;
     top: 0;
-    left: -380px;
-    width: 360px;
+    left: -420px;
+    width: 400px;
     height: 100vh;
     background: var(--ie-bg-panel);
     border-right: none;
@@ -147,7 +147,136 @@
     color: var(--ie-text-primary);
 }
 
-/* Ruler edges removed for cleaner look */
+/* ═══════════════════════════════════════════════════════════════
+   FILM STRIP BORDER - Left Edge
+   ═══════════════════════════════════════════════════════════════ */
+
+.inland-empire-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 22px;
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        #d4cfc4 0%,
+        #e8e4dc 30%,
+        #d4cfc4 100%
+    );
+    z-index: 10000;
+    /* Sprocket holes using repeating gradient */
+    background-image: 
+        /* Main cream background */
+        linear-gradient(to right, #d4cfc4 0%, #e8e4dc 30%, #d4cfc4 100%),
+        /* Sprocket holes - left column */
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 8px,
+            #1a1a20 8px,
+            #1a1a20 18px,
+            transparent 18px,
+            transparent 32px
+        ),
+        /* Sprocket holes - right column */
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 8px,
+            #1a1a20 8px,
+            #1a1a20 18px,
+            transparent 18px,
+            transparent 32px
+        );
+    background-size: 100% 100%, 6px 32px, 6px 32px;
+    background-position: 0 0, 2px 4px, 14px 4px;
+    background-repeat: no-repeat, repeat-y, repeat-y;
+    /* Subtle inner shadow for depth */
+    box-shadow: inset -2px 0 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Film strip vertical text overlay */
+.inland-empire-panel::after {
+    content: 'FANAL · PLAYBACK · INLAND · EMPIRE · FANAL · PLAYBACK · INLAND · EMPIRE · FANAL · PLAYBACK ·';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 22px;
+    height: 100%;
+    z-index: 10001;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-family: 'Courier New', monospace;
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: rgba(80, 70, 60, 0.5);
+    padding: 20px 0;
+    overflow: hidden;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    text-transform: uppercase;
+}
+
+/* Adjust panel content to account for film strip */
+.ie-panel-header,
+.ie-tabs,
+.ie-tab-content {
+    margin-left: 22px;
+}
+
+/* Right edge film strip (optional - comment out if too much) */
+.inland-empire-panel .ie-tab-content::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 18px;
+    height: 100%;
+    background: linear-gradient(
+        to left,
+        #c4bfb4 0%,
+        #d8d4cc 40%,
+        #c4bfb4 100%
+    );
+    z-index: 5;
+    /* Ruler tick marks */
+    background-image:
+        linear-gradient(to left, #c4bfb4 0%, #d8d4cc 40%, #c4bfb4 100%),
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 9px,
+            rgba(60, 50, 40, 0.4) 9px,
+            rgba(60, 50, 40, 0.4) 10px,
+            transparent 10px,
+            transparent 10px
+        ),
+        /* Longer marks every 5 */
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 49px,
+            rgba(60, 50, 40, 0.6) 49px,
+            rgba(60, 50, 40, 0.6) 50px,
+            transparent 50px,
+            transparent 50px
+        );
+    background-size: 100% 100%, 8px 10px, 12px 50px;
+    background-position: 0 0, right 0, right 0;
+    background-repeat: no-repeat, repeat-y, repeat-y;
+    box-shadow: inset 2px 0 4px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+}
+
+/* Make tab content position relative for the right ruler */
+.ie-tab-content {
+    position: relative;
+    padding-right: 24px !important;
+}
 
 .ie-panel-open {
     left: 0;
