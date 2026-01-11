@@ -446,7 +446,7 @@
 
 [data-tab-content="settings"] .ie-section {
     background: rgba(29, 38, 51, 0.6);
-    border-left: 3px solid #9b9e99;
+    border-left: 3px solid #6b6e6a;
     backdrop-filter: blur(4px);
 }
 
@@ -460,7 +460,7 @@
 }
 
 [data-tab-content="settings"] .ie-form-group label {
-    color: #9da1a0;
+    color: #7a7d7c;
 }
 
 [data-tab-content="settings"] .ie-form-group input,
@@ -479,17 +479,17 @@
 }
 
 [data-tab-content="settings"] .ie-checkbox {
-    color: #9da1a0;
+    color: #7a7d7c;
 }
 
 [data-tab-content="settings"] .ie-checkbox input {
-    accent-color: #9b9e99;
+    accent-color: #6b6e6a;
 }
 
 [data-tab-content="settings"] .ie-btn {
     background: rgba(13, 13, 18, 0.8);
     border-color: #1d2633;
-    color: #9da1a0;
+    color: #7a7d7c;
 }
 
 [data-tab-content="settings"] .ie-btn:hover:not(:disabled) {
@@ -499,14 +499,14 @@
 }
 
 [data-tab-content="settings"] .ie-btn-primary {
-    background: #e8e4de;
-    border-color: #e8e4de;
+    background: #a8a49d;
+    border-color: #a8a49d;
     color: #0d0d12;
 }
 
 [data-tab-content="settings"] .ie-btn-primary:hover:not(:disabled) {
-    background: #ffffff;
-    border-color: #ffffff;
+    background: #b8b4ad;
+    border-color: #b8b4ad;
     color: #0d0d12;
 }
 
@@ -516,8 +516,8 @@
 
 [data-tab-content="settings"] .ie-btn-test-api {
     background: transparent;
-    border: 1px dashed #9da1a0;
-    color: #9da1a0;
+    border: 1px dashed #6b6e6a;
+    color: #7a7d7c;
 }
 
 [data-tab-content="settings"] .ie-btn-test-api:hover {
@@ -535,7 +535,7 @@
 
 /* Range/slider inputs in settings */
 [data-tab-content="settings"] input[type="range"] {
-    accent-color: #9b9e99;
+    accent-color: #6b6e6a;
     background: #1c2630;
 }
 
@@ -544,7 +544,7 @@
 }
 
 [data-tab-content="settings"] input[type="range"]::-webkit-slider-thumb {
-    background: #9b9e99;
+    background: #6b6e6a;
 }
 
 /* Override any remaining attribute colors in settings */
@@ -555,12 +555,12 @@
 
 [data-tab-content="settings"] [style*="border-left-color"],
 [data-tab-content="settings"] [style*="border-color"] {
-    border-left-color: #9b9e99 !important;
+    border-left-color: #6b6e6a !important;
 }
 
 /* Nested/sub-options in settings - override purple borders */
 [data-tab-content="settings"] .ie-auto-gen-options {
-    border-left-color: #9b9e99;
+    border-left-color: #6b6e6a;
 }
 
 /* Force checkbox styling in settings - override ST theme */
@@ -568,7 +568,7 @@
 [data-tab-content="settings"] .ie-checkbox input,
 [data-tab-content="settings"] .checkbox_label input,
 .inland-empire-panel [data-tab-content="settings"] input[type="checkbox"] {
-    accent-color: #9b9e99 !important;
+    accent-color: #6b6e6a !important;
     -webkit-appearance: none !important;
     -moz-appearance: none !important;
     appearance: none !important;
@@ -576,7 +576,7 @@
     height: 22px !important;
     min-width: 22px !important;
     min-height: 22px !important;
-    border: 2px solid #9b9e99 !important;
+    border: 2px solid #6b6e6a !important;
     border-radius: 4px !important;
     background: rgba(13, 13, 18, 0.8) !important;
     cursor: pointer !important;
@@ -590,8 +590,8 @@
 [data-tab-content="settings"] .ie-checkbox input:checked,
 [data-tab-content="settings"] .checkbox_label input:checked,
 .inland-empire-panel [data-tab-content="settings"] input[type="checkbox"]:checked {
-    background: #9b9e99 !important;
-    border-color: #9b9e99 !important;
+    background: #6b6e6a !important;
+    border-color: #6b6e6a !important;
 }
 
 [data-tab-content="settings"] input[type="checkbox"]:checked::after,
