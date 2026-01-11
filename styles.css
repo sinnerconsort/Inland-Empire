@@ -321,12 +321,12 @@
             transparent 23px,
             transparent 43px
         ),
-        /* Main gradient - 12px gray on left, 10px gray on right */
+        /* Main gradient - 18px gray on left, 10px gray on right */
         linear-gradient(
             to right,
             #62716f 0px,
-            #62716f 12px,
-            #0d3628 12px,
+            #62716f 18px,
+            #0d3628 18px,
             #0d3628 10%,
             #112d2a 30%,
             #14292b 60%,
@@ -334,13 +334,13 @@
             #62716f 90%,
             #62716f 100%
         );
-    background-size: 12px 43px, 10px 43px, 100% 100%;
+    background-size: 18px 43px, 10px 43px, 100% 100%;
     background-position: left top, right top, left top;
     background-repeat: repeat-y, repeat-y, repeat;
     background-attachment: local, local, local;
     position: relative;
     padding-right: 36px;
-    padding-left: 24px;
+    padding-left: 28px;
 }
 
 /* Remove the pseudo-elements since everything is in background */
