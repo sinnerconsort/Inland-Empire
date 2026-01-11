@@ -498,6 +498,82 @@
     border-color: #90511d !important;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   THOUGHT CABINET TAB - Warm Golden to Dark Teal
+   ═══════════════════════════════════════════════════════════════ */
+
+[data-tab-content="cabinet"] {
+    background: linear-gradient(
+        to bottom,
+        #b69a59 0%,
+        #7a6d3d 20%,
+        #4a5040 40%,
+        #263032 70%,
+        #263032 100%
+    );
+}
+
+[data-tab-content="cabinet"] .ie-section {
+    background: rgba(38, 48, 50, 0.7);
+    border-left: 3px solid #b69a59;
+    backdrop-filter: blur(4px);
+}
+
+[data-tab-content="cabinet"] .ie-section-header {
+    color: #e8e4de;
+    border-bottom-color: rgba(182, 154, 89, 0.3);
+}
+
+[data-tab-content="cabinet"] .ie-section-header span::before {
+    color: #b69a59;
+}
+
+[data-tab-content="cabinet"] .ie-thought-card {
+    background: rgba(38, 48, 50, 0.8);
+    border-color: rgba(182, 154, 89, 0.3);
+}
+
+[data-tab-content="cabinet"] .ie-thought-name {
+    color: #b69a59;
+}
+
+[data-tab-content="cabinet"] .ie-btn {
+    background: rgba(38, 48, 50, 0.8);
+    border-color: rgba(182, 154, 89, 0.4);
+    color: #e8e4de;
+}
+
+[data-tab-content="cabinet"] .ie-btn:hover:not(:disabled) {
+    background: rgba(182, 154, 89, 0.3);
+    border-color: #b69a59;
+}
+
+[data-tab-content="cabinet"] .ie-btn-primary {
+    background: #b69a59;
+    border-color: #b69a59;
+    color: #1a1a20;
+}
+
+[data-tab-content="cabinet"] .ie-btn-primary:hover:not(:disabled) {
+    background: #c9ab64;
+    border-color: #c9ab64;
+}
+
+/* Cabinet tab button when active */
+.ie-tab[data-tab="cabinet"].ie-tab-active {
+    color: #b69a59;
+    border-bottom-color: #b69a59;
+}
+
+[data-tab-content="cabinet"] .ie-theme-tag {
+    background: rgba(182, 154, 89, 0.2);
+    border: 1px solid rgba(182, 154, 89, 0.3);
+}
+
+[data-tab-content="cabinet"] .ie-progress-bar {
+    background: linear-gradient(90deg, #b69a59, #c9ab64);
+}
+
 /* Panel content wrapper */
 .ie-panel-content {
     flex: 1;
