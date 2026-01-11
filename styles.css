@@ -276,6 +276,7 @@
         #17252e 100%
     );
     position: relative;
+    padding-right: 24px;
 }
 
 /* Film grain/noise texture overlay */
@@ -302,28 +303,6 @@
     z-index: 0;
 }
 
-/* Film reel sprocket holes - left side */
-[data-tab-content="skills"]::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 8px;
-    height: 100%;
-    background: 
-        repeating-linear-gradient(
-            to bottom,
-            transparent 0px,
-            transparent 8px,
-            rgba(0, 0, 0, 0.6) 8px,
-            rgba(0, 0, 0, 0.6) 12px,
-            transparent 12px,
-            transparent 24px
-        );
-    pointer-events: none;
-    z-index: 1;
-}
-
 /* Content needs to be above the overlays */
 [data-tab-content="skills"] > * {
     position: relative;
@@ -335,25 +314,28 @@
     position: relative;
 }
 
-/* Right side film reel */
-[data-tab-content="skills"] .ie-skills-overview::after {
+/* Right side film reel strip with background */
+[data-tab-content="skills"]::after {
     content: '';
     position: absolute;
     top: 0;
-    right: -12px;
-    width: 8px;
+    right: 0;
+    width: 20px;
     height: 100%;
     background: 
+        /* Sprocket holes */
         repeating-linear-gradient(
             to bottom,
-            transparent 0px,
-            transparent 8px,
-            rgba(0, 0, 0, 0.5) 8px,
-            rgba(0, 0, 0, 0.5) 12px,
-            transparent 12px,
-            transparent 24px
+            #62716f 0px,
+            #62716f 6px,
+            #1a1a1a 6px,
+            #1a1a1a 10px,
+            #62716f 10px,
+            #62716f 20px
         );
+    border-left: 1px solid rgba(0, 0, 0, 0.5);
     pointer-events: none;
+    z-index: 3;
 }
 
 /* Adjust attribute cards for the new background */
