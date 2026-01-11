@@ -147,33 +147,56 @@
     color: var(--ie-text-primary);
 }
 
-/* Ruler edge on the right side of panel */
+/* ═══════════════════════════════════════════════════════════════
+   FILM STRIP BORDERS - On main panel, positioned below header
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Left film strip border - thinner, starts below header */
+.inland-empire-panel::before {
+    content: '';
+    position: absolute;
+    top: 58px; /* Start below the header */
+    left: 0;
+    width: 8px;
+    bottom: 0;
+    background: #62716f;
+    background-image: 
+        /* Film strip holes */
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 20px,
+            rgba(0, 0, 0, 0.4) 20px,
+            rgba(0, 0, 0, 0.4) 23px,
+            transparent 23px,
+            transparent 43px
+        );
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Right film strip border - starts below header */
 .inland-empire-panel::after {
     content: '';
     position: absolute;
-    top: 0;
+    top: 58px; /* Start below the header */
     right: 0;
-    width: 24px;
-    height: 100%;
-    background: 
-        linear-gradient(to right, var(--ie-bg-tertiary) 0%, var(--ie-ruler) 100%);
-    border-left: 1px solid var(--ie-border);
+    width: 10px;
+    bottom: 0;
+    background: #62716f;
     background-image: 
+        /* Film strip holes */
         repeating-linear-gradient(
             to bottom,
             transparent 0px,
-            transparent 18px,
-            var(--ie-ruler-mark) 18px,
-            var(--ie-ruler-mark) 20px
-        ),
-        repeating-linear-gradient(
-            to bottom,
-            transparent 0px,
-            transparent 98px,
-            var(--ie-text-muted) 98px,
-            var(--ie-text-muted) 100px
+            transparent 20px,
+            rgba(0, 0, 0, 0.4) 20px,
+            rgba(0, 0, 0, 0.4) 23px,
+            transparent 23px,
+            transparent 43px
         );
     pointer-events: none;
+    z-index: 10;
 }
 
 .ie-panel-open {
@@ -187,6 +210,8 @@
     padding: 16px 40px 16px 16px;
     background: linear-gradient(180deg, var(--ie-bg-tertiary) 0%, var(--ie-bg-secondary) 100%);
     border-bottom: 2px solid var(--ie-accent-orange);
+    position: relative;
+    z-index: 20; /* Keep header above film strips */
 }
 
 .ie-panel-title {
@@ -210,6 +235,16 @@
     gap: 8px;
 }
 
+/* Panel content wrapper */
+.ie-panel-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+    position: relative;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    TABS - DE Style with Orange Accent
    ═══════════════════════════════════════════════════════════════ */
@@ -218,7 +253,10 @@
     display: flex;
     background: var(--ie-bg-secondary);
     border-bottom: 1px solid var(--ie-border);
-    padding-right: 24px; /* Account for ruler edge */
+    padding-left: 8px;  /* Account for left film strip */
+    padding-right: 10px; /* Account for right film strip */
+    position: relative;
+    z-index: 5;
 }
 
 .ie-tab {
@@ -253,9 +291,12 @@
     overflow-y: auto;
     overflow-x: hidden;
     padding: 12px;
-    padding-right: 36px; /* Account for ruler edge */
+    padding-left: 14px;  /* Account for left film strip */
+    padding-right: 16px; /* Account for right film strip */
     min-height: 0;
     -webkit-overflow-scrolling: touch;
+    position: relative;
+    z-index: 1;
 }
 
 .ie-tab-content-active {
@@ -270,22 +311,15 @@
 [data-tab-content="skills"] {
     background: linear-gradient(
         to right,
-        #62716f 0px,
-        #62716f 6px,
-        #0d3628 6px,
-        #0d3628 8%,
+        #0d3628 0%,
         #112d2a 30%,
         #14292b 60%,
-        #17252e 92%,
-        #62716f 92%,
-        #62716f 100%
+        #17252e 100%
     );
     position: relative;
-    padding-right: 12px;
-    padding-left: 10px;
 }
 
-/* Film grain/noise texture overlay */
+/* Subtle scanlines overlay for skills tab */
 [data-tab-content="skills"]::before {
     content: '';
     position: absolute;
@@ -294,16 +328,6 @@
     right: 0;
     bottom: 0;
     background-image: 
-        /* Left film strip holes */
-        repeating-linear-gradient(
-            to bottom,
-            transparent 0px,
-            transparent 20px,
-            rgba(0, 0, 0, 0.3) 20px,
-            rgba(0, 0, 0, 0.3) 23px,
-            transparent 23px,
-            transparent 43px
-        ),
         /* Subtle scanlines */
         repeating-linear-gradient(
             0deg,
@@ -312,35 +336,9 @@
             rgba(0, 0, 0, 0.02) 2px,
             rgba(0, 0, 0, 0.02) 4px
         );
-    background-size: 6px 100%, 100% 100%;
-    background-position: left top, left top;
-    background-repeat: repeat-y, repeat;
     opacity: 1;
     pointer-events: none;
     z-index: 0;
-}
-
-/* Right side film strip holes */
-[data-tab-content="skills"]::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 10px;
-    height: 100%;
-    background: 
-        repeating-linear-gradient(
-            to bottom,
-            transparent 0px,
-            transparent 20px,
-            rgba(0, 0, 0, 0.3) 20px,
-            rgba(0, 0, 0, 0.3) 23px,
-            transparent 23px,
-            transparent 43px
-        );
-    border-left: 1px solid rgba(0, 0, 0, 0.2);
-    pointer-events: none;
-    z-index: 3;
 }
 
 /* Content needs to be above the overlays */
@@ -390,7 +388,6 @@
         #0d0d12 75%,
         #0d0d12 100%
     );
-    padding-right: 36px;
 }
 
 [data-tab-content="settings"] .ie-section {
@@ -582,15 +579,6 @@
 /* Textarea focus in settings */
 [data-tab-content="settings"] textarea:focus {
     border-color: #90511d !important;
-}
-
-/* Panel content wrapper */
-.ie-panel-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    min-height: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════
