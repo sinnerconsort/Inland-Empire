@@ -586,25 +586,25 @@
 [data-tab-content="profiles"] {
     background: linear-gradient(
         to bottom,
-        #263a3b 0%,
-        #3a4030 50%,
-        #4e4426 100%
+        #182224 0%,
+        #2a2820 50%,
+        #402e1d 100%
     );
 }
 
 [data-tab-content="profiles"] .ie-section {
-    background: rgba(38, 58, 59, 0.6);
-    border-left: 3px solid #4e4426;
+    background: rgba(24, 34, 36, 0.6);
+    border-left: 3px solid #402e1d;
     backdrop-filter: blur(4px);
 }
 
 [data-tab-content="profiles"] .ie-section-header {
     color: #e8e4de;
-    border-bottom-color: rgba(78, 68, 38, 0.4);
+    border-bottom-color: rgba(64, 46, 29, 0.4);
 }
 
 [data-tab-content="profiles"] .ie-section-header span::before {
-    color: #4e4426;
+    color: #402e1d;
 }
 
 /* Save Profile and Apply Build buttons */
@@ -626,27 +626,27 @@
 
 [data-tab-content="profiles"] .ie-form-group input {
     background: rgba(13, 13, 18, 0.7);
-    border-color: rgba(78, 68, 38, 0.5);
+    border-color: rgba(64, 46, 29, 0.5);
     color: #e8e4de;
 }
 
 [data-tab-content="profiles"] .ie-form-group input:focus {
-    border-color: #4e4426;
+    border-color: #402e1d;
 }
 
 [data-tab-content="profiles"] .ie-profile-card {
-    background: rgba(38, 58, 59, 0.5);
-    border: 1px solid rgba(78, 68, 38, 0.3);
+    background: rgba(24, 34, 36, 0.5);
+    border: 1px solid rgba(64, 46, 29, 0.3);
 }
 
 [data-tab-content="profiles"] .ie-attr-editor-row {
-    background: rgba(38, 58, 59, 0.5);
+    background: rgba(24, 34, 36, 0.5);
 }
 
 /* Profiles tab button when active */
 .ie-tab[data-tab="profiles"].ie-tab-active {
-    color: #4e4426;
-    border-bottom-color: #4e4426;
+    color: #402e1d;
+    border-bottom-color: #402e1d;
 }
 
 [data-tab-content="cabinet"] .ie-theme-tag {
