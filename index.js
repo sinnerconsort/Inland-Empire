@@ -12,7 +12,7 @@
 // Data
 import { SKILLS, ATTRIBUTES, ANCIENT_VOICES } from './data/skills.js';
 import { STATUS_EFFECTS } from './data/statuses.js';
-import { INTRUSIVE_THOUGHTS, OBJECT_VOICES } from './data/voices.js';
+import { OBJECT_VOICES } from './data/voices.js';
 import { THEMES, THOUGHTS } from './data/thoughts.js';
 
 // Systems
@@ -58,17 +58,13 @@ import {
 import {
     analyzeContext,
     selectSpeakingSkills,
-    generateVoices,
-    processIntrusiveThoughts,
-    getIntrusiveThought
+    generateVoices
 } from './systems/generation.js';
 
 // UPDATED: Added autoScan import
 import {
     createThoughtBubbleFAB,
     createDiscoveryModal,
-    addIntrusiveDiscovery,
-    addObjectDiscovery,
     updateSceneContext,
     toggleDiscoveryModal,
     autoScan
@@ -85,8 +81,6 @@ import {
 import {
     showToast,
     hideToast,
-    showIntrusiveToast,
-    showObjectToast,
     showDiscoveryToast,
     showInternalizedToast
 } from './ui/toasts.js';
@@ -182,19 +176,6 @@ async function triggerVoices(messageText = null) {
         trackThemesInMessage(text);
         incrementMessageCount();
 
-        // Process intrusive thoughts and object voices
-        const intrusiveData = await processIntrusiveThoughts(text);
-
-        // Add intrusive thought to discovery panel
-        if (intrusiveData.intrusive && !extensionSettings.intrusiveInChat) {
-            addIntrusiveDiscovery(intrusiveData.intrusive);
-        }
-
-        // Add object voices to discovery panel
-        for (const objVoice of intrusiveData.objects) {
-            addObjectDiscovery(objVoice);
-        }
-
         // Select speaking skills
         const selectedSkills = selectSpeakingSkills(analysisContext, {
             minVoices: extensionSettings.voicesPerMessage?.min || 1,
@@ -210,7 +191,7 @@ async function triggerVoices(messageText = null) {
         showToast(`${selectedSkills.length} skills speaking...`, 'info', 2000);
 
         // Generate voices
-        const voiceResults = await generateVoices(selectedSkills, analysisContext, intrusiveData);
+        const voiceResults = await generateVoices(selectedSkills, analysisContext);
         
         showToast(`Generated ${voiceResults.length} voices`, 'info', 2000);
 
@@ -237,14 +218,6 @@ async function triggerVoices(messageText = null) {
 
         // Combine results
         const allVoices = [];
-
-        // Add intrusive thought if showing in chat
-        if (intrusiveData.intrusive && extensionSettings.intrusiveInChat) {
-            allVoices.push(intrusiveData.intrusive);
-        }
-
-        // Add object voices
-        allVoices.push(...intrusiveData.objects);
 
         // Add main voices (filter failed checks if setting disabled)
         const filteredVoices = extensionSettings.showFailedChecks ?
@@ -818,8 +791,6 @@ function loadSettingsToUI() {
         'ie-character-name': extensionSettings.characterName,
         'ie-character-pronouns': extensionSettings.characterPronouns,
         'ie-character-context': extensionSettings.characterContext,
-        'ie-intrusive-chance': (extensionSettings.intrusiveChance || 0.15) * 100,
-        'ie-object-chance': (extensionSettings.objectVoiceChance || 0.4) * 100,
         'ie-auto-gen-threshold': extensionSettings.autoGenThreshold || 10,
         'ie-auto-gen-cooldown': extensionSettings.autoGenCooldown || 5,
         'ie-auto-gen-perspective': extensionSettings.autoGenPerspective || 'observer',
@@ -837,14 +808,11 @@ function loadSettingsToUI() {
         'ie-show-failed-checks': extensionSettings.showFailedChecks,
         'ie-auto-trigger': extensionSettings.autoTrigger,
         'ie-auto-detect-status': extensionSettings.autoDetectStatus,
-        'ie-intrusive-enabled': extensionSettings.intrusiveEnabled,
-        'ie-intrusive-in-chat': extensionSettings.intrusiveInChat,
-        'ie-object-voices-enabled': extensionSettings.objectVoicesEnabled,
         'ie-thought-discovery-enabled': extensionSettings.thoughtDiscoveryEnabled,
         'ie-auto-discover-thoughts': extensionSettings.autoDiscoverThoughts,
         'ie-auto-generate-thoughts': extensionSettings.autoGenerateThoughts,
         'ie-show-in-chat': extensionSettings.showInChat !== false,
-        'ie-auto-scan-enabled': extensionSettings.autoScanEnabled  // NEW
+        'ie-auto-scan-enabled': extensionSettings.autoScanEnabled
     };
 
     for (const [id, value] of Object.entries(checks)) {
@@ -884,11 +852,6 @@ function saveSettingsFromUI() {
         showFailedChecks: document.getElementById('ie-show-failed-checks')?.checked !== false,
         autoTrigger: document.getElementById('ie-auto-trigger')?.checked || false,
         autoDetectStatus: document.getElementById('ie-auto-detect-status')?.checked || false,
-        intrusiveEnabled: document.getElementById('ie-intrusive-enabled')?.checked !== false,
-        intrusiveInChat: document.getElementById('ie-intrusive-in-chat')?.checked !== false,
-        intrusiveChance: (parseInt(document.getElementById('ie-intrusive-chance')?.value) || 15) / 100,
-        objectVoicesEnabled: document.getElementById('ie-object-voices-enabled')?.checked !== false,
-        objectVoiceChance: (parseInt(document.getElementById('ie-object-chance')?.value) || 40) / 100,
         thoughtDiscoveryEnabled: document.getElementById('ie-thought-discovery-enabled')?.checked !== false,
         autoDiscoverThoughts: document.getElementById('ie-auto-discover-thoughts')?.checked !== false,
         autoGenerateThoughts: document.getElementById('ie-auto-generate-thoughts')?.checked || false,
@@ -897,7 +860,7 @@ function saveSettingsFromUI() {
         autoGenPerspective: document.getElementById('ie-auto-gen-perspective')?.value || 'observer',
         autoGenPlayerContext: document.getElementById('ie-auto-gen-player-context')?.value || '',
         showInChat: document.getElementById('ie-show-in-chat')?.checked !== false,
-        autoScanEnabled: document.getElementById('ie-auto-scan-enabled')?.checked || false  // NEW
+        autoScanEnabled: document.getElementById('ie-auto-scan-enabled')?.checked || false
     });
 
     saveState(getContext());
