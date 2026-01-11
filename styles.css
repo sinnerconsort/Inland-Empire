@@ -147,15 +147,84 @@
    FILM STRIP BORDER - Left Edge
    ═══════════════════════════════════════════════════════════════ */
 
+/* ═══════════════════════════════════════════════════════════════
+   LEFT RULER EDGE (using the HTML element)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Ruler on the LEFT - rename class in HTML from ie-right-ruler to ie-left-ruler if you want, but styling works either way */
+.ie-right-ruler {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: auto;
+    width: 20px;
+    height: 100%;
+    z-index: 10000;
+    pointer-events: none;
+    /* Base cream color - lightened */
+    background: linear-gradient(
+        to left,
+        #e0dcd4 0%,
+        #eae6de 50%,
+        #e0dcd4 100%
+    );
+    box-shadow: inset -2px 0 6px rgba(0, 0, 0, 0.25);
+}
+
+/* Small tick marks every 10px - lightened */
+.ie-right-ruler::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 9px,
+        rgba(80, 65, 50, 0.45) 9px,
+        rgba(80, 65, 50, 0.45) 10px
+    );
+    background-size: 8px 10px;
+    background-position: right top;
+    background-repeat: repeat-y;
+}
+
+/* Larger tick marks every 50px - lightened */
+.ie-right-ruler::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 48px,
+        rgba(60, 50, 40, 0.6) 48px,
+        rgba(60, 50, 40, 0.6) 50px
+    );
+    background-size: 14px 50px;
+    background-position: right top;
+    background-repeat: repeat-y;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RIGHT FILM STRIP BORDER (using panel pseudo-elements)
+   ═══════════════════════════════════════════════════════════════ */
+
 .inland-empire-panel::before {
     content: '';
     position: absolute;
     top: 0;
-    left: 0;
+    right: 0;
+    left: auto;
     width: 22px;
     height: 100%;
     background: linear-gradient(
-        to right,
+        to left,
         #d4cfc4 0%,
         #e8e4dc 30%,
         #d4cfc4 100%
@@ -164,7 +233,7 @@
     /* Sprocket holes using repeating gradient */
     background-image: 
         /* Main cream background */
-        linear-gradient(to right, #d4cfc4 0%, #e8e4dc 30%, #d4cfc4 100%),
+        linear-gradient(to left, #d4cfc4 0%, #e8e4dc 30%, #d4cfc4 100%),
         /* Sprocket holes - left column */
         repeating-linear-gradient(
             to bottom,
@@ -189,15 +258,16 @@
     background-position: 0 0, 2px 4px, 14px 4px;
     background-repeat: no-repeat, repeat-y, repeat-y;
     /* Subtle inner shadow for depth */
-    box-shadow: inset -2px 0 4px rgba(0, 0, 0, 0.3);
+    box-shadow: inset 2px 0 4px rgba(0, 0, 0, 0.3);
 }
 
-/* Film strip vertical text overlay */
+/* Film strip vertical text overlay - NOW ON RIGHT */
 .inland-empire-panel::after {
-    content: 'FANAL · PLAYBACK · INLAND · EMPIRE · FANAL · PLAYBACK · INLAND · EMPIRE · FANAL · PLAYBACK ·';
+    content: 'FANAL  ·  PLAYBACK  ·  INLAND  ·  EMPIRE  ·  FANAL  ·  PLAYBACK  ·  INLAND  ·  EMPIRE  ·  FANAL  ·  PLAYBACK  ·';
     position: absolute;
     top: 0;
-    left: 0;
+    right: 0;
+    left: auto;
     width: 22px;
     height: 100%;
     z-index: 10001;
@@ -206,7 +276,8 @@
     font-family: 'Courier New', monospace;
     font-size: 7px;
     font-weight: 700;
-    letter-spacing: 3px;
+    letter-spacing: 4px;
+    word-spacing: 2px;
     color: rgba(80, 70, 60, 0.5);
     padding: 20px 0;
     overflow: hidden;
@@ -217,78 +288,17 @@
     text-transform: uppercase;
 }
 
-/* Adjust panel content to account for film strip */
+/* Adjust panel content to account for borders - NOW margin-left for ruler, margin-right for film strip */
 .ie-panel-header,
 .ie-tabs {
-    margin-left: 22px;
+    margin-left: 20px;
+    margin-right: 22px;
 }
 
 .ie-tab-content {
-    margin-left: 22px;
+    margin-left: 20px;
+    margin-right: 22px;
     position: relative;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   RIGHT RULER EDGE
-   ═══════════════════════════════════════════════════════════════ */
-
-/* Right ruler - Add <div class="ie-right-ruler"></div> as first child of .inland-empire-panel */
-.ie-right-ruler {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 20px;
-    height: 100%;
-    z-index: 10000;
-    pointer-events: none;
-    /* Base cream color */
-    background: linear-gradient(
-        to left,
-        #d4cfc4 0%,
-        #e0dcd4 50%,
-        #d4cfc4 100%
-    );
-    box-shadow: inset 2px 0 6px rgba(0, 0, 0, 0.3);
-}
-
-/* Small tick marks every 10px */
-.ie-right-ruler::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: repeating-linear-gradient(
-        to bottom,
-        transparent 0px,
-        transparent 9px,
-        rgba(60, 45, 30, 0.6) 9px,
-        rgba(60, 45, 30, 0.6) 10px
-    );
-    background-size: 8px 10px;
-    background-position: left top;
-    background-repeat: repeat-y;
-}
-
-/* Larger tick marks every 50px */
-.ie-right-ruler::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: repeating-linear-gradient(
-        to bottom,
-        transparent 0px,
-        transparent 48px,
-        rgba(40, 30, 20, 0.8) 48px,
-        rgba(40, 30, 20, 0.8) 50px
-    );
-    background-size: 14px 50px;
-    background-position: left top;
-    background-repeat: repeat-y;
 }
 
 .ie-panel-open {
@@ -299,7 +309,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 26px 16px 20px; /* Extra right padding for ruler */
+    padding: 16px 20px;
     background: linear-gradient(180deg, var(--ie-bg-tertiary) 0%, var(--ie-bg-secondary) 100%);
     border-bottom: 2px solid var(--ie-accent-orange);
 }
@@ -333,7 +343,6 @@
     display: flex;
     background: var(--ie-bg-secondary);
     border-bottom: 1px solid var(--ie-border);
-    padding-right: 18px; /* Space for right ruler */
 }
 
 .ie-tab {
@@ -367,7 +376,7 @@
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 12px 24px 12px 12px; /* Extra right padding for ruler */
+    padding: 12px;
     min-height: 0;
     -webkit-overflow-scrolling: touch;
 }
