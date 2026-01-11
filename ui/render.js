@@ -785,6 +785,7 @@ export function syncSettingsToUI() {
     setValue('ie-character-pronouns', extensionSettings.characterPronouns);
     setValue('ie-character-context', extensionSettings.characterContext);
     setValue('ie-show-in-chat', extensionSettings.showInChat);
+    setValue('ie-auto-scan-enabled', extensionSettings.autoScanEnabled);
 
     // Show/hide auto-gen options
     const autoGenOptions = document.querySelectorAll('.ie-auto-gen-options');
@@ -837,6 +838,7 @@ export function syncUIToSettings() {
     extensionSettings.characterPronouns = getValue('ie-character-pronouns', 'they');
     extensionSettings.characterContext = getValue('ie-character-context', '');
     extensionSettings.showInChat = getValue('ie-show-in-chat', true);
+    extensionSettings.autoScanEnabled = getValue('ie-auto-scan-enabled', false);
 }
 
 export function clearVoices() {

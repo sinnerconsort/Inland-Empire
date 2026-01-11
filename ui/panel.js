@@ -233,6 +233,17 @@ export function createPsychePanel() {
                 </div>
 
                 <div class="ie-section">
+                    <div class="ie-section-header"><span>Environmental Scan</span></div>
+                    <div class="ie-form-group">
+                        <label class="ie-checkbox">
+                            <input type="checkbox" id="ie-auto-scan-enabled" />
+                            <span>Auto-scan on new messages</span>
+                        </label>
+                    </div>
+                    <small class="ie-form-hint">Automatically investigates the environment when AI responds. Use the 👁️ button or modal to manually scan.</small>
+                </div>
+
+                <div class="ie-section">
                     <div class="ie-section-header"><span>Thought Cabinet</span></div>
                     <div class="ie-form-group">
                         <label class="ie-checkbox">
