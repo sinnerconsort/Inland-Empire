@@ -254,6 +254,7 @@
     overflow-x: hidden;
     padding: 12px;
     padding-right: 36px; /* Account for ruler edge */
+    padding-left: 22px; /* Account for left ruler edge */
     min-height: 0;
     -webkit-overflow-scrolling: touch;
 }
@@ -591,6 +592,36 @@
     flex-direction: column;
     overflow: hidden;
     min-height: 0;
+    position: relative;
+}
+
+/* Thin ruler edge on the left side of content area (below header) */
+.ie-panel-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 10px;
+    height: 100%;
+    background: linear-gradient(to left, var(--ie-bg-tertiary) 0%, var(--ie-ruler) 100%);
+    border-right: 1px solid var(--ie-border);
+    background-image: 
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 18px,
+            var(--ie-ruler-mark) 18px,
+            var(--ie-ruler-mark) 20px
+        ),
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 98px,
+            var(--ie-text-muted) 98px,
+            var(--ie-text-muted) 100px
+        );
+    pointer-events: none;
+    z-index: 3;
 }
 
 /* ═══════════════════════════════════════════════════════════════
