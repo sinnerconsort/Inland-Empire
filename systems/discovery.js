@@ -271,10 +271,7 @@ What does each skill notice? Be specific and evocative.`;
 
     try {
         const response = await callAPI(systemPrompt, userPrompt);
-        console.log('[Discovery] Raw API response:', response);
-        const parsed = parseObservations(response, selectedSkills);
-        console.log('[Discovery] Parsed observations:', parsed);
-        return parsed;
+        return parseObservations(response, selectedSkills);
     } catch (error) {
         console.error('[Discovery] API call failed:', error);
         return [];
@@ -667,7 +664,7 @@ function getTypeLabel(type) {
     return labels[type] || 'Discovery';
 }
 
-// ════════════════════════════════════════���══════════════════════
+// ═══════════════════════════════════════════════════════════════
 // INTEGRATION HELPERS
 // ═══════════════════════════════════════════════════════════════
 
