@@ -579,6 +579,76 @@
     border-bottom-color: #b69a59;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   PROFILES TAB - Dark Teal to Olive Brown
+   ═══════════════════════════════════════════════════════════════ */
+
+[data-tab-content="profiles"] {
+    background: linear-gradient(
+        to bottom,
+        #263a3b 0%,
+        #3a4030 50%,
+        #4e4426 100%
+    );
+}
+
+[data-tab-content="profiles"] .ie-section {
+    background: rgba(38, 58, 59, 0.6);
+    border-left: 3px solid #4e4426;
+    backdrop-filter: blur(4px);
+}
+
+[data-tab-content="profiles"] .ie-section-header {
+    color: #e8e4de;
+    border-bottom-color: rgba(78, 68, 38, 0.4);
+}
+
+[data-tab-content="profiles"] .ie-section-header span::before {
+    color: #4e4426;
+}
+
+/* Save Profile and Apply Build buttons */
+[data-tab-content="profiles"] .ie-btn-primary,
+[data-tab-content="profiles"] #ie-save-profile-btn,
+[data-tab-content="profiles"] .ie-btn-apply-build {
+    background: #912910;
+    border-color: #912910;
+    color: #ffffff;
+}
+
+[data-tab-content="profiles"] .ie-btn-primary:hover:not(:disabled),
+[data-tab-content="profiles"] #ie-save-profile-btn:hover:not(:disabled),
+[data-tab-content="profiles"] .ie-btn-apply-build:hover:not(:disabled) {
+    background: #a63212;
+    border-color: #a63212;
+    color: #ffffff;
+}
+
+[data-tab-content="profiles"] .ie-form-group input {
+    background: rgba(13, 13, 18, 0.7);
+    border-color: rgba(78, 68, 38, 0.5);
+    color: #e8e4de;
+}
+
+[data-tab-content="profiles"] .ie-form-group input:focus {
+    border-color: #4e4426;
+}
+
+[data-tab-content="profiles"] .ie-profile-card {
+    background: rgba(38, 58, 59, 0.5);
+    border: 1px solid rgba(78, 68, 38, 0.3);
+}
+
+[data-tab-content="profiles"] .ie-attr-editor-row {
+    background: rgba(38, 58, 59, 0.5);
+}
+
+/* Profiles tab button when active */
+.ie-tab[data-tab="profiles"].ie-tab-active {
+    color: #4e4426;
+    border-bottom-color: #4e4426;
+}
+
 [data-tab-content="cabinet"] .ie-theme-tag {
     background: rgba(182, 154, 89, 0.2);
     border: 1px solid rgba(182, 154, 89, 0.3);
@@ -617,6 +687,22 @@
 
 [data-tab-content="cabinet"] .ie-thought-header {
     align-items: flex-start;
+}
+
+/* Observer/Participant toggle buttons */
+[data-tab-content="cabinet"] .ie-perspective-btn {
+    background: rgba(100, 176, 130, 0.3);
+    color: #e8e4de;
+}
+
+[data-tab-content="cabinet"] .ie-perspective-btn:hover {
+    background: rgba(100, 176, 130, 0.5);
+    color: #ffffff;
+}
+
+[data-tab-content="cabinet"] .ie-perspective-btn.ie-perspective-active {
+    background: #64b082;
+    color: #ffffff;
 }
 
 /* Panel content wrapper */
