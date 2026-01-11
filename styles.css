@@ -334,7 +334,7 @@
             #62716f calc(100% - 24px),
             #62716f 100%
         );
-    background-size: 12px 43px, 10px 43px, 100% 100%;
+    background-size: 24px 43px, 10px 43px, 100% 100%;
     background-position: left top, right top, left top;
     background-repeat: repeat-y, repeat-y, repeat;
     background-attachment: local, local, local;
