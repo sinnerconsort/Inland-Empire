@@ -1209,6 +1209,147 @@ function updateFABState() {
 jQuery(async () => {
     try {
         await init();
+        
+        // ═══════════════════════════════════════════════════════════
+        // GLOBAL API - For other extensions to interact with Inland Empire
+        // ═══════════════════════════════════════════════════════════
+        window.InlandEmpire = {
+            // Version for compatibility checks
+            version: '1.0.0',
+            
+            // ─────────────────────────────────────────────────────────
+            // READ: Skill & State Queries
+            // ─────────────────────────────────────────────────────────
+            getSkills: () => ({ ...SKILLS }),
+            getSkillData: (skillId) => SKILLS[skillId] ? { ...SKILLS[skillId] } : null,
+            getSkillLevel: (skillId) => currentBuild[skillId] || 1,
+            getEffectiveSkillLevel: (skillId) => {
+                const base = getEffectiveSkillLevel(skillId, getResearchPenalties());
+                const external = window.InlandEmpire._externalModifiers[skillId] || 0;
+                return base + external;
+            },
+            getActiveStatuses: () => [...activeStatuses],
+            isEnabled: () => extensionSettings.enabled,
+            
+            // ─────────────────────────────────────────────────────────
+            // WRITE: External Modifier Registry
+            // Other extensions can push/remove skill modifiers
+            // ─────────────────────────────────────────────────────────
+            _externalModifiers: {}, // { skillId: totalModifier }
+            _modifierSources: {},   // { sourceId: { skillId: value, ... } }
+            
+            /**
+             * Register a modifier from an external source (e.g., equipment)
+             * @param {string} sourceId - Unique ID for the source (e.g., 'horrific_necktie', 'drunk_status')
+             * @param {string} skillId - The skill to modify (e.g., 'inland_empire')
+             * @param {number} value - The modifier value (+1, -2, etc.)
+             */
+            registerModifier: (sourceId, skillId, value) => {
+                const api = window.InlandEmpire;
+                
+                // Initialize source tracking
+                if (!api._modifierSources[sourceId]) {
+                    api._modifierSources[sourceId] = {};
+                }
+                
+                // Remove old value from total if exists
+                const oldValue = api._modifierSources[sourceId][skillId] || 0;
+                api._externalModifiers[skillId] = (api._externalModifiers[skillId] || 0) - oldValue;
+                
+                // Add new value
+                api._modifierSources[sourceId][skillId] = value;
+                api._externalModifiers[skillId] = (api._externalModifiers[skillId] || 0) + value;
+                
+                console.log(`[Inland Empire API] Modifier registered: ${sourceId} → ${skillId} ${value >= 0 ? '+' : ''}${value}`);
+                
+                // Dispatch event for UI updates
+                document.dispatchEvent(new CustomEvent('ie:modifier-changed', {
+                    detail: { sourceId, skillId, value, totals: { ...api._externalModifiers } }
+                }));
+            },
+            
+            /**
+             * Remove all modifiers from a source (e.g., when unequipping an item)
+             * @param {string} sourceId - The source to remove
+             */
+            removeModifierSource: (sourceId) => {
+                const api = window.InlandEmpire;
+                const source = api._modifierSources[sourceId];
+                
+                if (!source) return;
+                
+                // Subtract all modifiers from this source
+                for (const [skillId, value] of Object.entries(source)) {
+                    api._externalModifiers[skillId] = (api._externalModifiers[skillId] || 0) - value;
+                    if (api._externalModifiers[skillId] === 0) {
+                        delete api._externalModifiers[skillId];
+                    }
+                }
+                
+                delete api._modifierSources[sourceId];
+                console.log(`[Inland Empire API] Modifier source removed: ${sourceId}`);
+                
+                document.dispatchEvent(new CustomEvent('ie:modifier-changed', {
+                    detail: { sourceId, removed: true, totals: { ...api._externalModifiers } }
+                }));
+            },
+            
+            /**
+             * Get all modifiers from a specific source
+             * @param {string} sourceId - The source to query
+             */
+            getModifiersFromSource: (sourceId) => {
+                return { ...window.InlandEmpire._modifierSources[sourceId] } || {};
+            },
+            
+            /**
+             * Get total external modifier for a skill
+             * @param {string} skillId - The skill to query
+             */
+            getExternalModifier: (skillId) => {
+                return window.InlandEmpire._externalModifiers[skillId] || 0;
+            },
+            
+            // ─────────────────────────────────────────────────────────
+            // ACTIONS: Trigger things
+            // ─────────────────────────────────────────────────────────
+            
+            /**
+             * Roll a skill check
+             * @param {string} skillId - The skill to check
+             * @param {number} difficulty - Target difficulty (6-20)
+             * @returns {object} { success, roll, total, isBoxcars, isSnakeEyes }
+             */
+            rollCheck: (skillId, difficulty) => {
+                const effectiveLevel = window.InlandEmpire.getEffectiveSkillLevel(skillId);
+                const result = rollSkillCheck(effectiveLevel, difficulty);
+                
+                // Dispatch event so other extensions can react
+                document.dispatchEvent(new CustomEvent('ie:skill-check', {
+                    detail: { skillId, difficulty, effectiveLevel, ...result }
+                }));
+                
+                return result;
+            },
+            
+            /**
+             * Trigger the voice generation manually
+             */
+            triggerVoices: () => triggerVoices(getContext()),
+            
+            /**
+             * Open/close the Psyche panel
+             */
+            togglePanel: () => togglePanel()
+        };
+        
+        console.log('[Inland Empire] Global API ready: window.InlandEmpire');
+        
+        // Dispatch ready event so other extensions know we're loaded
+        document.dispatchEvent(new CustomEvent('ie:ready', { 
+            detail: { version: window.InlandEmpire.version } 
+        }));
+        
     } catch (error) {
         console.error('[Inland Empire] Failed to initialize:', error);
     }
