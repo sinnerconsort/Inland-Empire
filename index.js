@@ -12,7 +12,7 @@
 // Data
 import { SKILLS, ATTRIBUTES, ANCIENT_VOICES } from './data/skills.js';
 import { STATUS_EFFECTS } from './data/statuses.js';
-import { OBJECT_VOICES } from './data/voices.js';
+// voices.js removed - objects now AI-generated in discovery.js v3
 import { THEMES, THOUGHTS } from './data/thoughts.js';
 
 // Systems
