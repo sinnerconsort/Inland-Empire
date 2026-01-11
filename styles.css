@@ -266,11 +266,11 @@
         #62716f 100%
     );
     position: relative;
-    padding-right: 18px;
-    padding-left: 12px;
+    padding-right: 38px;  /* Push content away from right gray strip */
+    padding-left: 14px;   /* Push content away from left gray strip */
 }
 
-/* Left side film strip holes */
+/* Left side film strip holes - punched into the gray */
 [data-tab-content="skills"]::before {
     content: '';
     position: absolute;
@@ -283,8 +283,8 @@
             to bottom,
             transparent 0px,
             transparent 20px,
-            rgba(0, 0, 0, 0.35) 20px,
-            rgba(0, 0, 0, 0.35) 23px,
+            rgba(0, 0, 0, 0.4) 20px,
+            rgba(0, 0, 0, 0.4) 23px,
             transparent 23px,
             transparent 43px
         );
@@ -292,21 +292,21 @@
     z-index: 3;
 }
 
-/* Right side film strip holes */
+/* Right side film strip holes - punched into the gray */
 [data-tab-content="skills"]::after {
     content: '';
     position: absolute;
     top: 0;
     right: 0;
-    width: 29px; /* 8% of ~360px panel width */
+    width: 8%;  /* Match the gradient's 92-100% gray area */
     height: 100%;
     background-image: 
         repeating-linear-gradient(
             to bottom,
             transparent 0px,
             transparent 20px,
-            rgba(0, 0, 0, 0.35) 20px,
-            rgba(0, 0, 0, 0.35) 23px,
+            rgba(0, 0, 0, 0.4) 20px,
+            rgba(0, 0, 0, 0.4) 23px,
             transparent 23px,
             transparent 43px
         );
@@ -314,7 +314,7 @@
     z-index: 3;
 }
 
-/* Content needs to be above the overlays */
+/* Content needs to be above the base but below the hole overlays */
 [data-tab-content="skills"] > * {
     position: relative;
     z-index: 2;
