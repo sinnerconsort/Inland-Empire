@@ -282,7 +282,7 @@ export function createPsychePanel() {
                     </div>
                     <div class="ie-form-group">
                         <label>Scene Perspective Notes</label>
-                        <textarea id="ie-scene-perspective" rows="3" placeholder="e.g. 'Scene is written from Danny's external POV watching Julie. Julie = you/your. Danny = he/him. When scene says her referring to Julie, convert to your.'"></textarea>
+                        <textarea id="ie-scene-perspective" rows="3" placeholder="e.g. 'Scene is written from Kim's external POV watching Harry. Harry = you/your. Kim = he/him. When scene says him referring to Harry, convert to your.'"></textarea>
                         <small class="ie-form-hint">Help voices convert third-person scene text to correct POV.</small>
                     </div>
                     <button class="ie-btn ie-btn-primary ie-btn-save-settings" style="width: 100%; margin-top: 10px;">
