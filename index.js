@@ -63,13 +63,15 @@ import {
     getIntrusiveThought
 } from './systems/generation.js';
 
+// UPDATED: Added autoScan import
 import {
     createThoughtBubbleFAB,
     createDiscoveryModal,
     addIntrusiveDiscovery,
     addObjectDiscovery,
     updateSceneContext,
-    toggleDiscoveryModal
+    toggleDiscoveryModal,
+    autoScan
 } from './systems/discovery.js';
 
 // UI
@@ -841,7 +843,8 @@ function loadSettingsToUI() {
         'ie-thought-discovery-enabled': extensionSettings.thoughtDiscoveryEnabled,
         'ie-auto-discover-thoughts': extensionSettings.autoDiscoverThoughts,
         'ie-auto-generate-thoughts': extensionSettings.autoGenerateThoughts,
-        'ie-show-in-chat': extensionSettings.showInChat !== false
+        'ie-show-in-chat': extensionSettings.showInChat !== false,
+        'ie-auto-scan-enabled': extensionSettings.autoScanEnabled  // NEW
     };
 
     for (const [id, value] of Object.entries(checks)) {
@@ -893,7 +896,8 @@ function saveSettingsFromUI() {
         autoGenCooldown: parseInt(document.getElementById('ie-auto-gen-cooldown')?.value) || 5,
         autoGenPerspective: document.getElementById('ie-auto-gen-perspective')?.value || 'observer',
         autoGenPlayerContext: document.getElementById('ie-auto-gen-player-context')?.value || '',
-        showInChat: document.getElementById('ie-show-in-chat')?.checked !== false
+        showInChat: document.getElementById('ie-show-in-chat')?.checked !== false,
+        autoScanEnabled: document.getElementById('ie-auto-scan-enabled')?.checked || false  // NEW
     });
 
     saveState(getContext());
@@ -972,14 +976,24 @@ function updatePOVOptions() {
 
 function resetFABPosition() {
     const fab = document.getElementById('inland-empire-fab');
+    const thoughtFab = document.getElementById('ie-thought-fab');
+    
     if (fab) {
         fab.style.top = '140px';
         fab.style.left = '10px';
         extensionSettings.fabPositionTop = 140;
         extensionSettings.fabPositionLeft = 10;
-        saveState(getContext());
-        showToast('Icon position reset', 'info');
     }
+    
+    if (thoughtFab) {
+        thoughtFab.style.top = '200px';
+        thoughtFab.style.left = '10px';
+        extensionSettings.discoveryFabTop = 200;
+        extensionSettings.discoveryFabLeft = 10;
+    }
+    
+    saveState(getContext());
+    showToast('Icon positions reset', 'info');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1057,7 +1071,7 @@ function bindEvents() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// AUTO-TRIGGER HOOK
+// AUTO-TRIGGER HOOK - UPDATED with autoScan
 // ═══════════════════════════════════════════════════════════════
 
 function setupAutoTrigger() {
@@ -1065,11 +1079,18 @@ function setupAutoTrigger() {
     if (!context?.eventSource) return;
 
     context.eventSource.on('message_received', (messageId) => {
-        if (!extensionSettings.enabled || !extensionSettings.autoTrigger) return;
-
+        // Get the message after a delay
         setTimeout(() => {
             const msg = getLastMessage();
-            if (msg && !msg.is_user) {
+            if (!msg || msg.is_user) return;
+            
+            // Auto-scan for environmental awareness (runs independently)
+            if (extensionSettings.autoScanEnabled) {
+                autoScan(msg.mes);
+            }
+            
+            // Auto-trigger voices (existing behavior)
+            if (extensionSettings.enabled && extensionSettings.autoTrigger) {
                 triggerVoices(msg.mes);
             }
         }, extensionSettings.triggerDelay || 1000);
@@ -1138,8 +1159,8 @@ async function init() {
     document.body.appendChild(panel);
     document.body.appendChild(fab);
 
-    // Create Discovery UI (Thought Bubble)
-    const thoughtFab = createThoughtBubbleFAB();
+    // Create Discovery UI (Thought Bubble) - UPDATED: pass getContext
+    const thoughtFab = createThoughtBubbleFAB(getContext);
     const discoveryModal = createDiscoveryModal();
 
     document.body.appendChild(thoughtFab);
