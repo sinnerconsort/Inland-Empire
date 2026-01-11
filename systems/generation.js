@@ -316,6 +316,7 @@ export function buildChorusPrompt(voiceData, context) {
     const charName = extensionSettings.characterName || '';
     const pronouns = extensionSettings.characterPronouns || 'they';
     const characterContext = extensionSettings.characterContext || '';
+    const scenePerspective = extensionSettings.scenePerspective || '';
 
     // POV instruction - must clearly establish WHO the character is
     let povInstruction;
@@ -359,6 +360,15 @@ OTHER CHARACTERS (NPCs):
         contextSection = `
 WHO "YOU" IS (the character whose head these voices are in):
 ${characterContext}
+---`;
+    }
+    
+    // Scene perspective notes
+    let perspectiveSection = '';
+    if (scenePerspective.trim()) {
+        perspectiveSection = `
+SCENE PERSPECTIVE NOTES:
+${scenePerspective}
 ---`;
     }
 
@@ -433,7 +443,7 @@ CRITICAL RULES:
 9. CASCADE voices are RESPONDING to another voice - make this clear!
 10. Let skills interrupt and talk over each other
 11. Total: 4-12 voice lines, with back-and-forth exchanges
-${contextSection}${statusContext}
+${contextSection}${perspectiveSection}${statusContext}
 
 Output ONLY voice dialogue. No narration or explanation. Make them ARGUE and REACT.`;
 
