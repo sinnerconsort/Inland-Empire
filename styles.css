@@ -40,10 +40,6 @@
     --ie-border-light: #3a3a44;
     --ie-shadow: 0 4px 24px rgba(0, 0, 0, 0.7);
     
-    /* Ruler marks color */
-    --ie-ruler: #3a3a44;
-    --ie-ruler-mark: #4a4a54;
-    
     /* Typography */
     --ie-font-header: 'Segoe UI', 'Arial Narrow', sans-serif;
     --ie-font-body: 'Segoe UI', Tahoma, sans-serif;
@@ -79,7 +75,7 @@
     transform: translateX(-50%);
     width: 20px;
     height: 3px;
-    background: var(--ie-ruler-mark);
+    background: var(--ie-border-light);
 }
 
 .ie-fab:hover {
@@ -223,59 +219,59 @@
 
 /* Adjust panel content to account for film strip */
 .ie-panel-header,
-.ie-tabs,
-.ie-tab-content {
+.ie-tabs {
     margin-left: 22px;
 }
 
-/* Right edge film strip (optional - comment out if too much) */
-.inland-empire-panel .ie-tab-content::after {
-    content: '';
+.ie-tab-content {
+    margin-left: 22px;
+    position: relative;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RIGHT RULER EDGE
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Right ruler - Add <div class="ie-right-ruler"></div> as first child of .inland-empire-panel */
+.ie-right-ruler {
     position: absolute;
     top: 0;
     right: 0;
     width: 18px;
     height: 100%;
+    z-index: 10000;
+    pointer-events: none;
+    /* Base cream color */
     background: linear-gradient(
         to left,
         #c4bfb4 0%,
-        #d8d4cc 40%,
-        #c4bfb4 100%
+        #d8d4cc 50%,
+        #ccc7bc 100%
     );
-    z-index: 5;
-    /* Ruler tick marks */
+    /* Ruler tick marks layered on top */
     background-image:
-        linear-gradient(to left, #c4bfb4 0%, #d8d4cc 40%, #c4bfb4 100%),
+        /* Base gradient */
+        linear-gradient(to left, #c4bfb4 0%, #d8d4cc 50%, #ccc7bc 100%),
+        /* Small ticks every 10px */
         repeating-linear-gradient(
             to bottom,
             transparent 0px,
             transparent 9px,
-            rgba(60, 50, 40, 0.4) 9px,
-            rgba(60, 50, 40, 0.4) 10px,
-            transparent 10px,
-            transparent 10px
+            rgba(60, 50, 40, 0.5) 9px,
+            rgba(60, 50, 40, 0.5) 10px
         ),
-        /* Longer marks every 5 */
+        /* Medium ticks every 50px */
         repeating-linear-gradient(
             to bottom,
             transparent 0px,
             transparent 49px,
-            rgba(60, 50, 40, 0.6) 49px,
-            rgba(60, 50, 40, 0.6) 50px,
-            transparent 50px,
-            transparent 50px
+            rgba(50, 40, 30, 0.7) 49px,
+            rgba(50, 40, 30, 0.7) 51px
         );
-    background-size: 100% 100%, 8px 10px, 12px 50px;
-    background-position: 0 0, right 0, right 0;
+    background-size: 100% 100%, 6px 10px, 10px 50px;
+    background-position: 0 0, left 0, left 0;
     background-repeat: no-repeat, repeat-y, repeat-y;
-    box-shadow: inset 2px 0 4px rgba(0, 0, 0, 0.2);
-    pointer-events: none;
-}
-
-/* Make tab content position relative for the right ruler */
-.ie-tab-content {
-    position: relative;
-    padding-right: 24px !important;
+    box-shadow: inset 2px 0 6px rgba(0, 0, 0, 0.3);
 }
 
 .ie-panel-open {
@@ -286,7 +282,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 20px;
+    padding: 16px 26px 16px 20px; /* Extra right padding for ruler */
     background: linear-gradient(180deg, var(--ie-bg-tertiary) 0%, var(--ie-bg-secondary) 100%);
     border-bottom: 2px solid var(--ie-accent-orange);
 }
@@ -320,6 +316,7 @@
     display: flex;
     background: var(--ie-bg-secondary);
     border-bottom: 1px solid var(--ie-border);
+    padding-right: 18px; /* Space for right ruler */
 }
 
 .ie-tab {
@@ -353,7 +350,7 @@
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 12px;
+    padding: 12px 24px 12px 12px; /* Extra right padding for ruler */
     min-height: 0;
     -webkit-overflow-scrolling: touch;
 }
@@ -378,24 +375,10 @@
     position: relative;
 }
 
-/* Remove the pseudo-elements since everything is in background */
-[data-tab-content="skills"]::before {
-    display: none;
-}
-
-[data-tab-content="skills"]::after {
-    display: none;
-}
-
-/* Content needs to be above the overlays */
+/* Content needs to be above any overlays */
 [data-tab-content="skills"] > * {
     position: relative;
     z-index: 2;
-}
-
-/* Film reel border on the right - using the skills overview section */
-[data-tab-content="skills"] .ie-skills-overview {
-    position: relative;
 }
 
 /* Adjust attribute cards for the new background */
