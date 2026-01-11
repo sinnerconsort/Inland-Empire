@@ -63,6 +63,15 @@ import {
     getIntrusiveThought
 } from './systems/generation.js';
 
+import {
+    createThoughtBubbleFAB,
+    createDiscoveryModal,
+    addIntrusiveDiscovery,
+    addObjectDiscovery,
+    updateSceneContext,
+    toggleDiscoveryModal
+} from './systems/discovery.js';
+
 // UI
 import {
     createPsychePanel,
@@ -150,6 +159,9 @@ async function triggerVoices(messageText = null) {
     const lastMsg = getLastMessage();
     const text = messageText || lastMsg?.mes || '';
 
+    // Update scene context for investigation
+    updateSceneContext(text);
+
     // Debug: Show what we're working with
     if (!text.trim()) {
         const chatLen = context?.chat?.length || 0;
@@ -171,14 +183,14 @@ async function triggerVoices(messageText = null) {
         // Process intrusive thoughts and object voices
         const intrusiveData = await processIntrusiveThoughts(text);
 
-        // Show intrusive thought toast
+        // Add intrusive thought to discovery panel
         if (intrusiveData.intrusive && !extensionSettings.intrusiveInChat) {
-            showIntrusiveToast(intrusiveData.intrusive);
+            addIntrusiveDiscovery(intrusiveData.intrusive);
         }
 
-        // Show object voice toasts
+        // Add object voices to discovery panel
         for (const objVoice of intrusiveData.objects) {
-            showObjectToast(objVoice);
+            addObjectDiscovery(objVoice);
         }
 
         // Select speaking skills
@@ -1125,6 +1137,13 @@ async function init() {
 
     document.body.appendChild(panel);
     document.body.appendChild(fab);
+
+    // Create Discovery UI (Thought Bubble)
+    const thoughtFab = createThoughtBubbleFAB();
+    const discoveryModal = createDiscoveryModal();
+
+    document.body.appendChild(thoughtFab);
+    document.body.appendChild(discoveryModal);
     
     // Set initial FAB state
     updateFABState();
