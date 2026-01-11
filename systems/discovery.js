@@ -5,6 +5,7 @@
  * Consolidates: Object Voices, Intrusive Thoughts, Scene Investigation
  * 
  * NEW: Auto-scan on messages, Quick-scan FAB button, Draggable FAB
+ * FIXED: Magnifying glass icon, better context handling
  */
 
 import { SKILLS } from '../data/skills.js';
@@ -75,6 +76,29 @@ export function getSceneContext() {
     return lastSceneContext;
 }
 
+/**
+ * NEW: Try to get context from SillyTavern if we don't have any
+ * This ensures the discovery system can work even without auto-scan
+ */
+export function ensureSceneContext(getContext) {
+    if (lastSceneContext) return lastSceneContext;
+    
+    // Try to get the last AI message from chat
+    const context = getContext?.();
+    if (context?.chat?.length) {
+        // Find the last non-user message
+        for (let i = context.chat.length - 1; i >= 0; i--) {
+            const msg = context.chat[i];
+            if (!msg.is_user && msg.mes) {
+                lastSceneContext = msg.mes;
+                updateScenePreview();
+                return lastSceneContext;
+            }
+        }
+    }
+    return '';
+}
+
 function updateScenePreview() {
     const preview = document.getElementById('ie-scene-preview');
     if (preview && lastSceneContext) {
@@ -96,6 +120,11 @@ export async function investigateSurroundings(options = {}) {
     if (isInvestigating) {
         if (!silent) console.log('[Discovery] Already investigating, skipping...');
         return [];
+    }
+    
+    // Try to ensure we have context before giving up
+    if (!lastSceneContext && getContextRef) {
+        ensureSceneContext(getContextRef);
     }
     
     if (!lastSceneContext) {
@@ -322,12 +351,12 @@ export function createThoughtBubbleFAB(getContext) {
     fab.className = 'ie-thought-fab';
     fab.title = 'Environmental Awareness';
     
-    // More DE-styled icon - eye with magnifier feel
+    // CHANGED: Magnifying glass icon instead of eye
     fab.innerHTML = `
-        <span class="ie-thought-fab-icon">👁️</span>
+        <span class="ie-thought-fab-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
         <div class="ie-thought-fab-badge" data-count="0"></div>
-        <button class="ie-quick-scan-btn" id="ie-quick-scan" title="Quick Scan (🔎)">
-            <i class="fa-solid fa-magnifying-glass"></i>
+        <button class="ie-quick-scan-btn" id="ie-quick-scan" title="Quick Scan">
+            <i class="fa-solid fa-rotate"></i>
         </button>
     `;
 
@@ -419,11 +448,12 @@ export function createDiscoveryModal() {
     overlay.id = 'ie-discovery-overlay';
     overlay.className = 'ie-discovery-overlay';
 
+    // CHANGED: Magnifying glass icon instead of eye
     overlay.innerHTML = `
         <div class="ie-discovery-modal">
             <div class="ie-discovery-header">
                 <div class="ie-discovery-title">
-                    <span class="ie-discovery-title-icon">👁️</span>
+                    <span class="ie-discovery-title-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
                     <span>Environmental Awareness</span>
                 </div>
                 <button class="ie-discovery-close" title="Close">
@@ -454,7 +484,7 @@ export function createDiscoveryModal() {
             
             <div class="ie-discovery-list" id="ie-discovery-list">
                 <div class="ie-discovery-empty">
-                    <i class="fa-solid fa-eye-slash"></i>
+                    <i class="fa-solid fa-search"></i>
                     <span>Nothing has caught your attention... yet.</span>
                 </div>
             </div>
@@ -468,9 +498,13 @@ export function createDiscoveryModal() {
     // Event listeners
     overlay.querySelector('.ie-discovery-close').addEventListener('click', toggleDiscoveryModal);
     overlay.querySelector('#ie-investigate-btn').addEventListener('click', () => {
+        // Ensure we have context before investigating
+        if (getContextRef) ensureSceneContext(getContextRef);
         investigateSurroundings({ silent: false, source: 'modal' });
     });
     overlay.querySelector('#ie-rescan-btn').addEventListener('click', () => {
+        // Ensure we have context before rescanning
+        if (getContextRef) ensureSceneContext(getContextRef);
         // Clear existing observations before rescanning
         pendingDiscoveries = pendingDiscoveries.filter(d => d.type !== 'observation');
         updateBadge();
@@ -500,6 +534,8 @@ export function toggleDiscoveryModal() {
     if (isOpen) {
         overlay.classList.remove('ie-discovery-open');
     } else {
+        // Try to ensure we have context when opening
+        if (getContextRef) ensureSceneContext(getContextRef);
         overlay.classList.add('ie-discovery-open');
         renderDiscoveryList();
         updateScenePreview();
@@ -557,7 +593,7 @@ function setQuickScanLoading(loading) {
         btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
     } else {
         btn.classList.remove('ie-scanning');
-        btn.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i>`;
+        btn.innerHTML = `<i class="fa-solid fa-rotate"></i>`;
     }
 }
 
@@ -566,7 +602,7 @@ function updateEmptyState(message) {
     if (container && pendingDiscoveries.length === 0) {
         container.innerHTML = `
             <div class="ie-discovery-empty">
-                <i class="fa-solid fa-eye-slash"></i>
+                <i class="fa-solid fa-search"></i>
                 <span>${message}</span>
             </div>
         `;
@@ -581,7 +617,7 @@ export function renderDiscoveryList() {
     if (pendingDiscoveries.length === 0) {
         container.innerHTML = `
             <div class="ie-discovery-empty">
-                <i class="fa-solid fa-eye-slash"></i>
+                <i class="fa-solid fa-search"></i>
                 <span>Nothing has caught your attention... yet.</span>
             </div>
         `;
