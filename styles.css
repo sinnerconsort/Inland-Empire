@@ -276,7 +276,8 @@
         #17252e 100%
     );
     position: relative;
-    padding-right: 24px;
+    padding-right: 18px;
+    padding-left: 14px;
 }
 
 /* Film grain/noise texture overlay */
@@ -320,20 +321,44 @@
     position: absolute;
     top: 0;
     right: 0;
-    width: 20px;
+    width: 14px;
     height: 100%;
     background: 
-        /* Sprocket holes */
+        /* Sprocket holes - smaller, more spaced */
         repeating-linear-gradient(
             to bottom,
             #62716f 0px,
-            #62716f 6px,
-            #1a1a1a 6px,
-            #1a1a1a 10px,
-            #62716f 10px,
-            #62716f 20px
+            #62716f 12px,
+            #1a1a1a 12px,
+            #1a1a1a 16px,
+            #62716f 16px,
+            #62716f 28px
         );
-    border-left: 1px solid rgba(0, 0, 0, 0.5);
+    border-left: 1px solid rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+    z-index: 3;
+}
+
+/* Left side film reel strip - thinner to match */
+[data-tab-content="skills"] .ie-skills-overview::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -14px;
+    width: 10px;
+    height: 100%;
+    background: 
+        /* Sprocket holes - smaller, more spaced */
+        repeating-linear-gradient(
+            to bottom,
+            #62716f 0px,
+            #62716f 12px,
+            #1a1a1a 12px,
+            #1a1a1a 16px,
+            #62716f 16px,
+            #62716f 28px
+        );
+    border-right: 1px solid rgba(0, 0, 0, 0.4);
     pointer-events: none;
     z-index: 3;
 }
