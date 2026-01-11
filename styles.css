@@ -300,44 +300,13 @@
    ═══════════════════════════════════════════════════════════════ */
 
 [data-tab-content="skills"] {
-    background:
-        /* Left film strip holes */
-        repeating-linear-gradient(
-            to bottom,
-            transparent 0px,
-            transparent 20px,
-            rgba(0, 0, 0, 0.3) 20px,
-            rgba(0, 0, 0, 0.3) 23px,
-            transparent 23px,
-            transparent 43px
-        ),
-        /* Right film strip holes */
-        repeating-linear-gradient(
-            to bottom,
-            transparent 0px,
-            transparent 20px,
-            rgba(0, 0, 0, 0.3) 20px,
-            rgba(0, 0, 0, 0.3) 23px,
-            transparent 23px,
-            transparent 43px
-        ),
-        /* Main gradient - 24px light gray on left (ruler stays 12px), 10px gray on right */
-        linear-gradient(
-            to right,
-            #62716f 0px,
-            #62716f 24px,
-            #0d3628 24px,
-            #0d3628 10%,
-            #112d2a 30%,
-            #14292b 60%,
-            #17252e calc(100% - 24px),
-            #62716f calc(100% - 24px),
-            #62716f 100%
-        );
-    background-size: 24px 43px, 10px 43px, 100% 100%;
-    background-position: left top, right top, left top;
-    background-repeat: repeat-y, repeat-y, repeat;
-    background-attachment: local, local, local;
+    background: linear-gradient(
+        to right,
+        #0d3628 0%,
+        #112d2a 30%,
+        #14292b 60%,
+        #17252e 100%
+    );
     position: relative;
     padding-right: 36px;
     padding-left: 30px;
