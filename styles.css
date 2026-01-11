@@ -176,13 +176,13 @@
     pointer-events: none;
 }
 
-/* Ruler edge on the left side of panel (thinner, 10px) */
+/* Ruler edge on the left side of panel (14px) */
 .inland-empire-panel::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
-    width: 10px;
+    width: 14px;
     height: 100%;
     background: 
         linear-gradient(to left, var(--ie-bg-tertiary) 0%, var(--ie-ruler) 100%);
@@ -214,7 +214,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 40px 16px 22px;
+    padding: 16px 40px 16px 26px;
     background: linear-gradient(180deg, var(--ie-bg-tertiary) 0%, var(--ie-bg-secondary) 100%);
     border-bottom: 2px solid var(--ie-accent-orange);
 }
@@ -249,7 +249,7 @@
     background: var(--ie-bg-secondary);
     border-bottom: 1px solid var(--ie-border);
     padding-right: 24px; /* Account for right ruler edge */
-    padding-left: 10px; /* Account for left ruler edge */
+    padding-left: 14px; /* Account for left ruler edge */
 }
 
 .ie-tab {
@@ -285,7 +285,7 @@
     overflow-x: hidden;
     padding: 12px;
     padding-right: 36px; /* Account for right ruler edge */
-    padding-left: 22px; /* Account for left ruler edge */
+    padding-left: 26px; /* Account for left ruler edge */
     min-height: 0;
     -webkit-overflow-scrolling: touch;
 }
@@ -340,7 +340,7 @@
     background-attachment: local, local, local;
     position: relative;
     padding-right: 36px;
-    padding-left: 28px;
+    padding-left: 26px;
 }
 
 /* Remove the pseudo-elements since everything is in background */
