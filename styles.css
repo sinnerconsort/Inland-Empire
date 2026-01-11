@@ -147,7 +147,7 @@
     color: var(--ie-text-primary);
 }
 
-/* Gray border on right side of panel (header area) */
+/* Ruler edge on the right side of panel */
 .inland-empire-panel::after {
     content: '';
     position: absolute;
@@ -155,8 +155,24 @@
     right: 0;
     width: 24px;
     height: 100%;
-    background: var(--ie-ruler);
+    background: 
+        linear-gradient(to right, var(--ie-bg-tertiary) 0%, var(--ie-ruler) 100%);
     border-left: 1px solid var(--ie-border);
+    background-image: 
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 18px,
+            var(--ie-ruler-mark) 18px,
+            var(--ie-ruler-mark) 20px
+        ),
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 98px,
+            var(--ie-text-muted) 98px,
+            var(--ie-text-muted) 100px
+        );
     pointer-events: none;
 }
 
@@ -237,8 +253,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     padding: 12px;
-    padding-right: 36px; /* Account for right ruler edge */
-    padding-left: 24px; /* Account for left ruler edge */
+    padding-right: 36px; /* Account for ruler edge */
     min-height: 0;
     -webkit-overflow-scrolling: touch;
 }
@@ -256,18 +271,18 @@
     background: linear-gradient(
         to right,
         #62716f 0px,
-        #62716f 12px,
-        #0d3628 12px,
+        #62716f 6px,
+        #0d3628 6px,
         #0d3628 8%,
         #112d2a 30%,
         #14292b 60%,
-        #17252e 88%,
-        #62716f 88%,
+        #17252e 92%,
+        #62716f 92%,
         #62716f 100%
     );
     position: relative;
-    padding-right: 36px;
-    padding-left: 24px;
+    padding-right: 12px;
+    padding-left: 10px;
 }
 
 /* Film grain/noise texture overlay */
@@ -276,46 +291,56 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 12px;
-    height: 100%;
-    background: #62716f;
+    right: 0;
+    bottom: 0;
     background-image: 
         /* Left film strip holes */
         repeating-linear-gradient(
             to bottom,
             transparent 0px,
             transparent 20px,
-            rgba(0, 0, 0, 0.4) 20px,
-            rgba(0, 0, 0, 0.4) 24px,
-            transparent 24px,
-            transparent 44px
+            rgba(0, 0, 0, 0.3) 20px,
+            rgba(0, 0, 0, 0.3) 23px,
+            transparent 23px,
+            transparent 43px
+        ),
+        /* Subtle scanlines */
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 0, 0, 0.02) 2px,
+            rgba(0, 0, 0, 0.02) 4px
         );
+    background-size: 6px 100%, 100% 100%;
+    background-position: left top, left top;
+    background-repeat: repeat-y, repeat;
+    opacity: 1;
     pointer-events: none;
-    z-index: 2;
+    z-index: 0;
 }
 
-/* Right side film strip */
+/* Right side film strip holes */
 [data-tab-content="skills"]::after {
     content: '';
     position: absolute;
     top: 0;
     right: 0;
-    width: 24px;
+    width: 10px;
     height: 100%;
-    background: #62716f;
-    background-image: 
+    background: 
         repeating-linear-gradient(
             to bottom,
             transparent 0px,
             transparent 20px,
-            rgba(0, 0, 0, 0.4) 20px,
-            rgba(0, 0, 0, 0.4) 24px,
-            transparent 24px,
-            transparent 44px
+            rgba(0, 0, 0, 0.3) 20px,
+            rgba(0, 0, 0, 0.3) 23px,
+            transparent 23px,
+            transparent 43px
         );
     border-left: 1px solid rgba(0, 0, 0, 0.2);
     pointer-events: none;
-    z-index: 2;
+    z-index: 3;
 }
 
 /* Content needs to be above the overlays */
@@ -333,14 +358,12 @@
 [data-tab-content="skills"] .ie-attribute-card {
     background: rgba(13, 13, 18, 0.5);
     backdrop-filter: blur(2px);
-    margin-right: 4px;
 }
 
-/* Skills section needs some right margin too */
+/* Inner voices section in skills tab */
 [data-tab-content="skills"] .ie-section {
     background: rgba(13, 13, 18, 0.4);
     border-left-color: rgba(155, 158, 153, 0.5);
-    margin-right: 4px;
 }
 
 /* Section headers in skills tab */
@@ -568,65 +591,6 @@
     flex-direction: column;
     overflow: hidden;
     min-height: 0;
-    position: relative;
-}
-
-/* Left side: Gray border (12px) with thin ruler (8px) on top */
-.ie-panel-content::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 12px;
-    height: 100%;
-    background: var(--ie-ruler);
-    border-right: 1px solid var(--ie-border);
-    background-image: 
-        repeating-linear-gradient(
-            to bottom,
-            transparent 0px,
-            transparent 18px,
-            var(--ie-ruler-mark) 18px,
-            var(--ie-ruler-mark) 20px
-        ),
-        repeating-linear-gradient(
-            to bottom,
-            transparent 0px,
-            transparent 98px,
-            var(--ie-text-muted) 98px,
-            var(--ie-text-muted) 100px
-        );
-    pointer-events: none;
-    z-index: 3;
-}
-
-/* Right side: Ruler with tick marks (below header) */
-.ie-panel-content::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 24px;
-    height: 100%;
-    background: linear-gradient(to right, var(--ie-bg-tertiary) 0%, var(--ie-ruler) 100%);
-    border-left: 1px solid var(--ie-border);
-    background-image: 
-        repeating-linear-gradient(
-            to bottom,
-            transparent 0px,
-            transparent 18px,
-            var(--ie-ruler-mark) 18px,
-            var(--ie-ruler-mark) 20px
-        ),
-        repeating-linear-gradient(
-            to bottom,
-            transparent 0px,
-            transparent 98px,
-            var(--ie-text-muted) 98px,
-            var(--ie-text-muted) 100px
-        );
-    pointer-events: none;
-    z-index: 3;
 }
 
 /* ═══════════════════════════════════════════════════════════════
