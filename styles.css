@@ -1,3 +1,969 @@
+/**
+ * Inland Empire - Styles
+ * Disco Elysium inspired psyche panel aesthetics
+ */
+
+/* ═══════════════════════════════════════════════════════════════
+   CSS VARIABLES - DISCO ELYSIUM PALETTE
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+    /* Backgrounds - darker, more noir */
+    --ie-bg-primary: #0d0d12;
+    --ie-bg-secondary: #151519;
+    --ie-bg-tertiary: #1a1a20;
+    --ie-bg-panel: rgba(13, 13, 18, 0.95);
+    
+    /* Text */
+    --ie-text-primary: #e8e4de;
+    --ie-text-secondary: #9a958c;
+    --ie-text-muted: #5a564e;
+    
+    /* Primary accent - DE orange/rust */
+    --ie-accent-orange: #d4763b;
+    --ie-accent-orange-dim: #a35a2a;
+    --ie-accent-orange-glow: rgba(212, 118, 59, 0.3);
+    
+    /* Attribute colors - true to DE */
+    --ie-accent-blue: #53a4b5;      /* INT - cool blue */
+    --ie-accent-purple: #6449af;    /* PSY - deep purple */
+    --ie-accent-red: #ad3d5b;       /* FYS - magenta red */
+    --ie-accent-yellow: #bfa127;    /* MOT - gold */
+    
+    /* Status colors */
+    --ie-success: #6b9c5a;
+    --ie-warning: #c4a94e;
+    --ie-error: #c45c5c;
+    
+    /* Borders & effects */
+    --ie-border: #2a2a32;
+    --ie-border-light: #3a3a44;
+    --ie-shadow: 0 4px 24px rgba(0, 0, 0, 0.7);
+    
+    /* Typography */
+    --ie-font-header: 'Segoe UI', 'Arial Narrow', sans-serif;
+    --ie-font-body: 'Segoe UI', Tahoma, sans-serif;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FAB (Floating Action Button) - DE Style
+   ═══════════════════════════════════════════════════════════════ */
+
+.ie-fab {
+    position: fixed;
+    z-index: 9998;
+    width: 52px;
+    height: 52px;
+    border-radius: 4px;
+    background: var(--ie-bg-secondary);
+    border: 2px solid var(--ie-border-light);
+    color: var(--ie-text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--ie-shadow);
+    transition: all 0.2s ease;
+    font-size: 22px;
+}
+
+.ie-fab::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 3px;
+    background: var(--ie-border-light);
+}
+
+.ie-fab:hover {
+    border-color: var(--ie-accent-orange);
+    color: var(--ie-accent-orange);
+    box-shadow: 0 0 20px var(--ie-accent-orange-glow);
+}
+
+.ie-fab-active {
+    background: var(--ie-accent-orange);
+    border-color: var(--ie-accent-orange);
+    color: var(--ie-bg-primary);
+}
+
+.ie-fab-disabled {
+    opacity: 0.4;
+    border-color: var(--ie-border);
+    color: var(--ie-text-muted);
+}
+
+.ie-fab-disabled:hover {
+    transform: none;
+    border-color: var(--ie-border);
+    color: var(--ie-text-muted);
+    box-shadow: var(--ie-shadow);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   EXTENSION SETTINGS (in ST's extension panel)
+   ═══════════════════════════════════════════════════════════════ */
+
+#ie-extension-settings .ie-ext-setting {
+    padding: 8px 0;
+}
+
+#ie-extension-settings .ie-ext-setting small {
+    display: block;
+    margin-top: 4px;
+    opacity: 0.7;
+}
+
+#ie-extension-settings .ie-ext-info {
+    padding: 8px 0;
+    text-align: center;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MAIN PANEL - DE Film Strip Edge Style
+   ═══════════════════════════════════════════════════════════════ */
+
+.inland-empire-panel {
+    position: fixed;
+    top: 0;
+    left: -420px;
+    width: 400px;
+    height: 100vh;
+    background: var(--ie-bg-panel);
+    border-right: none;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    transition: left 0.3s ease;
+    box-shadow: var(--ie-shadow);
+    font-family: var(--ie-font-body);
+    color: var(--ie-text-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FILM STRIP BORDER - Left Edge
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════
+   LEFT RULER EDGE (using the HTML element)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ie-right-ruler {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: auto;
+    width: 20px;
+    height: 100%;
+    z-index: 10000;
+    pointer-events: none;
+    background: linear-gradient(
+        to left,
+        #e0dcd4 0%,
+        #eae6de 50%,
+        #e0dcd4 100%
+    );
+    box-shadow: inset -2px 0 6px rgba(0, 0, 0, 0.25);
+}
+
+.ie-right-ruler::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 9px,
+        rgba(80, 65, 50, 0.45) 9px,
+        rgba(80, 65, 50, 0.45) 10px
+    );
+    background-size: 8px 10px;
+    background-position: right top;
+    background-repeat: repeat-y;
+}
+
+.ie-right-ruler::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 48px,
+        rgba(60, 50, 40, 0.6) 48px,
+        rgba(60, 50, 40, 0.6) 50px
+    );
+    background-size: 14px 50px;
+    background-position: right top;
+    background-repeat: repeat-y;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RIGHT FILM STRIP BORDER (using panel pseudo-elements)
+   ═══════════════════════════════════════════════════════════════ */
+
+.inland-empire-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: auto;
+    width: 22px;
+    height: 100%;
+    background: linear-gradient(
+        to left,
+        #d4cfc4 0%,
+        #e8e4dc 30%,
+        #d4cfc4 100%
+    );
+    z-index: 10000;
+    background-image: 
+        linear-gradient(to left, #d4cfc4 0%, #e8e4dc 30%, #d4cfc4 100%),
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 8px,
+            #1a1a20 8px,
+            #1a1a20 18px,
+            transparent 18px,
+            transparent 32px
+        ),
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 8px,
+            #1a1a20 8px,
+            #1a1a20 18px,
+            transparent 18px,
+            transparent 32px
+        );
+    background-size: 100% 100%, 6px 32px, 6px 32px;
+    background-position: 0 0, 2px 4px, 14px 4px;
+    background-repeat: no-repeat, repeat-y, repeat-y;
+    box-shadow: inset 2px 0 4px rgba(0, 0, 0, 0.3);
+}
+
+.inland-empire-panel::after {
+    content: 'FANAL  ·  PLAYBACK  ·  INLAND  ·  EMPIRE  ·  FANAL  ·  PLAYBACK  ·  INLAND  ·  EMPIRE  ·  FANAL  ·  PLAYBACK  ·';
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: auto;
+    width: 22px;
+    height: 100%;
+    z-index: 10001;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-family: 'Courier New', monospace;
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    word-spacing: 2px;
+    color: rgba(80, 70, 60, 0.5);
+    padding: 20px 0;
+    overflow: hidden;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    text-transform: uppercase;
+}
+
+.ie-panel-header,
+.ie-tabs {
+    margin-left: 20px;
+    margin-right: 22px;
+}
+
+.ie-tab-content {
+    margin-left: 20px;
+    margin-right: 22px;
+    position: relative;
+}
+
+.ie-panel-open {
+    left: 0;
+}
+
+.ie-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: linear-gradient(180deg, var(--ie-bg-tertiary) 0%, var(--ie-bg-secondary) 100%);
+    border-bottom: 2px solid var(--ie-accent-orange);
+}
+
+.ie-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--ie-font-header);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ie-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.ie-panel-title i {
+    color: var(--ie-accent-orange);
+}
+
+.ie-panel-controls {
+    display: flex;
+    gap: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TABS - DE Style with Orange Accent
+   ═══════════════════════════════════════════════════════════════ */
+
+.ie-tabs {
+    display: flex;
+    background: var(--ie-bg-secondary);
+    border-bottom: 1px solid var(--ie-border);
+}
+
+.ie-tab {
+    flex: 1;
+    padding: 12px 8px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--ie-text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 15px;
+    font-family: var(--ie-font-header);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ie-tab:hover {
+    background: var(--ie-bg-tertiary);
+    color: var(--ie-text-secondary);
+}
+
+.ie-tab-active {
+    background: var(--ie-bg-primary);
+    color: var(--ie-accent-orange);
+    border-bottom: 3px solid var(--ie-accent-orange);
+}
+
+.ie-tab-content {
+    display: none;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 12px;
+    min-height: 0;
+    -webkit-overflow-scrolling: touch;
+}
+
+.ie-tab-content-active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SKILLS TAB - DE Character Screen Style
+   ═══════════════════════════════════════════════════════════════ */
+
+[data-tab-content="skills"] {
+    background: linear-gradient(
+        to right,
+        #053a5a 0%,
+        #051f2e 33%,
+        #0b2f23 66%,
+        #172532 100%
+    );
+    position: relative;
+}
+
+[data-tab-content="skills"] > * {
+    position: relative;
+    z-index: 2;
+}
+
+[data-tab-content="skills"] .ie-attribute-card {
+    background: rgba(13, 13, 18, 0.5);
+    backdrop-filter: blur(2px);
+}
+
+[data-tab-content="skills"] .ie-section {
+    background: rgba(13, 13, 18, 0.4);
+    border-left-color: rgba(155, 158, 153, 0.5);
+}
+
+[data-tab-content="skills"] .ie-section-header span::before {
+    color: rgba(155, 158, 153, 0.6);
+}
+
+.ie-tab[data-tab="skills"].ie-tab-active {
+    color: #53a4b5;
+    border-bottom-color: #53a4b5;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SETTINGS TAB - DE Main Menu Style
+   ═══════════════════════════════════════════════════════════════ */
+
+[data-tab-content="settings"] {
+    background: linear-gradient(
+        to bottom,
+        #99673f 0%,
+        #7c4618 33%,
+        #412710 66%,
+        #432912 100%
+    );
+}
+
+[data-tab-content="settings"] .ie-section {
+    background: rgba(29, 38, 51, 0.6);
+    border-left: 3px solid #9b9e99;
+    backdrop-filter: blur(4px);
+}
+
+[data-tab-content="settings"] .ie-section-header {
+    color: #e8e4de;
+    border-bottom-color: rgba(157, 161, 160, 0.3);
+}
+
+[data-tab-content="settings"] .ie-section-header span::before {
+    color: #1c2630;
+}
+
+[data-tab-content="settings"] .ie-form-group label {
+    color: #9da1a0;
+}
+
+[data-tab-content="settings"] .ie-form-group input,
+[data-tab-content="settings"] .ie-form-group select,
+[data-tab-content="settings"] .ie-form-group textarea {
+    background: rgba(13, 13, 18, 0.8);
+    border-color: #1d2633;
+    color: #e8e4de;
+}
+
+[data-tab-content="settings"] .ie-form-group input:focus,
+[data-tab-content="settings"] .ie-form-group select:focus,
+[data-tab-content="settings"] .ie-form-group textarea:focus {
+    border-color: #90511d;
+    box-shadow: 0 0 0 1px rgba(144, 81, 29, 0.3);
+}
+
+[data-tab-content="settings"] .ie-checkbox {
+    color: #9da1a0;
+}
+
+[data-tab-content="settings"] .ie-checkbox input {
+    accent-color: #9b9e99;
+}
+
+[data-tab-content="settings"] .ie-btn {
+    background: rgba(13, 13, 18, 0.8);
+    border-color: #1d2633;
+    color: #9da1a0;
+}
+
+[data-tab-content="settings"] .ie-btn:hover:not(:disabled) {
+    background: #1d2633;
+    border-color: #90511d;
+    color: #e8e4de;
+}
+
+[data-tab-content="settings"] .ie-btn-primary {
+    background: #e8e4de;
+    border-color: #e8e4de;
+    color: #0d0d12;
+}
+
+[data-tab-content="settings"] .ie-btn-primary:hover:not(:disabled) {
+    background: #ffffff;
+    border-color: #ffffff;
+    color: #0d0d12;
+}
+
+[data-tab-content="settings"] .ie-form-hint {
+    color: #6a6a6a;
+}
+
+[data-tab-content="settings"] .ie-btn-test-api {
+    background: transparent;
+    border: 1px dashed #9da1a0;
+    color: #9da1a0;
+}
+
+[data-tab-content="settings"] .ie-btn-test-api:hover {
+    background: #1d2633;
+    border-style: solid;
+    border-color: #90511d;
+    color: #e8e4de;
+}
+
+.ie-tab[data-tab="settings"].ie-tab-active {
+    color: #90511d;
+    border-bottom-color: #90511d;
+}
+
+[data-tab-content="settings"] input[type="range"] {
+    accent-color: #9b9e99;
+    background: #1c2630;
+}
+
+[data-tab-content="settings"] input[type="range"]::-webkit-slider-runnable-track {
+    background: #1c2630;
+}
+
+[data-tab-content="settings"] input[type="range"]::-webkit-slider-thumb {
+    background: #9b9e99;
+}
+
+[data-tab-content="settings"] .ie-attribute-card,
+[data-tab-content="settings"] .ie-attribute-block {
+    border-left-color: #1c2630;
+}
+
+[data-tab-content="settings"] [style*="border-left-color"],
+[data-tab-content="settings"] [style*="border-color"] {
+    border-left-color: #9b9e99 !important;
+}
+
+[data-tab-content="settings"] .ie-auto-gen-options {
+    border-left-color: #9b9e99;
+}
+
+[data-tab-content="settings"] input[type="checkbox"],
+[data-tab-content="settings"] .ie-checkbox input,
+[data-tab-content="settings"] .checkbox_label input,
+.inland-empire-panel [data-tab-content="settings"] input[type="checkbox"] {
+    accent-color: #9b9e99 !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px !important;
+    min-height: 22px !important;
+    border: 2px solid #9b9e99 !important;
+    border-radius: 4px !important;
+    background: rgba(13, 13, 18, 0.8) !important;
+    cursor: pointer !important;
+    position: relative !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex-shrink: 0 !important;
+}
+
+[data-tab-content="settings"] input[type="checkbox"]:checked,
+[data-tab-content="settings"] .ie-checkbox input:checked,
+[data-tab-content="settings"] .checkbox_label input:checked,
+.inland-empire-panel [data-tab-content="settings"] input[type="checkbox"]:checked {
+    background: #9b9e99 !important;
+    border-color: #9b9e99 !important;
+}
+
+[data-tab-content="settings"] input[type="checkbox"]:checked::after,
+[data-tab-content="settings"] .ie-checkbox input:checked::after,
+[data-tab-content="settings"] .checkbox_label input:checked::after,
+.inland-empire-panel [data-tab-content="settings"] input[type="checkbox"]:checked::after {
+    content: '✓' !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    color: #0d0d12 !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+}
+
+[data-tab-content="settings"] input[type="checkbox"]::before,
+[data-tab-content="settings"] .ie-checkbox input::before,
+.inland-empire-panel [data-tab-content="settings"] input[type="checkbox"]::before {
+    display: none !important;
+    content: none !important;
+}
+
+[data-tab-content="settings"] label.checkbox_label,
+[data-tab-content="settings"] .toggle,
+[data-tab-content="settings"] .toggle-input {
+    background: transparent !important;
+}
+
+[data-tab-content="settings"] label.checkbox_label::before,
+[data-tab-content="settings"] label.checkbox_label::after,
+[data-tab-content="settings"] .toggle::before,
+[data-tab-content="settings"] .toggle::after {
+    display: none !important;
+}
+
+[data-tab-content="settings"] textarea:focus {
+    border-color: #90511d !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   THOUGHT CABINET TAB - Warm Golden to Dark Teal
+   ═══════════════════════════════════════════════════════════════ */
+
+[data-tab-content="cabinet"] {
+    background: linear-gradient(
+        to bottom,
+        #182223 0%,
+        #27322e 33%,
+        #795d36 66%,
+        #94935a 100%
+    );
+}
+
+[data-tab-content="cabinet"] .ie-section {
+    background: rgba(38, 48, 50, 0.7);
+    border-left: 3px solid #b69a59;
+    backdrop-filter: blur(4px);
+}
+
+[data-tab-content="cabinet"] .ie-section-header {
+    color: #e8e4de;
+    border-bottom-color: rgba(182, 154, 89, 0.3);
+}
+
+[data-tab-content="cabinet"] .ie-section-header span::before {
+    color: #b69a59;
+}
+
+[data-tab-content="cabinet"] .ie-thought-card {
+    background: rgba(38, 48, 50, 0.8);
+    border-color: rgba(182, 154, 89, 0.3);
+}
+
+[data-tab-content="cabinet"] .ie-thought-name {
+    color: #b69a59;
+}
+
+[data-tab-content="cabinet"] .ie-btn {
+    background: rgba(38, 48, 50, 0.8);
+    border-color: rgba(182, 154, 89, 0.4);
+    color: #e8e4de;
+}
+
+[data-tab-content="cabinet"] .ie-btn:hover:not(:disabled) {
+    background: rgba(182, 154, 89, 0.3);
+    border-color: #b69a59;
+}
+
+[data-tab-content="cabinet"] .ie-btn-primary {
+    background: #254750;
+    border-color: #254750;
+    color: #ffffff;
+}
+
+[data-tab-content="cabinet"] .ie-btn-primary:hover:not(:disabled) {
+    background: #2d5660;
+    border-color: #2d5660;
+    color: #ffffff;
+}
+
+[data-tab-content="cabinet"] .ie-btn-research {
+    background: #254750;
+    border-color: #254750;
+    color: #ffffff;
+}
+
+[data-tab-content="cabinet"] .ie-btn-research:hover:not(:disabled) {
+    background: #2d5660;
+    border-color: #2d5660;
+    color: #ffffff;
+}
+
+.ie-tab[data-tab="cabinet"].ie-tab-active {
+    color: #b69a59;
+    border-bottom-color: #b69a59;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PROFILES TAB - Dark Teal to Olive Brown
+   ═══════════════════════════════════════════════════════════════ */
+
+[data-tab-content="profiles"] {
+    background: linear-gradient(
+        to bottom,
+        #192229 0%,
+        #283a3e 25%,
+        #42311f 50%,
+        #4a3c21 75%,
+        #181714 100%
+    );
+}
+
+[data-tab-content="profiles"] .ie-section {
+    background: rgba(24, 34, 36, 0.6);
+    border-left: 3px solid #402e1d;
+    backdrop-filter: blur(4px);
+}
+
+[data-tab-content="profiles"] .ie-section-header {
+    color: #e8e4de;
+    border-bottom-color: rgba(64, 46, 29, 0.4);
+}
+
+[data-tab-content="profiles"] .ie-section-header span::before {
+    color: #402e1d;
+}
+
+[data-tab-content="profiles"] .ie-btn-primary,
+[data-tab-content="profiles"] #ie-save-profile-btn,
+[data-tab-content="profiles"] .ie-btn-apply-build {
+    background: #912910;
+    border-color: #912910;
+    color: #ffffff;
+}
+
+[data-tab-content="profiles"] .ie-btn-primary:hover:not(:disabled),
+[data-tab-content="profiles"] #ie-save-profile-btn:hover:not(:disabled),
+[data-tab-content="profiles"] .ie-btn-apply-build:hover:not(:disabled) {
+    background: #a63212;
+    border-color: #a63212;
+    color: #ffffff;
+}
+
+[data-tab-content="profiles"] .ie-form-group input {
+    background: rgba(13, 13, 18, 0.7);
+    border-color: rgba(64, 46, 29, 0.5);
+    color: #e8e4de;
+}
+
+[data-tab-content="profiles"] .ie-form-group input:focus {
+    border-color: #402e1d;
+}
+
+[data-tab-content="profiles"] .ie-profile-card {
+    background: rgba(24, 34, 36, 0.5);
+    border: 1px solid rgba(64, 46, 29, 0.3);
+}
+
+[data-tab-content="profiles"] .ie-attr-editor-row {
+    background: rgba(24, 34, 36, 0.5);
+}
+
+.ie-tab[data-tab="profiles"].ie-tab-active {
+    color: #402e1d;
+    border-bottom-color: #402e1d;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   STATUS TAB - Harry's Portrait Style (Yellow-Blue-Yellow)
+   ═══════════════════════════════════════════════════════════════ */
+
+[data-tab-content="status"] {
+    background: linear-gradient(
+        to bottom,
+        #cb8b31 0%,
+        #cb8b31 15%,
+        #50808d 35%,
+        #50808d 65%,
+        #cb8b31 85%,
+        #cb8b31 100%
+    );
+}
+
+[data-tab-content="status"] .ie-section {
+    background: rgba(13, 13, 18, 0.6);
+    border-left: 3px solid #cb8b31;
+    backdrop-filter: blur(4px);
+}
+
+[data-tab-content="status"] .ie-section-header {
+    color: #e8e4de;
+    border-bottom-color: rgba(203, 139, 49, 0.4);
+}
+
+[data-tab-content="status"] .ie-section-header span::before {
+    color: #cb8b31;
+}
+
+[data-tab-content="status"] .ie-status-card {
+    background: #1f7981;
+    border-color: #1f7981;
+    color: #ffffff;
+}
+
+[data-tab-content="status"] .ie-status-card:hover {
+    background: #267a82;
+    border-color: #267a82;
+}
+
+[data-tab-content="status"] .ie-status-card .ie-status-name {
+    color: #ffffff;
+}
+
+[data-tab-content="status"] .ie-status-card.ie-status-active {
+    background: #f2610e;
+    border-color: #f2610e;
+    color: #ffffff;
+}
+
+[data-tab-content="status"] .ie-status-card.ie-status-active:hover {
+    background: #ff7020;
+    border-color: #ff7020;
+}
+
+[data-tab-content="status"] .ie-status-card.ie-status-active .ie-status-name {
+    color: #ffffff;
+}
+
+[data-tab-content="status"] .ie-archetype-card {
+    background: #1f7981;
+    border-color: #1f7981;
+}
+
+[data-tab-content="status"] .ie-archetype-card.ie-status-active {
+    background: #f2610e;
+    border-color: #f2610e;
+    box-shadow: 0 0 10px rgba(242, 97, 14, 0.4);
+}
+
+.ie-tab[data-tab="status"].ie-tab-active {
+    color: #cb8b31;
+    border-bottom-color: #cb8b31;
+}
+
+[data-tab-content="cabinet"] .ie-theme-tag {
+    background: rgba(182, 154, 89, 0.2);
+    border: 1px solid rgba(182, 154, 89, 0.3);
+}
+
+[data-tab-content="cabinet"] .ie-progress-bar {
+    background: linear-gradient(90deg, #b69a59, #c9ab64);
+}
+
+[data-tab-content="cabinet"] .ie-btn-abandon,
+[data-tab-content="cabinet"] .ie-btn-dismiss-thought {
+    background: #8c3116;
+    border-color: #8c3116;
+    color: #ffffff;
+}
+
+[data-tab-content="cabinet"] .ie-btn-abandon:hover:not(:disabled),
+[data-tab-content="cabinet"] .ie-btn-dismiss-thought:hover:not(:disabled) {
+    background: #a33a1a;
+    border-color: #a33a1a;
+    color: #ffffff;
+}
+
+[data-tab-content="cabinet"] .ie-thought-name {
+    background: #b16201;
+    color: #fbd69b;
+    padding: 4px 10px;
+    display: inline-block;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 12px;
+}
+
+[data-tab-content="cabinet"] .ie-thought-header {
+    align-items: flex-start;
+}
+
+[data-tab-content="cabinet"] .ie-perspective-btn {
+    background: rgba(100, 176, 130, 0.3);
+    color: #e8e4de;
+}
+
+[data-tab-content="cabinet"] .ie-perspective-btn:hover {
+    background: rgba(100, 176, 130, 0.5);
+    color: #ffffff;
+}
+
+[data-tab-content="cabinet"] .ie-perspective-btn.ie-perspective-active {
+    background: #64b082;
+    color: #ffffff;
+}
+
+.ie-panel-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SECTIONS - DE Style
+   ═══════════════════════════════════════════════════════════════ */
+
+.ie-section {
+    background: var(--ie-bg-secondary);
+    border-radius: 2px;
+    margin-bottom: 12px;
+    padding: 12px;
+    border-left: 3px solid var(--ie-border-light);
+}
+
+.ie-section-primary {
+    background: var(--ie-bg-tertiary);
+    border: 1px solid var(--ie-accent-orange);
+    border-left: 3px solid var(--ie-accent-orange);
+    text-align: center;
+    padding: 16px;
+}
+
+.ie-checkbox-large {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.ie-checkbox-large input {
+    width: 20px;
+    height: 20px;
+}
+
+.ie-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--ie-font-header);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--ie-text-secondary);
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--ie-border);
+}
+
+.ie-section-header span {
+    position: relative;
+}
+
+.ie-section-header span::before {
+    content: '//';
+    color: var(--ie-accent-orange);
+    margin-right: 6px;
+    font-weight: 400;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BUTTONS - DE Angular Style
+   ═══════════════════════════════════════════════════════════════ */
+
+.ie-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    DISCOVERY FAB - Magnifying Glass Icon Fixes
    ═══════════════════════════════════════════════════════════════ */
