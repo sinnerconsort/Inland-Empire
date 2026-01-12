@@ -103,6 +103,18 @@
     box-shadow: var(--ie-shadow);
 }
 
+/* Investigation FAB disabled state */
+.ie-thought-fab-disabled {
+    opacity: 0.4;
+    border-color: var(--ie-border);
+    pointer-events: none;
+}
+
+.ie-thought-fab-disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    EXTENSION SETTINGS (in ST's extension panel)
    ═══════════════════════════════════════════════════════════════ */
