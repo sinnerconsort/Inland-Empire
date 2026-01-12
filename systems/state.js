@@ -55,13 +55,22 @@ export const DEFAULT_SETTINGS = {
     autoDetectStatus: false,
     autoTrigger: false,
     triggerDelay: 1000,
+    // Main FAB position
     fabPositionTop: 140,
     fabPositionLeft: 10,
+    // Investigation FAB position and visibility
+    discoveryFabTop: 200,
+    discoveryFabLeft: 10,
+    showInvestigationFab: true, // NEW: Toggle Investigation FAB visibility
+    autoScanEnabled: false,     // Auto-investigate on new messages
+    // Intrusive thoughts
     intrusiveEnabled: true,
     intrusiveChance: 0.15,
     intrusiveInChat: true,
+    // Object voices
     objectVoicesEnabled: true,
     objectVoiceChance: 0.4,
+    // Thought cabinet
     thoughtDiscoveryEnabled: true,
     showThemeTracker: true,
     autoDiscoverThoughts: true
