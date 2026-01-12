@@ -202,6 +202,13 @@ export function createPsychePanel() {
                     <div class="ie-section-header"><span>Investigation</span></div>
                     <div class="ie-form-group">
                         <label class="ie-checkbox">
+                            <input type="checkbox" id="ie-show-investigation-fab" checked />
+                            <span>Show Investigation button</span>
+                        </label>
+                        <small class="ie-form-hint">Toggle the 🔍 Investigation FAB visibility</small>
+                    </div>
+                    <div class="ie-form-group">
+                        <label class="ie-checkbox">
                             <input type="checkbox" id="ie-auto-scan-enabled" />
                             <span>Auto-investigate on new messages</span>
                         </label>
@@ -219,54 +226,59 @@ export function createPsychePanel() {
                     </div>
                     <div class="ie-form-group">
                         <label class="ie-checkbox">
-                            <input type="checkbox" id="ie-auto-discover-thoughts" checked />
-                            <span>Auto-discover built-in thoughts</span>
+                            <input type="checkbox" id="ie-show-theme-tracker" checked />
+                            <span>Show theme tracker</span>
                         </label>
                     </div>
                     <div class="ie-form-group">
                         <label class="ie-checkbox">
-                            <input type="checkbox" id="ie-auto-generate-thoughts" />
-                            <span>Auto-generate custom thoughts from chat</span>
+                            <input type="checkbox" id="ie-auto-discover-thoughts" checked />
+                            <span>Auto-generate custom thoughts</span>
                         </label>
-                    </div>
-                    <div class="ie-form-group ie-auto-gen-options">
-                        <label>Theme threshold for auto-gen</label>
-                        <input type="number" id="ie-auto-gen-threshold" min="5" max="30" value="10" />
-                        <small class="ie-form-hint">Highest theme count needed to trigger</small>
-                    </div>
-                    <div class="ie-form-group ie-auto-gen-options">
-                        <label>Messages between auto-gen</label>
-                        <input type="number" id="ie-auto-gen-cooldown" min="3" max="20" value="5" />
-                    </div>
-                    <div class="ie-form-group ie-auto-gen-options">
-                        <label>Default perspective</label>
-                        <select id="ie-auto-gen-perspective">
-                            <option value="observer">Observer (wrestling with what you saw)</option>
-                            <option value="participant">Participant (embodying the mindset)</option>
-                        </select>
-                    </div>
-                    <div class="ie-form-group ie-auto-gen-options">
-                        <label>Player context for auto-gen</label>
-                        <input type="text" id="ie-auto-gen-player-context" placeholder="e.g., 'survivor investigating the killer'" />
-                        <small class="ie-form-hint">Who you are in the scene (saved)</small>
                     </div>
                 </div>
 
                 <div class="ie-section">
-                    <div class="ie-section-header"><span>POV & Character</span></div>
+                    <div class="ie-section-header"><span>Intrusive Thoughts</span></div>
                     <div class="ie-form-group">
-                        <label>Voice POV Style</label>
+                        <label class="ie-checkbox">
+                            <input type="checkbox" id="ie-intrusive-enabled" checked />
+                            <span>Enable intrusive voices</span>
+                        </label>
+                    </div>
+                    <div class="ie-form-group">
+                        <label>Intrusive Chance (%)</label>
+                        <input type="number" id="ie-intrusive-chance" min="0" max="100" value="15" />
+                    </div>
+                    <div class="ie-form-group">
+                        <label class="ie-checkbox">
+                            <input type="checkbox" id="ie-intrusive-in-chat" checked />
+                            <span>Show intrusive voices in chat</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="ie-section">
+                    <div class="ie-section-header"><span>Character Context</span></div>
+                    <div class="ie-form-group">
+                        <label class="ie-checkbox">
+                            <input type="checkbox" id="ie-enabled" checked />
+                            <span>Extension Enabled</span>
+                        </label>
+                    </div>
+                    <div class="ie-form-group">
+                        <label>POV Style</label>
                         <select id="ie-pov-style">
                             <option value="second">Second Person (you/your)</option>
-                            <option value="third">Third Person (name/they)</option>
                             <option value="first">First Person (I/me)</option>
+                            <option value="third">Third Person (they/their)</option>
                         </select>
                     </div>
-                    <div class="ie-form-group ie-third-person-options">
+                    <div class="ie-form-group">
                         <label>Character Name</label>
-                        <input type="text" id="ie-character-name" placeholder="e.g. Harry" />
+                        <input type="text" id="ie-character-name" placeholder="Harry Du Bois" />
                     </div>
-                    <div class="ie-form-group ie-third-person-options">
+                    <div class="ie-form-group">
                         <label>Pronouns</label>
                         <select id="ie-character-pronouns">
                             <option value="they">They/Them</option>
@@ -291,7 +303,7 @@ export function createPsychePanel() {
                     </button>
                     <button class="ie-btn ie-btn-reset-fab" style="width: 100%; margin-top: 8px;">
                         <i class="fa-solid fa-arrows-to-dot"></i>
-                        <span>Reset Icon Position</span>
+                        <span>Reset Icon Positions</span>
                     </button>
                 </div>
             </div>
